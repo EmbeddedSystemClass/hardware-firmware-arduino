@@ -13,19 +13,19 @@
 #include <Sensirion.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
-
+#include <avr/pgmspace.h>
 
 // SD Card ****************************************************************
 // pin 11 - MOSI
 // pin 12 - MISO
 // pin 13 - CLK
-// pin 4  - CS
-const int sdChipSelect = 4;
+// pin 10 - CS
+const int sdChipSelect = 10;
 
 // SHTxx  Humidity and Temperature Measurement ***************************
-// pin 2  - Data Pin
-// pin 3  - Serial Clock
-Sensirion sht = Sensirion(2, 3);
+// pin 8  - Data Pin
+// pin 9  - Serial Clock
+Sensirion sht = Sensirion(8, 9);
 const unsigned long TRHSTEP   = 5000UL;  	// Sensor query period
 
 unsigned int shtRawData;
@@ -50,10 +50,10 @@ byte shtError = 0;
 Adafruit_PCD8544 display = Adafruit_PCD8544(7, 6, 5, 4, 3);
 
 // States ****************************************************************
-define MEASURE_STATE   = 1;
-define RESET_LOG_STATE = 2;
-define SET_TIME_STATE  = 3;
-byte state = MEASURE_STATE
+#define MEASURE_STATE   1;
+#define RESET_LOG_STATE 2;
+#define SET_TIME_STATE  3;
+byte state = MEASURE_STATE;
 
 void setup()
 {  
@@ -61,7 +61,7 @@ void setup()
   display.begin();
   // you can change the contrast around to adapt the display
   // for the best viewing!
-  display.setContrast(50);
+  display.setContrast(60);
   display.clearDisplay();   // clears the screen and buffer
 
 	
@@ -72,18 +72,18 @@ void setup()
   }
 
 
-  Serial.print("Initializing SD card...");
+  Serial.print(F("Initializing SD card..."));
   // make sure that the default chip select pin is set to
   // output, even if you don't use it:
-  pinMode(10, OUTPUT);
+  //pinMode(10, OUTPUT);
   
   // see if the card is present and can be initialized:
   if (!SD.begin(sdChipSelect)) {
-    Serial.println("Card failed, or not present");
+    Serial.println(F("Card failed, or not present"));
     // don't do anything more:
     return;
   }
-  Serial.println("card initialized.");
+  Serial.println(F("card initialized."));
  
   byte stat;  
   if (shtError = sht.readSR(&stat))         // Read sensor status register
@@ -97,20 +97,21 @@ void setup()
 void loop() {
 	byte input = getInput();
 	
-	switch state {
-		case MEASURE_STATE:
+	switch(state) {
+		case 1:
 			state = measure(input);
 			break;
-		case RESET_LOG_STATE:
+		case 2:
 			state = resetLog(input);
 			break;
-		case SET_TIME_STATE:
+		case 3:
 			state = setTime(input);
 			break;
 	}	
 }
 
-void measure(byte input) {
+
+byte measure(byte input) {
   unsigned long curMillis = millis();          // Get current time
 
   
@@ -131,6 +132,7 @@ void measure(byte input) {
       if (shtError = sht.meas(HUMI, &shtRawData, NONBLOCK)) // Start humi measurement
         logError(shtError);
     } else {
+      //Serial.println("Measure");
       shtMeasActive = false;
       humidity = sht.calcHumi(shtRawData, temperature); // Convert raw sensor data
       dewpoint = sht.calcDewpoint(humidity, temperature);
@@ -151,6 +153,7 @@ byte setTime(byte input) {
 
 void logData()
 {
+    
   // make a string for assembling the data to log:
   String dataString = "";
 
@@ -170,22 +173,29 @@ void logData()
   }  
   // if the file isn't open, pop up an error:
   else {
-    Serial.println("error opening datalog.txt");
-  } 
+    Serial.println(F("error opening datalog.txt"));
+  }   
+  
 }
 
 void displayData()
 {
+  display.clearDisplay();
+  display.setTextColor(BLACK);
   display.setTextSize(1);
-  display.setTextColor(BLACK);
-  display.setCursor(0,0);
-  display.println("Hello, world!");
-  display.setTextColor(WHITE, BLACK); // 'inverted' text
-  display.println(3.141592);
+  display.setCursor(0, 0);
+  display.println(F("Temperature"));
   display.setTextSize(2);
-  display.setTextColor(BLACK);
-  display.print("0x"); display.println(0xDEADBEEF, HEX);
-  display.display();
+  display.setCursor(0, 10);        
+  display.print(temperature); display.print((char)255); display.println(F("C"));
+  
+  display.setCursor(0, 25);
+  display.setTextSize(1);
+  display.println(F("Humidity"));
+  display.setTextSize(2);
+  display.setCursor(0, 34);
+  display.print(humidity); display.println(F("%"));
+  display.display();  
 }
 
 // The following code is only used with shtError checking enabled
@@ -193,16 +203,16 @@ void logError(byte shtError) {
   String errorString = "";
   switch (shtError) {
   case S_Err_NoACK:
-    errorString = "Error: No response (ACK) received from sensor!";
+    errorString = F("Error: No response (ACK) received from sensor!");
     break;
   case S_Err_CRC:
-    errorString = "Error: CRC mismatch!";
+    errorString = F("Error: CRC mismatch!");
     break;
   case S_Err_TO:
-    errorString = "Error: Measurement timeout!";
+    errorString = F("Error: Measurement timeout!");
     break;
   default:
-    errorString = "Unknown shtError received!";
+    errorString = F("Unknown shtError received!");
     break;
   }
   // open the file. note that only one file can be open at a time,
@@ -218,7 +228,7 @@ void logError(byte shtError) {
   }  
   // if the file isn't open, pop up an error:
   else {
-    Serial.println("error opening errorString.txt");
+    Serial.println(F("error opening errorString.txt"));
   } 
 }
 
@@ -227,7 +237,6 @@ byte stateMachine(byte state, byte stimuli) {
 
 byte getInput() {
 }
-
 
 
 
