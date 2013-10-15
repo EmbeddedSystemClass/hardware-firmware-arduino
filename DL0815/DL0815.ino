@@ -16,25 +16,20 @@
 
 
 // SD Card ****************************************************************
- /* SD card attached to SPI bus as follows:
-  ** MOSI - pin 11
-  ** MISO - pin 12
-  ** CLK - pin 13
- ** CS - pin 4
- */
- 
+// pin 11 - MOSI
+// pin 12 - MISO
+// pin 13 - CLK
+// pin 4  - CS
 const int sdChipSelect = 4;
 
-
 // SHTxx  Humidity and Temperature Measurement ***************************
-const byte shtDataPin =  2;                 // SHTxx serial data
-const byte shtSclkPin =  3;                 // SHTxx serial clock
-const unsigned long TRHSTEP   = 5000UL;  // Sensor query period
-
-Sensirion sht = Sensirion(shtDataPin, shtSclkPin);
+// pin 2  - Data Pin
+// pin 3  - Serial Clock
+Sensirion sht = Sensirion(2, 3);
+const unsigned long TRHSTEP   = 5000UL;  	// Sensor query period
 
 unsigned int shtRawData;
-unsigned long trhMillis = 0;             // Time interval tracking
+unsigned long trhMillis = 0;             	// Time interval tracking
 float temperature;
 float humidity;
 float dewpoint;
@@ -54,22 +49,21 @@ byte shtError = 0;
 // pin 3 - LCD reset (RST)
 Adafruit_PCD8544 display = Adafruit_PCD8544(7, 6, 5, 4, 3);
 
+// States ****************************************************************
+define MEASURE_STATE   = 1;
+define RESET_LOG_STATE = 2;
+define SET_TIME_STATE  = 3;
+byte state = MEASURE_STATE
 
 void setup()
-{
-  byte stat;
-  
+{  
+  // Initialize Display
   display.begin();
-  // init done
-
   // you can change the contrast around to adapt the display
   // for the best viewing!
   display.setContrast(50);
-
-  display.display(); // show splashscreen
-  delay(2000);
   display.clearDisplay();   // clears the screen and buffer
-	
+
 	
  // Open serial communications and wait for port to open:
   Serial.begin(9600);
@@ -90,7 +84,8 @@ void setup()
     return;
   }
   Serial.println("card initialized.");
-  
+ 
+  byte stat;  
   if (shtError = sht.readSR(&stat))         // Read sensor status register
     logError(shtError);
   if (shtError = sht.writeSR(LOW_RES))      // Set sensor to low resolution
@@ -100,6 +95,22 @@ void setup()
 }
 
 void loop() {
+	byte input = getInput();
+	
+	switch state {
+		case MEASURE_STATE:
+			state = measure(input);
+			break;
+		case RESET_LOG_STATE:
+			state = resetLog(input);
+			break;
+		case SET_TIME_STATE:
+			state = setTime(input);
+			break;
+	}	
+}
+
+void measure(byte input) {
   unsigned long curMillis = millis();          // Get current time
 
   
@@ -127,6 +138,15 @@ void loop() {
       displayData();
     }
   }
+  return MEASURE_STATE;
+}
+
+byte resetLog(byte input) {
+	return RESET_LOG_STATE;
+}
+
+byte setTime(byte input) {
+	return SET_TIME_STATE;
 }
 
 void logData()
@@ -202,7 +222,11 @@ void logError(byte shtError) {
   } 
 }
 
+byte stateMachine(byte state, byte stimuli) {
+}
 
+byte getInput() {
+}
 
 
 
