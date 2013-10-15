@@ -32,7 +32,6 @@ unsigned int shtRawData;
 unsigned long trhMillis = 0;             	// Time interval tracking
 float temperature;
 float humidity;
-float dewpoint;
 
 byte shtMeasActive = false;
 byte sthMeasType = TEMP;
@@ -135,7 +134,6 @@ byte measure(byte input) {
       //Serial.println("Measure");
       shtMeasActive = false;
       humidity = sht.calcHumi(shtRawData, temperature); // Convert raw sensor data
-      dewpoint = sht.calcDewpoint(humidity, temperature);
       logData();
       displayData();
     }
