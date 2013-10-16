@@ -14,6 +14,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
 #include <avr/pgmspace.h>
+#include <swRTC.h>
 
 // SD Card ****************************************************************
 // pin 11 - MOSI
@@ -48,6 +49,9 @@ byte shtError = 0;
 // pin 3 - LCD reset (RST)
 Adafruit_PCD8544 display = Adafruit_PCD8544(7, 6, 5, 4, 3);
 
+// Software RTC **********************************************************
+swRTC rtc;
+
 // States ****************************************************************
 #define MEASURE_STATE   1;
 #define RESET_LOG_STATE 2;
@@ -63,6 +67,11 @@ void setup()
   display.setContrast(60);
   display.clearDisplay();   // clears the screen and buffer
 
+
+  rtc.stopRTC(); //stop the RTC
+  rtc.setTime(21,55,0); //set the time here
+  rtc.setDate(16,10,2013); //set the date here
+  rtc.startRTC(); //start the RTC
 	
  // Open serial communications and wait for port to open:
   Serial.begin(9600);
@@ -155,6 +164,7 @@ void logData()
   // make a string for assembling the data to log:
   String dataString = "";
 
+  dataString += String(rtc.getHours()) + ":" + String(rtc.getMinutes()) + ":" + String(rtc.getSeconds()) + ";";
   dataString += String(temperature) + ";";
   dataString += String(humidity) + ";";
 
