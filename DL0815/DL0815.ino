@@ -7,7 +7,7 @@
  This example code is in the public domain.
  	 
  */
-
+#include <PString.h>
 #include <SPI.h>
 #include <SD.h>
 #include <Sensirion.h>
@@ -162,8 +162,9 @@ void logData()
 {
     
   // make a string for assembling the data to log:
-  String dataString = "";
-
+  char buffer[20];
+  PString dataString(buffer, sizeof(buffer));
+  // 00:00:00,00.00,00.00
   dataString += String(rtc.getHours()) + ":" + String(rtc.getMinutes()) + ":" + String(rtc.getSeconds()) + ";";
   dataString += String(temperature) + ";";
   dataString += String(humidity) + ";";
@@ -188,22 +189,31 @@ void logData()
 
 void displayData()
 {
-  display.clearDisplay();
-  display.setTextColor(BLACK);
-  display.setTextSize(1);
-  display.setCursor(0, 0);
-  display.println(F("Temperature"));
-  display.setTextSize(2);
-  display.setCursor(0, 10);        
-  display.print(temperature); display.print((char)255); display.println(F("C"));
+  char buffer[20];
+  PString str(buffer, sizeof(buffer));
+  display.clearDisplay();  
+
+  str = F("Temperature")
+  displayText(0, 0, 1, buffer);  
   
-  display.setCursor(0, 25);
-  display.setTextSize(1);
-  display.println(F("Humidity"));
-  display.setTextSize(2);
-  display.setCursor(0, 34);
-  display.print(humidity); display.println(F("%"));
+  str = PString(temperature) + (char)255 + F("C"); 
+  displayText(0, 10, 2, buffer);  
+  
+  str = F("Humidity")
+  displayText(0, 25, 1, buffer);
+
+  str = PString(humidity) + F("%"); 
+  displayText(0, 34, 2, buffer);  
+	
   display.display();  
+}
+
+void displayText(byte x, byte y, byte size, char *buffer)
+{
+  display.setTextColor(BLACK);
+  display.setTextSize(size);
+  display.setCursor(x, y);
+  display.println(buffer);	
 }
 
 // The following code is only used with shtError checking enabled
