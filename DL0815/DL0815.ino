@@ -27,8 +27,8 @@ const int sdChipSelect = 10;
 // pin 9  - Serial Clock
 Sensirion sht = Sensirion(8, 9);
 unsigned int shtRawData;
-int temperature;
-int humidity;
+byte temperature;
+byte humidity;
 
 byte shtMeasActive = false;
 byte sthMeasType = TEMP;
@@ -88,7 +88,7 @@ void setup()
     return;
   }
   Serial.println(F("card initialized."));
- 
+ /*
   byte stat;  
   if (shtError = sht.readSR(&stat))         // Read sensor status register
     logError(shtError);
@@ -96,6 +96,7 @@ void setup()
     logError(shtError);
   if (shtError = sht.readSR(&stat))         // Read sensor status register again
     logError(shtError);
+  */
 }
 
 void loop() {
@@ -115,27 +116,27 @@ void loop() {
 }
 
 byte measure(byte input) {  
-  bool doMeasure = rtc.getSeconds() % 10;
+  bool doMeasure = rtc.getSeconds() % 5;
   
   // Demonstrate non-blocking calls
   if (doMeasure) {      // Time for new measurements?
     shtMeasActive = true;
     sthMeasType = TEMP;
-    if (shtError = sht.meas(TEMP, &shtRawData, NONBLOCK)) // Start temp measurement
-      logError(shtError);    
+    if (shtError = sht.meas(TEMP, &shtRawData, NONBLOCK)); // Start temp measurement
+      //logError(shtError);    
   }
   if (shtMeasActive && (shtError = sht.measRdy())) { // Check measurement status
-    if (shtError != S_Meas_Rdy)
-      logError(shtError);
+    //if (shtError != S_Meas_Rdy)
+    //  logError(shtError);
     if (sthMeasType == TEMP) {                    // Process temp or humi?
       sthMeasType = HUMI;
-      temperature = sht.calcTemp(shtRawData) * 100;     // Convert raw sensor data
-      if (shtError = sht.meas(HUMI, &shtRawData, NONBLOCK)) // Start humi measurement
-        logError(shtError);
+      temperature = (byte)sht.calcTemp(shtRawData);     // Convert raw sensor data
+      if (shtError = sht.meas(HUMI, &shtRawData, NONBLOCK)); // Start humi measurement
+        //logError(shtError);
     } else {
       //Serial.println("Measure");
       shtMeasActive = false;
-      humidity = sht.calcHumi(shtRawData, temperature) * 100; // Convert raw sensor data
+      humidity = (byte)sht.calcHumi(shtRawData, temperature); // Convert raw sensor data
       logData();
       displayData();
     }
@@ -161,6 +162,9 @@ void logData()
   dataString += String(humidity) + ";";
 
   switch (shtError) {
+  case S_Meas_Rdy:
+    // no error
+    break;
   case S_Err_NoACK:
     dataString += F("Error: No response (ACK) received from sensor!");
     break;
@@ -198,9 +202,9 @@ void displayData()
   display.clearDisplay();  
 
   displayText(0, 0 , 1, String(F("Temperature")));   
-  displayText(0, 10, 2, String(temperature / 100) + (char)255 + String(F("C")));  
+  displayText(0, 10, 2, String(temperature) + (char)255 + String(F("C")));  
   displayText(0, 25, 1, String(F("Humidity")));
-  displayText(0, 34, 2, String(humidity / 100) + String(F("%")));  
+  displayText(0, 34, 2, String(humidity) + String(F("%")));  
 	
   display.display();  
 }
