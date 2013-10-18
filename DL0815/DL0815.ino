@@ -7,7 +7,6 @@
  This example code is in the public domain.
  	 
  */
-#include <PString.h>
 #include <SPI.h>
 #include <SD.h>
 #include <Sensirion.h>
@@ -27,12 +26,9 @@ const int sdChipSelect = 10;
 // pin 8  - Data Pin
 // pin 9  - Serial Clock
 Sensirion sht = Sensirion(8, 9);
-const unsigned long TRHSTEP   = 5000UL;  	// Sensor query period
-
 unsigned int shtRawData;
-unsigned long trhMillis = 0;             	// Time interval tracking
-float temperature;
-float humidity;
+int temperature;
+int humidity;
 
 byte shtMeasActive = false;
 byte sthMeasType = TEMP;
@@ -118,31 +114,28 @@ void loop() {
 	}	
 }
 
-
-byte measure(byte input) {
-  unsigned long curMillis = millis();          // Get current time
-
+byte measure(byte input) {  
+  bool doMeasure = rtc.getSeconds() % 10;
   
   // Demonstrate non-blocking calls
-  if (curMillis - trhMillis >= TRHSTEP) {      // Time for new measurements?
+  if (doMeasure) {      // Time for new measurements?
     shtMeasActive = true;
     sthMeasType = TEMP;
     if (shtError = sht.meas(TEMP, &shtRawData, NONBLOCK)) // Start temp measurement
-      logError(shtError);
-    trhMillis = curMillis;
+      logError(shtError);    
   }
   if (shtMeasActive && (shtError = sht.measRdy())) { // Check measurement status
     if (shtError != S_Meas_Rdy)
       logError(shtError);
     if (sthMeasType == TEMP) {                    // Process temp or humi?
       sthMeasType = HUMI;
-      temperature = sht.calcTemp(shtRawData);     // Convert raw sensor data
+      temperature = sht.calcTemp(shtRawData) * 100;     // Convert raw sensor data
       if (shtError = sht.meas(HUMI, &shtRawData, NONBLOCK)) // Start humi measurement
         logError(shtError);
     } else {
       //Serial.println("Measure");
       shtMeasActive = false;
-      humidity = sht.calcHumi(shtRawData, temperature); // Convert raw sensor data
+      humidity = sht.calcHumi(shtRawData, temperature) * 100; // Convert raw sensor data
       logData();
       displayData();
     }
@@ -159,15 +152,28 @@ byte setTime(byte input) {
 }
 
 void logData()
-{
-    
-  // make a string for assembling the data to log:
-  char buffer[20];
-  PString dataString(buffer, sizeof(buffer));
+{    
+  // make a string for assembling the data to log:  
+  String dataString;
   // 00:00:00,00.00,00.00
   dataString += String(rtc.getHours()) + ":" + String(rtc.getMinutes()) + ":" + String(rtc.getSeconds()) + ";";
   dataString += String(temperature) + ";";
   dataString += String(humidity) + ";";
+
+  switch (shtError) {
+  case S_Err_NoACK:
+    dataString += F("Error: No response (ACK) received from sensor!");
+    break;
+  case S_Err_CRC:
+    dataString += F("Error: CRC mismatch!");
+    break;
+  case S_Err_TO:
+    dataString += F("Error: Measurement timeout!");
+    break;
+  default:
+    dataString += F("Unknown shtError received!");
+    break;
+  }
 
   // open the file. note that only one file can be open at a time,
   // so you have to close this one before opening another.
@@ -179,7 +185,7 @@ void logData()
     dataFile.close();
     // print to the serial port too:
     Serial.println(dataString);
-  }  
+  }    
   // if the file isn't open, pop up an error:
   else {
     Serial.println(F("error opening datalog.txt"));
@@ -189,71 +195,26 @@ void logData()
 
 void displayData()
 {
-  char buffer[20];
-  PString str(buffer, sizeof(buffer));
   display.clearDisplay();  
 
-  str = F("Temperature")
-  displayText(0, 0, 1, buffer);  
-  
-  str = PString(temperature) + (char)255 + F("C"); 
-  displayText(0, 10, 2, buffer);  
-  
-  str = F("Humidity")
-  displayText(0, 25, 1, buffer);
-
-  str = PString(humidity) + F("%"); 
-  displayText(0, 34, 2, buffer);  
+  displayText(0, 0 , 1, String(F("Temperature")));   
+  displayText(0, 10, 2, String(temperature / 100) + (char)255 + String(F("C")));  
+  displayText(0, 25, 1, String(F("Humidity")));
+  displayText(0, 34, 2, String(humidity / 100) + String(F("%")));  
 	
   display.display();  
 }
 
-void displayText(byte x, byte y, byte size, char *buffer)
+void displayText(byte x, byte y, byte size, String str)
 {
   display.setTextColor(BLACK);
   display.setTextSize(size);
   display.setCursor(x, y);
-  display.println(buffer);	
-}
-
-// The following code is only used with shtError checking enabled
-void logError(byte shtError) {
-  String errorString = "";
-  switch (shtError) {
-  case S_Err_NoACK:
-    errorString = F("Error: No response (ACK) received from sensor!");
-    break;
-  case S_Err_CRC:
-    errorString = F("Error: CRC mismatch!");
-    break;
-  case S_Err_TO:
-    errorString = F("Error: Measurement timeout!");
-    break;
-  default:
-    errorString = F("Unknown shtError received!");
-    break;
-  }
-  // open the file. note that only one file can be open at a time,
-  // so you have to close this one before opening another.
-  File dataFile = SD.open("error.txt", FILE_WRITE);
-
-  // if the file is available, write to it:
-  if (dataFile) {
-    dataFile.println(errorString);
-    dataFile.close();
-    // print to the serial port too:
-    Serial.println(errorString);
-  }  
-  // if the file isn't open, pop up an error:
-  else {
-    Serial.println(F("error opening errorString.txt"));
-  } 
-}
-
-byte stateMachine(byte state, byte stimuli) {
+  display.println(str);	
 }
 
 byte getInput() {
+  return 0;
 }
 
 
