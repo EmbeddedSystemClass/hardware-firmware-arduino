@@ -67,6 +67,12 @@ Adafruit_PCD8544 display = Adafruit_PCD8544(7, 6, 5, 4, 3);
 
 // Software RTC **********************************************************
 swRTC rtc;
+byte rtcState = 0;
+
+#define RTC_EDIT   0
+#define RTC_HOUR   1
+#define RTC_MINUTE 2
+#define RTC_SECOND 3
 
 // States ****************************************************************
 #define MEASURE_STATE   1;
@@ -200,13 +206,55 @@ byte resetLog(byte input) {
 }
 
 byte setRtC(byte input) {
+  
+  if (!bitRead(rtcState, RTC_EDIT)) {
+    bitSet(rtcState, RTC_EDIT);
+    bitSet(rtcState, RTC_HOUR);
+    //rtc.stopRTC();
+  }
+  
   display.clearDisplay(); 
-  displayText(0, 0, 1, F("Set RTC"));
+  displayText(0,  0, 1, F("Set RTC"));
+  
+  if (bitRead(rtcState, RTC_HOUR)) {
+    displayText(0, 12, 1, F("__"));
+  } else if (bitRead(rtcState, RTC_MINUTE)) {
+    displayText(18, 12, 1, F("__")); 
+  } else if (bitRead(rtcState, RTC_SECOND)) {
+    displayText(36, 12, 1, F("__"));  
+  }
+
+  displayText(0, 10, 1, getTime());
   display.display();
+  
+  if (bitRead(input, BTN2)) {
+    if (bitRead(rtcState, RTC_HOUR)) {
+      byte h = align(rtc.getHours() + 1, 23);      
+      rtc.setTime(h, rtc.getMinutes(), rtc.getSeconds());
+    } else if (bitRead(rtcState, RTC_MINUTE)) {
+      byte m = align(rtc.getMinutes() + 1, 59);      
+      rtc.setTime(rtc.getHours(), m, rtc.getSeconds());
+    } else if(bitRead(rtcState, RTC_SECOND)) {
+      byte s = align(rtc.getSeconds() + 1, 59);      
+      rtc.setTime(rtc.getHours(), rtc.getMinutes(), s);
+    }
+  }
 
   if (bitRead(input, BTN1)) {
-    return RESET_LOG_STATE;
+    if (bitRead(rtcState, RTC_HOUR)) {
+      bitClear(rtcState, RTC_HOUR);
+      bitSet(rtcState, RTC_MINUTE);
+    } else if (bitRead(rtcState, RTC_MINUTE)) {
+      bitClear(rtcState, RTC_MINUTE);
+      bitSet(rtcState, RTC_SECOND); 
+    } else if (bitRead(rtcState, RTC_SECOND)) {
+      bitClear(rtcState, RTC_SECOND);
+      bitClear(rtcState, RTC_EDIT);
+      //rtc.startRTC();
+      return RESET_LOG_STATE;  
+    }
   }
+  
   return SET_TIME_STATE;
 }
 
@@ -215,10 +263,7 @@ void logData()
   // make a string for assembling the data to log:  
   String dataString;
   // 00:00:00,00.00,00.00
-  dataString += formatNumber(rtc.getHours(), 2) + ":";
-
-  dataString += formatNumber(rtc.getMinutes(), 2) + ":";
-  dataString += formatNumber(rtc.getSeconds(), 2) + ";";
+  dataString += getTime() + ";";
   dataString += String(temperature) + ";";
   dataString += String(humidity) + ";";
 
@@ -258,13 +303,6 @@ void logData()
 
 }
 
-String formatNumber(byte n, byte count) {
-  String s = String(n);
-  while(s.length() != count)
-    s = String(F("0")) + s;
-  return s;
-}
-
 void displayData()
 {
   display.clearDisplay();  
@@ -277,10 +315,15 @@ void displayData()
   display.display();  
 }
 
-void displayText(byte x, byte y, byte size, String str)
+void displayText(byte x, byte y, byte fontSize, String str)
 {
-  display.setTextColor(BLACK);
-  display.setTextSize(size);
+  displayText(x, y, fontSize, str, BLACK, WHITE);
+}
+
+void displayText(byte x, byte y, byte fontSize, String str, byte textColor, byte backColor)
+{
+  display.setTextColor(textColor, backColor);
+  display.setTextSize(fontSize);
   display.setCursor(x, y);
   display.println(str);	
 }
@@ -310,3 +353,22 @@ void logError(String s) {
   displayText(0, 0, 1, s);
 }
 
+String formatNumber(byte n, byte count) {
+  String s = String(n);
+  while(s.length() != count)
+    s = String(F("0")) + s;
+  return s;
+}
+
+String getTime() {
+  String s;
+  s += formatNumber(rtc.getHours(), 2) + F(":");
+  s += formatNumber(rtc.getMinutes(), 2) + F(":");
+  s += formatNumber(rtc.getSeconds(), 2);
+  return s;
+}
+
+byte align(byte value, byte maxValue) {
+  if (value > maxValue) value = 0;
+  return value;
+}
