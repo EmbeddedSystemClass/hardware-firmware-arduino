@@ -19,16 +19,18 @@
 #define bitToggle(value, bit) ((value) ^= (1UL << (bit)))
 
 // Buttons ****************************************************************
-const byte btn1Pin = A1;     // the number of the pushbutton pin
-const byte btn2Pin = A2;     // the number of the pushbutton pin
-
-byte buttonState = 0;         // variable for reading the pushbutton status
-byte lastButtonState = 0;
-byte buttonFlags = 0;
-long lastDebounceTime = 0;
+const byte btn1Pin = A1;     // pushbutton 1 pin
+const byte btn2Pin = A2;     // pushbutton 2 pin
 
 #define BTN1 0
 #define BTN2 1
+
+struct {
+   unsigned bBtn1:1;
+   unsigned bBtn2:1;
+   byte lastButtonState;
+   long lastDebounceTime;	
+} btnState;
 
 // SD Card ****************************************************************
 // pin 11 - MOSI
@@ -41,20 +43,21 @@ const int sdChipSelect = 10;
 // pin 8  - Data Pin
 // pin 9  - Serial Clock
 Sensirion sht = Sensirion(8, 9);
-unsigned int shtRawData;
-byte temperature;
-byte humidity;
 
 // This version of the code checks return codes for errors
 byte shtError = 0;
 
-byte shtFlags = 0;
-// Flags
-#define SHT_TEMP    0
-#define SHT_HUMI    1
-#define SHT_MEASURE 2
-#define SHT_LOG     3
-#define SHT_DISPLAY 4
+struct {
+   unsigned bMeasure:1;
+   unsigned bTempMeasure:1; 
+   unsigned bHumiMeasure:1;
+   unsigned bLog:1;
+   unsigned bDisplay:1; 
+   byte temperature;
+   byte humidity;
+   unsigned int rawData;
+} shtState;
+
 
 // Display Nokia 5110 ****************************************************
 
@@ -67,12 +70,19 @@ Adafruit_PCD8544 display = Adafruit_PCD8544(7, 6, 5, 4, 3);
 
 // Software RTC **********************************************************
 swRTC rtc;
-byte rtcState = 0;
 
-#define RTC_EDIT   0
-#define RTC_HOUR   1
-#define RTC_MINUTE 2
-#define RTC_SECOND 3
+#define EDIT_NONE    0
+#define EDIT_HOURS   1
+#define EDIT_MINUTES 2
+#define EDIT_SECONDS 3
+#define EDIT_YEAR    4
+#define EDIT_MONTH   5
+#define EDIT_DAY     6
+
+struct {
+   unsigned bEdit:1;
+   byte EditState;	
+} rtcState;
 
 // States ****************************************************************
 #define MEASURE_STATE   1;
@@ -136,58 +146,58 @@ void loop() {
   //Serial.println(state);	
   switch(state) {
   case 1:
-    state = measure(buttonFlags);
+    state = measure(0);
     break;
   case 2:
-    state = setRtC(buttonFlags);
+    state = setRtC(0);
     break;
   case 3:
-    state = resetLog(buttonFlags);
+    state = resetLog(0);
     break;
   }	
 }
 
 byte measure(byte input) {
-  if (!bitRead(shtFlags, SHT_MEASURE) && millis() % 5000UL == 0) {      // Time for new measurements?
-    bitSet(shtFlags, SHT_MEASURE);
-    bitSet(shtFlags, SHT_TEMP);
-    sht.meas(TEMP, &shtRawData, NONBLOCK); // Start temp measurement
+  if (!shtState.bMeasure && millis() % 5000UL == 0) {      // Time for new measurements?
+    shtState.bMeasure = true;
+    shtState.bTempMeasure = true;
+    sht.meas(TEMP, &shtState.rawData, NONBLOCK); // Start temp measurement
     // Serial.println("start temp measure");
   }
-  if (bitRead(shtFlags, SHT_MEASURE) && (shtError = sht.measRdy())) { // Check measurement status
-    if (bitRead(shtFlags, SHT_TEMP)) {                    // Process temp or humi?
-      bitClear(shtFlags, SHT_TEMP);
-      bitSet(shtFlags, SHT_HUMI);
-      temperature = (byte)sht.calcTemp(shtRawData);     // Convert raw sensor data
-      sht.meas(HUMI, &shtRawData, NONBLOCK); // Start humi measurement
+  if (shtState.bMeasure && (shtError = sht.measRdy())) { // Check measurement status
+    if (shtState.bTempMeasure) {                    // Process temp or humi?
+      shtState.bTempMeasure = false;
+      shtState.bHumiMeasure = true;
+      shtState.temperature = (byte)sht.calcTemp(shtState.rawData);     // Convert raw sensor data
+      sht.meas(HUMI, &shtState.rawData, NONBLOCK); // Start humi measurement
       // Serial.println("start humi measure");
     } 
-    else if (bitRead(shtFlags, SHT_HUMI)) 
+    else if (shtState.bHumiMeasure) 
     {
-      bitClear(shtFlags, SHT_HUMI);
-      bitClear(shtFlags, SHT_MEASURE);
-      bitSet(shtFlags, SHT_LOG);
-      bitSet(shtFlags, SHT_DISPLAY);
-      humidity = (byte)sht.calcHumi(shtRawData, temperature); // Convert raw sensor data
+      shtState.bHumiMeasure = false;
+      shtState.bMeasure = false;
+      shtState.bLog = true;
+      shtState.bDisplay = true;
+      shtState.humidity = (byte)sht.calcHumi(shtState.rawData, shtState.temperature); // Convert raw sensor data
       // Serial.println("measure ready");
     }
   }
   
-  if (bitRead(shtFlags, SHT_DISPLAY)) {
-    bitClear(shtFlags, SHT_DISPLAY);
+  if (shtState.bDisplay) {
+    shtState.bDisplay = false;
     displayData();
     // Serial.println("display");
   }
   
-  if (bitRead(shtFlags, SHT_LOG)) {
-    bitClear(shtFlags, SHT_LOG);
+  if (shtState.bLog) {
+    shtState.bDisplay = false;
     logData();
     // Serial.println("log");
   }
 
-  if (bitRead(input, BTN1)) {
-    bitClear(shtFlags, SHT_MEASURE);
-    bitSet(shtFlags, SHT_DISPLAY);  // if MEASURE_STATE reactivated, display last values
+  if (btnState.bBtn1) {
+    shtState.bMeasure = false;
+    shtState.bDisplay = true;  // if MEASURE_STATE reactivated, display last values
     return SET_TIME_STATE;
   }
 
@@ -199,7 +209,7 @@ byte resetLog(byte input) {
   displayText(0, 0, 1, F("Reset Log"));
   display.display();
 
-  if (bitRead(input, BTN1)) {
+  if (btnState.bBtn1) {
     return MEASURE_STATE;
   }
   return RESET_LOG_STATE;
@@ -207,53 +217,77 @@ byte resetLog(byte input) {
 
 byte setRtC(byte input) {
   
-  if (!bitRead(rtcState, RTC_EDIT)) {
-    bitSet(rtcState, RTC_EDIT);
-    bitSet(rtcState, RTC_HOUR);
-    //rtc.stopRTC();
+  if (rtcState.EditState == EDIT_NONE) {    
+    rtcState.EditState = EDIT_HOURS;				// start with hours edit
   }
   
   display.clearDisplay(); 
   displayText(0,  0, 1, F("Set RTC"));
   
-  if (bitRead(rtcState, RTC_HOUR)) {
-    displayText(0, 12, 1, F("__"));
-  } else if (bitRead(rtcState, RTC_MINUTE)) {
-    displayText(18, 12, 1, F("__")); 
-  } else if (bitRead(rtcState, RTC_SECOND)) {
-    displayText(36, 12, 1, F("__"));  
-  }
+  byte i = btnState.bBtn2 ? 1 : 0;	// if Btn2 pressed, increment time
+					//   else do not increment time
+  byte n = 0;
+  switch(rtcState.EditState) {
 
-  displayText(0, 10, 1, getTime());
+    // Time ****************
+	  
+    case EDIT_HOURS:
+      displayText(0, 12, 1, F("__"));			  // cursor
+      n = align(rtc.getHours() + i, 23);      	  // increment
+      rtc.setTime(n, rtc.getMinutes(), rtc.getSeconds()); // set time
+      if (btnState.bBtn1) { 				  // if Btn1 pressed
+	rtcState.EditState = EDIT_MINUTES;   		  //   edit minutes
+      }
+      break;
+    case EDIT_MINUTES:
+      displayText(18, 12, 1, F("__")); 
+      n = align(rtc.getMinutes() + i, 59);      
+      rtc.setTime(rtc.getHours(), n, rtc.getSeconds());
+      if (btnState.bBtn1) {
+	rtcState.EditState = EDIT_SECONDS;
+      }
+      break;
+    case EDIT_SECONDS:
+      n = align(rtc.getSeconds() + i, 59);      
+      rtc.setTime(rtc.getHours(), rtc.getMinutes(), n);	  
+      displayText(36, 12, 1, F("__"));
+      if (btnState.bBtn1) {
+        rtcState.EditState = EDIT_YEAR;
+      }
+      break;
+ 
+    // Date ****************
+    
+    case EDIT_YEAR:
+      displayText(0, 22, 1, F("__"));			  // cursor
+      n = rtc.getYear() + i;      	                  // increment
+      rtc.setDate(n, rtc.getMonth(), rtc.getDay());       // set date
+      if (btnState.bBtn1) { 				  // if Btn1 pressed
+	rtcState.EditState = EDIT_MONTH;   		  //   edit month
+      }
+      break;
+    case EDIT_MONTH:
+      displayText(18, 22, 1, F("__")); 
+      n = align(rtc.getMonth() + i, 12);      
+      rtc.setDate(rtc.getYear(), n, rtc.getDay());
+      if (btnState.bBtn1) {
+	rtcState.EditState = EDIT_DAY;
+      }
+      break;
+    case EDIT_DAY:
+      n = align(rtc.getDay() + i, 31);      
+      rtc.setDate(rtc.getYear(), rtc.getDay(), n);	  
+      displayText(36, 22, 1, F("__"));
+      if (btnState.bBtn1) {
+        rtcState.EditState = EDIT_NONE;
+	return RESET_LOG_STATE;
+      }
+      break;
+  }  
+
+  displayText(0, 10, 1, getTimeStr());
+  displayText(0, 20, 1, getDateStr());
   display.display();
-  
-  if (bitRead(input, BTN2)) {
-    if (bitRead(rtcState, RTC_HOUR)) {
-      byte h = align(rtc.getHours() + 1, 23);      
-      rtc.setTime(h, rtc.getMinutes(), rtc.getSeconds());
-    } else if (bitRead(rtcState, RTC_MINUTE)) {
-      byte m = align(rtc.getMinutes() + 1, 59);      
-      rtc.setTime(rtc.getHours(), m, rtc.getSeconds());
-    } else if(bitRead(rtcState, RTC_SECOND)) {
-      byte s = align(rtc.getSeconds() + 1, 59);      
-      rtc.setTime(rtc.getHours(), rtc.getMinutes(), s);
-    }
-  }
-
-  if (bitRead(input, BTN1)) {
-    if (bitRead(rtcState, RTC_HOUR)) {
-      bitClear(rtcState, RTC_HOUR);
-      bitSet(rtcState, RTC_MINUTE);
-    } else if (bitRead(rtcState, RTC_MINUTE)) {
-      bitClear(rtcState, RTC_MINUTE);
-      bitSet(rtcState, RTC_SECOND); 
-    } else if (bitRead(rtcState, RTC_SECOND)) {
-      bitClear(rtcState, RTC_SECOND);
-      bitClear(rtcState, RTC_EDIT);
-      //rtc.startRTC();
-      return RESET_LOG_STATE;  
-    }
-  }
   
   return SET_TIME_STATE;
 }
@@ -263,9 +297,9 @@ void logData()
   // make a string for assembling the data to log:  
   String dataString;
   // 00:00:00,00.00,00.00
-  dataString += getTime() + ";";
-  dataString += String(temperature) + ";";
-  dataString += String(humidity) + ";";
+  dataString += getTimeStr() + ";";
+  dataString += String(shtState.temperature) + ";";
+  dataString += String(shtState.humidity) + ";";
 
   switch (shtError) {
   case S_Meas_Rdy:
@@ -308,9 +342,9 @@ void displayData()
   display.clearDisplay();  
 
   displayText(0, 0 , 1, String(F("Temperature")));   
-  displayText(0, 10, 2, String(temperature) + (char)255 + String(F("C")));  
+  displayText(0, 10, 2, String(shtState.temperature) + (char)255 + String(F("C")));  
   displayText(0, 25, 1, String(F("Humidity")));
-  displayText(0, 34, 2, String(humidity) + String(F("%")));  
+  displayText(0, 34, 2, String(shtState.humidity) + String(F("%")));  
 
   display.display();  
 }
@@ -330,22 +364,17 @@ void displayText(byte x, byte y, byte fontSize, String str, byte textColor, byte
 
 void updateButtonFlags() {
   // read the state of the pushbutton value:
-  buttonState = ~PINC & 3;
+  byte buttonState = ~PINC & 3;
 
-  if(millis() - lastDebounceTime > 75 && lastButtonState != buttonState) {
-    lastDebounceTime = millis();
-    lastButtonState = buttonState;
-
-    if (bitRead(lastButtonState, BTN1)) {
-      bitSet(buttonFlags, BTN1);
-    }
-    if (bitRead(lastButtonState, BTN2)) {
-      bitSet(buttonFlags, BTN2);
-    }
+  if(millis() - btnState.lastDebounceTime > 75 && btnState.lastButtonState != buttonState) {
+    btnState.lastDebounceTime = millis();
+    btnState.lastButtonState = buttonState;    
+    btnState.bBtn1 = bitRead(btnState.lastButtonState, BTN1);
+    btnState.bBtn2 = bitRead(btnState.lastButtonState, BTN2);    
   } 
   else {
-    bitClear(buttonFlags, BTN1);
-    bitClear(buttonFlags, BTN2);      
+    btnState.bBtn1 = false;
+    btnState.bBtn2 = false;   
   }  
 }
 
@@ -360,11 +389,19 @@ String formatNumber(byte n, byte count) {
   return s;
 }
 
-String getTime() {
+String getTimeStr() {
   String s;
   s += formatNumber(rtc.getHours(), 2) + F(":");
   s += formatNumber(rtc.getMinutes(), 2) + F(":");
   s += formatNumber(rtc.getSeconds(), 2);
+  return s;
+}
+
+String getDateStr() {
+  String s;
+  s += formatNumber(rtc.getYear(), 2) + F("-");
+  s += formatNumber(rtc.getMonth(), 2) + F("-");
+  s += formatNumber(rtc.getDay(), 2);
   return s;
 }
 
