@@ -18,6 +18,8 @@
 // Bit Ops ****************************************************************
 #define bitToggle(value, bit) ((value) ^= (1UL << (bit)))
 
+#define align(a,b) ((a)>(b)?(0):(a))
+
 // Buttons ****************************************************************
 const byte btn1Pin = A1;     // pushbutton 1 pin
 const byte btn2Pin = A2;     // pushbutton 2 pin
@@ -106,8 +108,8 @@ void setup()
 
 
   rtc.stopRTC(); //stop the RTC
-  rtc.setTime(21,55,0); //set the time here
-  rtc.setDate(16,10,2013); //set the date here
+  rtc.setTime(0, 0, 0); //set the time here
+  rtc.setDate(1, 1, 2000); //set the date here
   rtc.startRTC(); //start the RTC
 
     // Open serial communications and wait for port to open:
@@ -146,23 +148,23 @@ void loop() {
   //Serial.println(state);	
   switch(state) {
   case 1:
-    state = measure(0);
+    state = measure();
     break;
   case 2:
-    state = setRtC(0);
+    state = setRtC();
     break;
   case 3:
-    state = resetLog(0);
+    state = resetLog();
     break;
   }	
 }
 
-byte measure(byte input) {
+byte measure() {
   if (!shtState.bMeasure && millis() % 5000UL == 0) {      // Time for new measurements?
     shtState.bMeasure = true;
     shtState.bTempMeasure = true;
     sht.meas(TEMP, &shtState.rawData, NONBLOCK); // Start temp measurement
-    // Serial.println("start temp measure");
+    //Serial.println("start temp measure");
   }
   if (shtState.bMeasure && (shtError = sht.measRdy())) { // Check measurement status
     if (shtState.bTempMeasure) {                    // Process temp or humi?
@@ -170,7 +172,7 @@ byte measure(byte input) {
       shtState.bHumiMeasure = true;
       shtState.temperature = (byte)sht.calcTemp(shtState.rawData);     // Convert raw sensor data
       sht.meas(HUMI, &shtState.rawData, NONBLOCK); // Start humi measurement
-      // Serial.println("start humi measure");
+      //Serial.println("start humi measure");
     } 
     else if (shtState.bHumiMeasure) 
     {
@@ -179,20 +181,20 @@ byte measure(byte input) {
       shtState.bLog = true;
       shtState.bDisplay = true;
       shtState.humidity = (byte)sht.calcHumi(shtState.rawData, shtState.temperature); // Convert raw sensor data
-      // Serial.println("measure ready");
+      //Serial.println("measure ready");
     }
   }
   
   if (shtState.bDisplay) {
     shtState.bDisplay = false;
     displayData();
-    // Serial.println("display");
+    //Serial.println("display");
   }
   
   if (shtState.bLog) {
-    shtState.bDisplay = false;
+    shtState.bLog = false;
     logData();
-    // Serial.println("log");
+    //Serial.println("log");
   }
 
   if (btnState.bBtn1) {
@@ -204,7 +206,7 @@ byte measure(byte input) {
   return MEASURE_STATE;
 }
 
-byte resetLog(byte input) {
+byte resetLog() {
   display.clearDisplay(); 
   displayText(0, 0, 1, F("Reset Log"));
   display.display();
@@ -215,7 +217,7 @@ byte resetLog(byte input) {
   return RESET_LOG_STATE;
 }
 
-byte setRtC(byte input) {
+byte setRtC() {
   
   if (rtcState.EditState == EDIT_NONE) {    
     rtcState.EditState = EDIT_HOURS;				// start with hours edit
@@ -226,14 +228,15 @@ byte setRtC(byte input) {
   
   byte i = btnState.bBtn2 ? 1 : 0;	// if Btn2 pressed, increment time
 					//   else do not increment time
-  byte n = 0;
+  unsigned long n = 0;
   switch(rtcState.EditState) {
 
     // Time ****************
 	  
     case EDIT_HOURS:
       displayText(0, 12, 1, F("__"));			  // cursor
-      n = align(rtc.getHours() + i, 23);      	  // increment
+//      n = align(rtc.getHours() + i, 23);      	          // increment
+      n = align(rtc.getHours() + i, 23);
       rtc.setTime(n, rtc.getMinutes(), rtc.getSeconds()); // set time
       if (btnState.bBtn1) { 				  // if Btn1 pressed
 	rtcState.EditState = EDIT_MINUTES;   		  //   edit minutes
@@ -259,25 +262,25 @@ byte setRtC(byte input) {
     // Date ****************
     
     case EDIT_YEAR:
-      displayText(0, 22, 1, F("__"));			  // cursor
+      displayText(0, 22, 1, F("____"));			  // cursor
       n = rtc.getYear() + i;      	                  // increment
-      rtc.setDate(n, rtc.getMonth(), rtc.getDay());       // set date
+      rtc.setDate(rtc.getDay(), rtc.getMonth(), n);       // set date
       if (btnState.bBtn1) { 				  // if Btn1 pressed
 	rtcState.EditState = EDIT_MONTH;   		  //   edit month
       }
       break;
     case EDIT_MONTH:
-      displayText(18, 22, 1, F("__")); 
+      displayText(29, 22, 1, F("__")); 
       n = align(rtc.getMonth() + i, 12);      
-      rtc.setDate(rtc.getYear(), n, rtc.getDay());
+      rtc.setDate(rtc.getDay(), n, rtc.getYear());
       if (btnState.bBtn1) {
 	rtcState.EditState = EDIT_DAY;
       }
       break;
     case EDIT_DAY:
       n = align(rtc.getDay() + i, 31);      
-      rtc.setDate(rtc.getYear(), rtc.getDay(), n);	  
-      displayText(36, 22, 1, F("__"));
+      rtc.setDate(n, rtc.getMonth(), rtc.getYear());	  
+      displayText(47, 22, 1, F("__"));
       if (btnState.bBtn1) {
         rtcState.EditState = EDIT_NONE;
 	return RESET_LOG_STATE;
@@ -297,9 +300,9 @@ void logData()
   // make a string for assembling the data to log:  
   String dataString;
   // 00:00:00,00.00,00.00
-  dataString += getTimeStr() + ";";
-  dataString += String(shtState.temperature) + ";";
-  dataString += String(shtState.humidity) + ";";
+  dataString += getTimeStr() + F(";");
+  dataString += String(shtState.temperature) + F(";");
+  dataString += String(shtState.humidity) + F(";");
 
   switch (shtError) {
   case S_Meas_Rdy:
@@ -382,8 +385,10 @@ void logError(String s) {
   displayText(0, 0, 1, s);
 }
 
-String formatNumber(byte n, byte count) {
+String formatNumber(int n, byte count) {
   String s = String(n);
+  if (s.length() >= count)
+    return s;
   while(s.length() != count)
     s = String(F("0")) + s;
   return s;
@@ -399,13 +404,9 @@ String getTimeStr() {
 
 String getDateStr() {
   String s;
-  s += formatNumber(rtc.getYear(), 2) + F("-");
+  s += formatNumber(rtc.getYear(), 4) + F("-");
   s += formatNumber(rtc.getMonth(), 2) + F("-");
   s += formatNumber(rtc.getDay(), 2);
   return s;
 }
 
-byte align(byte value, byte maxValue) {
-  if (value > maxValue) value = 0;
-  return value;
-}
