@@ -38,6 +38,13 @@ struct {
 // pin 10 - CS
 const int sdChipSelect = 10;
 
+#define LOG_EDIT_NONE   0
+#define LOG_EDIT_ENTER  1
+#define LOG_DELETE_YES  2
+#define LOG_DELETE_NO   3
+
+byte logState;
+
 // SHTxx  Humidity and Temperature Measurement ***************************
 // pin 8  - Data Pin
 // pin 9  - Serial Clock
@@ -211,11 +218,38 @@ byte measure() {
 }
 
 byte resetLog() {
-  display.clearDisplay(); 
-  displayText(0, 0, 1, F("Reset Log"));
-  display.display();
-
+  
+  if (logState == LOG_EDIT_NONE) {
+    logState = LOG_EDIT_ENTER;
+  }
+  
+  switch(logState) {
+    case LOG_EDIT_ENTER:
+      display.clearDisplay(); 
+      displayText(0,  0, 1, F("Reset Log"));      
+      display.display();
+      logState = LOG_DELETE_YES;
+      break;
+    case LOG_DELETE_YES:
+      displayText(0, 22, 1, F("___      "));
+      displayText(0, 20, 1, F("YES    NO"));
+      display.display();
+      if (btnState.bBtn2) {
+        logState = LOG_DELETE_NO;
+      }
+      break;
+    case LOG_DELETE_NO:
+      displayText(0, 22, 1, F("       __"));
+      displayText(0, 20, 1, F("YES    NO"));
+      display.display();
+      if (btnState.bBtn2) {
+        logState = LOG_DELETE_YES;
+      }
+      break;
+  }
+  
   if (btnState.bBtn1) {
+    logState = LOG_EDIT_NONE;
     return MEASURE_STATE;
   }
   return RESET_LOG_STATE;
