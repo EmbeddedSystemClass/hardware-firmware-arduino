@@ -15,10 +15,8 @@
 #include <avr/pgmspace.h>
 #include <swRTC.h>
 
-// Bit Ops ****************************************************************
-#define bitToggle(value, bit) ((value) ^= (1UL << (bit)))
-
-#define align(a,b) ((a)>(b)?(0):(a))
+// Ops ****************************************************************
+#define alignDateTimeValue(a,b) ((a)>(b)?(0):(a))  // time and date 
 
 // Buttons ****************************************************************
 const byte btn1Pin = A1;     // pushbutton 1 pin
@@ -28,10 +26,9 @@ const byte btn2Pin = A2;     // pushbutton 2 pin
 #define BTN2 1
 
 struct {
-   unsigned bBtn1:1;
-   unsigned bBtn2:1;
-   byte lastButtonState;
-   long lastDebounceTime;	
+  unsigned bBtn1:1;
+  unsigned bBtn2:1;
+  byte lastButtonState;
 } btnState;
 
 // SD Card ****************************************************************
@@ -50,14 +47,14 @@ Sensirion sht = Sensirion(8, 9);
 byte shtError = 0;
 
 struct {
-   unsigned bMeasure:1;
-   unsigned bTempMeasure:1; 
-   unsigned bHumiMeasure:1;
-   unsigned bLog:1;
-   unsigned bDisplay:1; 
-   byte temperature;
-   byte humidity;
-   unsigned int rawData;
+  unsigned bMeasure:1;
+  unsigned bTempMeasure:1; 
+  unsigned bHumiMeasure:1;
+  unsigned bLog:1;
+  unsigned bDisplay:1; 
+  byte temperature;
+  byte humidity;
+  unsigned int rawData;
 } shtState;
 
 
@@ -73,17 +70,16 @@ Adafruit_PCD8544 display = Adafruit_PCD8544(7, 6, 5, 4, 3);
 // Software RTC **********************************************************
 swRTC rtc;
 
-#define EDIT_NONE    0
-#define EDIT_HOURS   1
-#define EDIT_MINUTES 2
-#define EDIT_SECONDS 3
-#define EDIT_YEAR    4
-#define EDIT_MONTH   5
-#define EDIT_DAY     6
+#define RTC_EDIT_NONE    0
+#define RTC_EDIT_HOURS   1
+#define RTC_EDIT_MINUTES 2
+#define RTC_EDIT_SECONDS 3
+#define RTC_EDIT_YEAR    4
+#define RTC_EDIT_MONTH   5
+#define RTC_EDIT_DAY     6
 
-struct {
-   unsigned bEdit:1;
-   byte EditState;	
+struct {  
+  byte EditState;	
 } rtcState;
 
 // States ****************************************************************
@@ -91,6 +87,13 @@ struct {
 #define SET_TIME_STATE  2;
 #define RESET_LOG_STATE 3;
 byte state = MEASURE_STATE;
+
+struct {  
+  unsigned bT50MS:1;
+  unsigned bT500MS:1;
+  byte counter;
+  unsigned long lastUpdateTime;
+} eventState;
 
 void setup()
 {  
@@ -143,6 +146,7 @@ void setup()
 }
 
 void loop() {
+  updateEvents();
   updateButtonFlags();
 
   //Serial.println(state);	
@@ -219,8 +223,8 @@ byte resetLog() {
 
 byte setRtC() {
   
-  if (rtcState.EditState == EDIT_NONE) {    
-    rtcState.EditState = EDIT_HOURS;				// start with hours edit
+  if (rtcState.EditState == RTC_EDIT_NONE) {    
+    rtcState.EditState = RTC_EDIT_HOURS;				// start with hours edit
   }
   
   display.clearDisplay(); 
@@ -233,56 +237,55 @@ byte setRtC() {
 
     // Time ****************
 	  
-    case EDIT_HOURS:
+    case RTC_EDIT_HOURS:
       displayText(0, 12, 1, F("__"));			  // cursor
-//      n = align(rtc.getHours() + i, 23);      	          // increment
-      n = align(rtc.getHours() + i, 23);
+      n = alignDateTimeValue(rtc.getHours() + i, 23);     // increment
       rtc.setTime(n, rtc.getMinutes(), rtc.getSeconds()); // set time
       if (btnState.bBtn1) { 				  // if Btn1 pressed
-	rtcState.EditState = EDIT_MINUTES;   		  //   edit minutes
+	rtcState.EditState = RTC_EDIT_MINUTES;   	  //   edit minutes
       }
       break;
-    case EDIT_MINUTES:
+    case RTC_EDIT_MINUTES:
       displayText(18, 12, 1, F("__")); 
-      n = align(rtc.getMinutes() + i, 59);      
+      n = alignDateTimeValue(rtc.getMinutes() + i, 59);      
       rtc.setTime(rtc.getHours(), n, rtc.getSeconds());
       if (btnState.bBtn1) {
-	rtcState.EditState = EDIT_SECONDS;
+	rtcState.EditState = RTC_EDIT_SECONDS;
       }
       break;
-    case EDIT_SECONDS:
-      n = align(rtc.getSeconds() + i, 59);      
+    case RTC_EDIT_SECONDS:
+      n = alignDateTimeValue(rtc.getSeconds() + i, 59);      
       rtc.setTime(rtc.getHours(), rtc.getMinutes(), n);	  
       displayText(36, 12, 1, F("__"));
       if (btnState.bBtn1) {
-        rtcState.EditState = EDIT_YEAR;
+        rtcState.EditState = RTC_EDIT_YEAR;
       }
       break;
  
     // Date ****************
     
-    case EDIT_YEAR:
+    case RTC_EDIT_YEAR:
       displayText(0, 22, 1, F("____"));			  // cursor
       n = rtc.getYear() + i;      	                  // increment
       rtc.setDate(rtc.getDay(), rtc.getMonth(), n);       // set date
       if (btnState.bBtn1) { 				  // if Btn1 pressed
-	rtcState.EditState = EDIT_MONTH;   		  //   edit month
+	rtcState.EditState = RTC_EDIT_MONTH;   		  //   edit month
       }
       break;
-    case EDIT_MONTH:
+    case RTC_EDIT_MONTH:
       displayText(29, 22, 1, F("__")); 
-      n = align(rtc.getMonth() + i, 12);      
+      n = alignDateTimeValue(rtc.getMonth() + i, 12);      
       rtc.setDate(rtc.getDay(), n, rtc.getYear());
       if (btnState.bBtn1) {
-	rtcState.EditState = EDIT_DAY;
+	rtcState.EditState = RTC_EDIT_DAY;
       }
       break;
-    case EDIT_DAY:
-      n = align(rtc.getDay() + i, 31);      
+    case RTC_EDIT_DAY:
+      n = alignDateTimeValue(rtc.getDay() + i, 31);      
       rtc.setDate(n, rtc.getMonth(), rtc.getYear());	  
       displayText(47, 22, 1, F("__"));
       if (btnState.bBtn1) {
-        rtcState.EditState = EDIT_NONE;
+        rtcState.EditState = RTC_EDIT_NONE;
 	return RESET_LOG_STATE;
       }
       break;
@@ -365,12 +368,26 @@ void displayText(byte x, byte y, byte fontSize, String str, byte textColor, byte
   display.println(str);	
 }
 
+void updateEvents() {
+  // generate 50ms, 500ms timer events
+  if (millis() - eventState.lastUpdateTime > 50) {
+    eventState.lastUpdateTime = millis();
+    eventState.counter++;
+    eventState.bT50MS = true;
+    if (eventState.counter % 10 == 0) {
+	eventState.bT500MS = true;
+    }
+  } else {
+    eventState.bT50MS = false;
+    eventState.bT500MS = false;
+  }
+}
+
 void updateButtonFlags() {
-  // read the state of the pushbutton value:
+  // read the state of the pushbuttons
   byte buttonState = ~PINC & 3;
 
-  if(millis() - btnState.lastDebounceTime > 75 && btnState.lastButtonState != buttonState) {
-    btnState.lastDebounceTime = millis();
+  if(eventState.bT50MS && btnState.lastButtonState != buttonState) {    
     btnState.lastButtonState = buttonState;    
     btnState.bBtn1 = bitRead(btnState.lastButtonState, BTN1);
     btnState.bBtn2 = bitRead(btnState.lastButtonState, BTN2);    
