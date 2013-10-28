@@ -47,7 +47,11 @@ typedef struct PROGMEM
 #define ST_LOGGING    4
 #define ST_TEMP_CHART 5
 #define ST_HUMI_CHART 6
-#define ST_EXIT       7
+
+#define ST_LOG_YES    7
+#define ST_LOG_NO     8
+
+#define ST_EXIT       255
 
 const char MT_MAIN[] PROGMEM          = "Menu Test";
 const char MT_DATE_TIME[] PROGMEM     = "Date Time";
@@ -66,6 +70,10 @@ const MENU_NEXTSTATE menu_nextstate[] PROGMEM = {
     {ST_TEMP_CHART,             KEY_PLUS,   ST_HUMI_CHART},
     {ST_HUMI_CHART,             KEY_PLUS,   ST_EXIT},
     {ST_EXIT,                   KEY_PLUS,   ST_DATE_TIME},
+
+    {ST_LOG_YES,                KEY_PLUS,   ST_LOG_NO},
+    {ST_LOG_NO ,                KEY_PLUS,   ST_LOG_YES},
+    
     {0,                         0,          0}
 };
 
@@ -276,40 +284,33 @@ byte mainScreen(byte inp) {
 }
 
 byte setLogging(byte input) {
+  static byte logState;
   
-  if (logState == LOG_EDIT_NONE) {
-    logState = LOG_EDIT_ENTER;
+  if (logState == 0) {
+    logState = ST_LOG_YES;
   }
+  
+  display.clearDisplay();
+  displayText_f(0,  0, 1, PSTR("Reset Log"));
+  displayText_f(0, 20, 1, PSTR("YES    NO"));
   
   switch(logState) {
-    case LOG_EDIT_ENTER:
-      display.clearDisplay(); 
-      displayText(0,  0, 1, F("Reset Log"));      
-      display.display();
-      logState = LOG_DELETE_YES;
+    case ST_LOG_YES:
+      display.drawRect(0, 20, 18, 8, BLACK);
       break;
-    case LOG_DELETE_YES:
-      displayText(0, 22, 1, F("___      "));
-      displayText(0, 20, 1, F("YES    NO"));
-      display.display();
-      if (btnState.bBtn2) {
-        logState = LOG_DELETE_NO;
-      }
-      break;
-    case LOG_DELETE_NO:
-      displayText(0, 22, 1, F("       __"));
-      displayText(0, 20, 1, F("YES    NO"));
-      display.display();
-      if (btnState.bBtn2) {
-        logState = LOG_DELETE_YES;
-      }
+    case ST_LOG_NO:
+      display.drawRect(42, 20, 18, 8, BLACK);
       break;
   }
   
-  if (btnState.bBtn1) {
-    logState = LOG_EDIT_NONE;
-    return ST_MAIN;
+  display.display();
+  
+  if (btnState.bBtn2) {
+    logState = stateMachine(logState, KEY_PLUS);
+  } else if (btnState.bBtn1) {
+    return ST_MAIN; 
   }
+  
   return ST_LOGGING;
 }
 
