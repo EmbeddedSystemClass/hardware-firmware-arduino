@@ -56,6 +56,7 @@ const char MT_TEMPERATURE[] PROGMEM   = "Temperature";
 const char MT_HUMIDITY[] PROGMEM      = "Humidity";
 const char MT_EXIT[] PROGMEM          = "Exit";
 
+
 const MENU_NEXTSTATE menu_nextstate[] PROGMEM = {
 //  STATE                       INPUT       NEXT STATE
     {ST_MAIN,                   KEY_PLUS,   ST_MAIN_MENU},
@@ -79,6 +80,7 @@ const MENU_STATE menu_state[] PROGMEM = {
     {ST_MAIN_MENU,                      ST_EXIT,                    MT_EXIT,                    mainScreen},
     {0,                                 NULL,                       NULL,                       NULL}
 };
+
 // Logging ***************************************************************
 #define LOG_EDIT_NONE   0
 #define LOG_EDIT_ENTER  1
