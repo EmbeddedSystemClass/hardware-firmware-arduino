@@ -21,8 +21,10 @@
 #define alignValue(a, b) (a > b ? 0 : a)
 
 
-// Menu Progmem *********************************************************
+// Statemachine *********************************************************
 
+byte state;
+byte stateGroup;
 
 typedef struct PROGMEM
 {
@@ -41,17 +43,25 @@ typedef struct PROGMEM
 
 #define KEY_PLUS 1
 
-#define ST_MAIN       1
-#define ST_MAIN_MENU  2
-#define ST_DATE_TIME  3
-#define ST_LOGGING    4
-#define ST_TEMP_CHART 5
-#define ST_HUMI_CHART 6
+#define ST_MAIN          1
+#define ST_MAIN_MENU     2
+#define ST_DATE_TIME     3
+#define ST_LOGGING       4
+#define ST_TEMP_CHART    5
+#define ST_HUMI_CHART    6
 
-#define ST_LOG_YES    7
-#define ST_LOG_NO     8
+#define ST_EDIT_HOURS    9
+#define ST_EDIT_MINUTES 10
+#define ST_EDIT_SECONDS 11
+#define ST_EDIT_YEAR    12
+#define ST_EDIT_MONTH   13
+#define ST_EDIT_DAY     14
 
-#define ST_EXIT       255
+#define ST_OK	       251
+#define ST_CANCEL      252
+#define ST_YES         253
+#define ST_NO          254
+#define ST_EXIT        255
 
 const char MT_MAIN[] PROGMEM          = "Menu Test";
 const char MT_DATE_TIME[] PROGMEM     = "Date Time";
@@ -60,19 +70,31 @@ const char MT_TEMPERATURE[] PROGMEM   = "Temperature";
 const char MT_HUMIDITY[] PROGMEM      = "Humidity";
 const char MT_EXIT[] PROGMEM          = "Exit";
 
-
 const MENU_NEXTSTATE menu_nextstate[] PROGMEM = {
 //  STATE                       INPUT       NEXT STATE
     {ST_MAIN,                   KEY_PLUS,   ST_MAIN_MENU},
+    
+// Main Menu    
     {ST_MAIN_MENU,              KEY_PLUS,   ST_DATE_TIME},
     {ST_DATE_TIME,              KEY_PLUS,   ST_LOGGING},
     {ST_LOGGING,                KEY_PLUS,   ST_TEMP_CHART},
     {ST_TEMP_CHART,             KEY_PLUS,   ST_HUMI_CHART},
     {ST_HUMI_CHART,             KEY_PLUS,   ST_EXIT},
     {ST_EXIT,                   KEY_PLUS,   ST_DATE_TIME},
+    
+// Yes, No Dialog
+    {ST_YES,                    KEY_PLUS,   ST_NO},
+    {ST_NO,                     KEY_PLUS,   ST_YES},
 
-    {ST_LOG_YES,                KEY_PLUS,   ST_LOG_NO},
-    {ST_LOG_NO ,                KEY_PLUS,   ST_LOG_YES},
+// Date Time Edit
+    {ST_EDIT_HOURS,             KEY_PLUS,   ST_EDIT_MINUTES},
+    {ST_EDIT_MINUTES,           KEY_PLUS,   ST_EDIT_SECONDS},
+    {ST_EDIT_SECONDS,           KEY_PLUS,   ST_EDIT_YEAR},
+    {ST_EDIT_YEAR,              KEY_PLUS,   ST_EDIT_MONTH},
+    {ST_EDIT_MONTH,             KEY_PLUS,   ST_EDIT_DAY},
+    {ST_EDIT_DAY,               KEY_PLUS,   ST_OK},
+    {ST_OK,                     KEY_PLUS,   ST_CANCEL},
+    {ST_CANCEL,                 KEY_PLUS,   ST_EDIT_HOURS},
     
     {0,                         0,          0}
 };
@@ -88,14 +110,6 @@ const MENU_STATE menu_state[] PROGMEM = {
     {ST_MAIN_MENU,                      ST_EXIT,                    MT_EXIT,                    mainScreen},
     {0,                                 NULL,                       NULL,                       NULL}
 };
-
-// Logging ***************************************************************
-#define LOG_EDIT_NONE   0
-#define LOG_EDIT_ENTER  1
-#define LOG_DELETE_YES  2
-#define LOG_DELETE_NO   3
-
-byte logState;
 
 // Buttons ***************************************************************
 const byte btn1Pin = A1;     // pushbutton 1 pin
@@ -123,25 +137,7 @@ Adafruit_PCD8544 display = Adafruit_PCD8544(7, 6, 5, 4, 3);
 // Software RTC **********************************************************
 swRTC rtc;
 
-#define RTC_EDIT_NONE    0
-#define RTC_EDIT_HOURS   1
-#define RTC_EDIT_MINUTES 2
-#define RTC_EDIT_SECONDS 3
-#define RTC_EDIT_YEAR    4
-#define RTC_EDIT_MONTH   5
-#define RTC_EDIT_DAY     6
-
-struct {  
-  byte EditState;	
-} rtcState;
-
-// States ****************************************************************
-#define MAIN_SCREEN     1;
-#define MAIN_MENU       2;
-#define RESET_LOG_STATE 3;
-#define SET_TIME_STATE  4;
-
-byte state;
+// Events ****************************************************************
 
 struct {  
   unsigned bT50MS:1;
@@ -150,9 +146,10 @@ struct {
   unsigned long lastUpdateTime;
 } eventState;
 
+// Program ***************************************************************
+
 void setup()
 {  
-
   // initialize the pushbutton pin as an input:
   pinMode(btn1Pin, INPUT);
   pinMode(btn2Pin, INPUT);
@@ -178,7 +175,6 @@ void setup()
   
 }
 
-  byte group;
 void loop() {
   byte nextstate;
 
@@ -205,7 +201,7 @@ void loop() {
       state = nextstate;
       for (i=0; (j=pgm_read_byte(&menu_state[i].state)); i++) {
         if (j == state) {
-          group = pgm_read_byte(&menu_state[i].group);
+          stateGroup = pgm_read_byte(&menu_state[i].group);
           pStateFunc = (byte (*)(byte))(PGM_VOID_P) pgm_read_word(&menu_state[i].pFunc);
           break;
         }
@@ -226,7 +222,7 @@ byte showMenu(byte input) {
   display.clearDisplay();
   
   for (i=0; (j=pgm_read_byte(&menu_state[i].group)); i++) {
-    if (j == group) {
+    if (j == stateGroup) {
       stateTemp = pgm_read_byte(&menu_state[i].state);
       statetext = (PGM_P)pgm_read_word(&menu_state[i].pText);
       if (statetext != NULL) {
@@ -287,7 +283,7 @@ byte setLogging(byte input) {
   static byte logState;
   
   if (logState == 0) {
-    logState = ST_LOG_YES;
+    logState = ST_YES;
   }
   
   display.clearDisplay();
@@ -295,10 +291,10 @@ byte setLogging(byte input) {
   displayText_f(0, 20, 1, PSTR("YES    NO"));
   
   switch(logState) {
-    case ST_LOG_YES:
+    case ST_YES:
       display.drawRect(0, 20, 18, 8, BLACK);
       break;
-    case ST_LOG_NO:
+    case ST_NO:
       display.drawRect(42, 20, 18, 8, BLACK);
       break;
   }
@@ -320,84 +316,10 @@ byte setRTC(byte input) {
   display.display();
   
   if (btnState.bBtn1) {
-    logState = LOG_EDIT_NONE;
     return ST_MAIN;
   }
   
   return state;
-//  if (rtcState.EditState == RTC_EDIT_NONE) {    
-//    rtcState.EditState = RTC_EDIT_HOURS;				// start with hours edit
-//  }
-//  
-//  display.clearDisplay(); 
-//  displayText(0,  0, 1, F("Set RTC"));
-//  
-//  byte i = btnState.bBtn2 ? 1 : 0;	// if Btn2 pressed, increment time
-//					//   else do not increment time
-//  unsigned long n = 0;
-//  switch(rtcState.EditState) {
-//
-//    // Time ****************
-//	  
-//    case RTC_EDIT_HOURS:
-//      displayText(0, 12, 1, F("__"));			  // cursor
-//      n = alignDateTimeValue(rtc.getHours() + i, 23);     // increment
-//      rtc.setTime(n, rtc.getMinutes(), rtc.getSeconds()); // set time
-//      if (btnState.bBtn1) { 				  // if Btn1 pressed
-//	rtcState.EditState = RTC_EDIT_MINUTES;   	  //   edit minutes
-//      }
-//      break;
-//    case RTC_EDIT_MINUTES:
-//      displayText(18, 12, 1, F("__")); 
-//      n = alignDateTimeValue(rtc.getMinutes() + i, 59);      
-//      rtc.setTime(rtc.getHours(), n, rtc.getSeconds());
-//      if (btnState.bBtn1) {
-//	rtcState.EditState = RTC_EDIT_SECONDS;
-//      }
-//      break;
-//    case RTC_EDIT_SECONDS:
-//      n = alignDateTimeValue(rtc.getSeconds() + i, 59);      
-//      rtc.setTime(rtc.getHours(), rtc.getMinutes(), n);	  
-//      displayText(36, 12, 1, F("__"));
-//      if (btnState.bBtn1) {
-//        rtcState.EditState = RTC_EDIT_YEAR;
-//      }
-//      break;
-// 
-//    // Date ****************
-//    
-//    case RTC_EDIT_YEAR:
-//      displayText(0, 22, 1, F("____"));			  // cursor
-//      n = rtc.getYear() + i;      	                  // increment
-//      rtc.setDate(rtc.getDay(), rtc.getMonth(), n);       // set date
-//      if (btnState.bBtn1) { 				  // if Btn1 pressed
-//	rtcState.EditState = RTC_EDIT_MONTH;   		  //   edit month
-//      }
-//      break;
-//    case RTC_EDIT_MONTH:
-//      displayText(29, 22, 1, F("__")); 
-//      n = alignDateTimeValue(rtc.getMonth() + i, 12);      
-//      rtc.setDate(rtc.getDay(), n, rtc.getYear());
-//      if (btnState.bBtn1) {
-//	rtcState.EditState = RTC_EDIT_DAY;
-//      }
-//      break;
-//    case RTC_EDIT_DAY:
-//      n = alignDateTimeValue(rtc.getDay() + i, 31);      
-//      rtc.setDate(n, rtc.getMonth(), rtc.getYear());	  
-//      displayText(47, 22, 1, F("__"));
-//      if (btnState.bBtn1) {
-//        rtcState.EditState = RTC_EDIT_NONE;
-//	return RESET_LOG_STATE;
-//      }
-//      break;
-//  }  
-//
-//  displayText(0, 10, 1, getTimeStr());
-//  displayText(0, 20, 1, getDateStr());
-//  display.display();
-  
-  return SET_TIME_STATE;
 }
 
 void displayText_f(byte x, byte y, byte fontSize, const char *pFlashStr) {
