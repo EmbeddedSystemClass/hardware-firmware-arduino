@@ -127,6 +127,9 @@ struct {
 
 // Display Nokia 5110 ****************************************************
 
+#define TEXTHEIGHT 8
+#define TEXTWIDTH  6
+
 // pin 7 - Serial clock out (SCLK)
 // pin 6 - Serial data out (DIN)
 // pin 5 - Data/Command select (D/C)
@@ -168,10 +171,10 @@ void setup()
   rtc.startRTC(); //start the RTC
 
     // Open serial communications and wait for port to open:
-  Serial.begin(9600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for Leonardo only
-  }
+//  Serial.begin(9600);
+//  while (!Serial) {
+  //  ; // wait for serial port to connect. Needed for Leonardo only
+  //}
   
 }
 
@@ -217,7 +220,7 @@ byte showMenu(byte input) {
   byte stateTemp = 0;
   PGM_P statetext;
   
-  static byte selectedState;
+  static byte menuState;
   
   display.clearDisplay();
   
@@ -226,12 +229,14 @@ byte showMenu(byte input) {
       stateTemp = pgm_read_byte(&menu_state[i].state);
       statetext = (PGM_P)pgm_read_word(&menu_state[i].pText);
       if (statetext != NULL) {
-        if (selectedState == 0) {
-          selectedState = stateTemp;
+        if (menuState == 0) {
+          menuState = stateTemp;
         }
-        displayText_f(0, y * 9 + 1, 1, statetext);
-        if (selectedState == stateTemp) {
-          display.drawRect(0, y * 9, LCDWIDTH, 10, BLACK);
+//        byte textColor = menuState == stateTemp ? WHITE : BLACK;
+//        byte backColor = menuState == stateTemp ? BLACK : WHITE;
+        displayText_f(2, y * (TEXTHEIGHT + 1) + 1, 1, statetext);
+        if (menuState == stateTemp) {
+          display.drawRect(0, y * (TEXTHEIGHT + 1), LCDWIDTH, 10, BLACK);
         }
         y++;
       }
@@ -241,10 +246,10 @@ byte showMenu(byte input) {
   display.display();
   
   if (btnState.bBtn2) {
-    selectedState=stateMachine(selectedState, KEY_PLUS);
+    menuState=stateMachine(menuState, KEY_PLUS);
   } else if (btnState.bBtn1) {
-    stateTemp = selectedState;
-    selectedState = 0;
+    stateTemp = menuState;
+    menuState = 0;
     return stateTemp;
   }
   
@@ -269,7 +274,7 @@ unsigned char stateMachine(byte state, byte stimuli)
 
 byte mainScreen(byte inp) {
   display.clearDisplay();
-  displayText(0, 0, 1, F("Menu Test"));
+  displayText_f(0, 0, 1, PSTR("Menu Test"));
   display.display();
   
   if (btnState.bBtn1) {
@@ -288,14 +293,14 @@ byte setLogging(byte input) {
   
   display.clearDisplay();
   displayText_f(0,  0, 1, PSTR("Reset Log"));
-  displayText_f(0, 20, 1, PSTR("YES    NO"));
+  displayText_f(2, 20, 1, PSTR("YES    NO"));
   
   switch(logState) {
     case ST_YES:
-      display.drawRect(0, 20, 18, 8, BLACK);
+      display.drawRect(0, 18, 3 * TEXTWIDTH + 3, TEXTHEIGHT + 3, BLACK);
       break;
     case ST_NO:
-      display.drawRect(42, 20, 18, 8, BLACK);
+      display.drawRect(6 * (TEXTWIDTH + 1), 18, 2 * TEXTWIDTH + 3, TEXTHEIGHT + 3, BLACK);
       break;
   }
   
@@ -323,7 +328,11 @@ byte setRTC(byte input) {
 }
 
 void displayText_f(byte x, byte y, byte fontSize, const char *pFlashStr) {
-//  display.setTextColor(textColor, backColor);
+  displayText_f(x, y, fontSize, BLACK, WHITE, pFlashStr);
+}
+
+void displayText_f(byte x, byte y, byte fontSize, byte textColor, byte backColor, const char *pFlashStr) {
+  display.setTextColor(textColor, backColor);
   display.setTextSize(fontSize);
   
   for (byte i = 0; (const char)(pgm_read_byte(&pFlashStr[i])) && i < 40; i++) {
@@ -334,18 +343,18 @@ void displayText_f(byte x, byte y, byte fontSize, const char *pFlashStr) {
   }
 }
 
-void displayText(byte x, byte y, byte fontSize, String str)
-{
-  displayText(x, y, fontSize, str, BLACK, WHITE);
-}
-
-void displayText(byte x, byte y, byte fontSize, String str, byte textColor, byte backColor)
-{
-  display.setTextColor(textColor, backColor);
-  display.setTextSize(fontSize);
-  display.setCursor(x, y);
-  display.println(str);	
-}
+//void displayText(byte x, byte y, byte fontSize, String str)
+//{
+//  displayText(x, y, fontSize, str, BLACK, WHITE);
+//}
+//
+//void displayText(byte x, byte y, byte fontSize, String str, byte textColor, byte backColor)
+//{
+//  display.setTextColor(textColor, backColor);
+//  display.setTextSize(fontSize);
+//  display.setCursor(x, y);
+//  display.println(str);	
+//}
 
 void updateEvents() {
   // generate 50ms, 500ms timer events
@@ -378,7 +387,7 @@ void updateButtonFlags() {
 }
 
 void logError(String s) {
-  displayText(0, 0, 1, s);
+  //displayText(0, 0, 1, s);
 }
 
 String formatNumber(int n, byte count) {
