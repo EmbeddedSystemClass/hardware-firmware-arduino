@@ -42,6 +42,7 @@ typedef struct PROGMEM
 } MENU_STATE;
 
 #define KEY_PLUS 1
+#define KEY_NEXT 2
 
 #define ST_MAIN          1
 #define ST_MAIN_MENU     2
@@ -111,6 +112,25 @@ const MENU_STATE menu_state[] PROGMEM = {
     {0,                                 NULL,                       NULL,                       NULL}
 };
 
+
+// Editors ***************************************************************
+
+const char PROGMEM EDIT_MASK[] = { "__:__" };
+const char PROGMEM EDIT_MIN[]  = { "00:00" };
+const char PROGMEM EDIT_MAX[]  = { "29:59" };
+
+typedef struct PROGMEM {
+  PGM_P mask;
+  PGM_P min;
+  PGM_P max;
+} EDITOR;
+
+const EDITOR ed[] PROGMEM = {
+  {  EDIT_MASK, EDIT_MIN, EDIT_MAX }
+};
+
+
+
 // Buttons ***************************************************************
 const byte btn1Pin = A1;     // pushbutton 1 pin
 const byte btn2Pin = A2;     // pushbutton 2 pin
@@ -145,6 +165,7 @@ swRTC rtc;
 struct {  
   unsigned bT50MS:1;
   unsigned bT500MS:1;
+  unsigned bTP500MS:1;
   byte counter;
   unsigned long lastUpdateTime;
 } eventState;
@@ -318,13 +339,91 @@ byte setLogging(byte input) {
 byte setRTC(byte input) {
   display.clearDisplay();
   displayText_f(0,0,1,PSTR("Set RTC"));
+
+  
+  static char buffer[] = "21:49";
+  
+  char key = 0;
+  
+  if (btnState.bBtn1)
+    key = KEY_NEXT;
+  else if (btnState.bBtn2)
+    key = KEY_PLUS;
+  
+  if (!editStr(ed, buffer, 6, key))
+    return ST_MAIN;
+
+ // displayText_f(pos * TEXTWIDTH,22,1,PSTR("_"));
+ // displayText(0,20,1,buffer);
+ 
+  
+
   display.display();
   
-  if (btnState.bBtn1) {
-    return ST_MAIN;
-  }
+//  if (btnState.bBtn1) {
+//    return ST_MAIN;
+//  }
   
   return state;
+}
+
+byte editStr(PGM_VOID_P editor, char buffer[], char length, char key) {
+  static char pos = 0;	
+  EDITOR * pEditor = (EDITOR*)editor;
+  
+  if (key == KEY_NEXT)
+  {
+    length--;
+    if (++pos >= length)
+    {
+      pos = 0;
+      return false;
+    }
+    
+    PGM_P pMask = (PGM_P)pgm_read_word(&pEditor->mask);
+
+    while ('_' != pgm_read_byte(pMask + pos))
+    {
+      if (++pos >= length)
+      {
+        pos = 0;
+        return false;
+      }
+      //pos = ++pos < length ? pos : 0;
+    }
+  } 
+  else if (key == KEY_PLUS)
+  {			
+    PGM_P pMask = (PGM_P)pgm_read_word(&pEditor->mask) + pos;
+    char edit = pgm_read_byte(pMask);
+
+    if (edit == '_') 
+    {
+      PGM_P pMin = (PGM_P)pgm_read_word(&pEditor->min) + pos;
+      PGM_P pMax = (PGM_P)pgm_read_word(&pEditor->max) + pos;
+
+      char min  = pgm_read_byte(pMin);
+      char max  = pgm_read_byte(pMax);
+
+      char c = buffer[pos] + 1;
+      buffer[pos] = c > max ? min : c;
+    }		
+  }
+  
+  display.setTextColor(BLACK, WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 20);
+  display.println(buffer);
+  
+  if (eventState.bTP500MS)
+    display.setTextColor(BLACK, WHITE);
+  else
+    display.setTextColor(WHITE, BLACK);
+    
+  display.setCursor(pos * TEXTWIDTH, 20);
+  display.write(buffer[pos]);
+  
+  return true;
 }
 
 void displayText_f(byte x, byte y, byte fontSize, const char *pFlashStr) {
@@ -343,18 +442,18 @@ void displayText_f(byte x, byte y, byte fontSize, byte textColor, byte backColor
   }
 }
 
-//void displayText(byte x, byte y, byte fontSize, String str)
-//{
-//  displayText(x, y, fontSize, str, BLACK, WHITE);
-//}
-//
-//void displayText(byte x, byte y, byte fontSize, String str, byte textColor, byte backColor)
-//{
-//  display.setTextColor(textColor, backColor);
-//  display.setTextSize(fontSize);
-//  display.setCursor(x, y);
-//  display.println(str);	
-//}
+void displayText(byte x, byte y, byte fontSize, char str[])
+{
+  displayText(x, y, fontSize, str, BLACK, WHITE);
+}
+
+void displayText(byte x, byte y, byte fontSize, char str[], byte textColor, byte backColor)
+{
+  display.setTextColor(textColor, backColor);
+  display.setTextSize(fontSize);
+  display.setCursor(x, y);
+  display.println(str);	
+}
 
 void updateEvents() {
   // generate 50ms, 500ms timer events
@@ -364,11 +463,13 @@ void updateEvents() {
     eventState.bT50MS = true;
     if (eventState.counter % 10 == 0) {
 	eventState.bT500MS = true;
+        eventState.bTP500MS = eventState.bTP500MS ? false : true;
     }
   } else {
     eventState.bT50MS = false;
     eventState.bT500MS = false;
   }
+
 }
 
 void updateButtonFlags() {
