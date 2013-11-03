@@ -44,19 +44,16 @@ typedef struct PROGMEM
 #define KEY_PLUS 1
 #define KEY_NEXT 2
 
-#define ST_MAIN          1
-#define ST_MAIN_MENU     2
-#define ST_DATE_TIME     3
-#define ST_LOGGING       4
-#define ST_TEMP_CHART    5
-#define ST_HUMI_CHART    6
-
-#define ST_EDIT_HOURS    9
-#define ST_EDIT_MINUTES 10
-#define ST_EDIT_SECONDS 11
-#define ST_EDIT_YEAR    12
-#define ST_EDIT_MONTH   13
-#define ST_EDIT_DAY     14
+#define ST_MAIN           1
+#define ST_MAIN_MENU      2
+#define ST_DATE_TIME      3
+#define ST_DATE_TIME_MENU 4
+#define ST_DATE           5
+#define ST_TIME           6
+#define ST_EXIT_DT        7
+#define ST_LOGGING        8
+#define ST_TEMP_CHART     9
+#define ST_HUMI_CHART    10
 
 #define ST_OK	       251
 #define ST_CANCEL      252
@@ -66,6 +63,8 @@ typedef struct PROGMEM
 
 const char MT_MAIN[] PROGMEM          = "Menu Test";
 const char MT_DATE_TIME[] PROGMEM     = "Date Time";
+const char MT_DATE[] PROGMEM          = "Date";
+const char MT_TIME[] PROGMEM          = "Time";
 const char MT_LOG[] PROGMEM           = "Logging";
 const char MT_TEMPERATURE[] PROGMEM   = "Temperature";
 const char MT_HUMIDITY[] PROGMEM      = "Humidity";
@@ -77,25 +76,19 @@ const MENU_NEXTSTATE menu_nextstate[] PROGMEM = {
     
 // Main Menu    
     {ST_MAIN_MENU,              KEY_PLUS,   ST_DATE_TIME},
-    {ST_DATE_TIME,              KEY_PLUS,   ST_LOGGING},
+    {ST_DATE_TIME_MENU,         KEY_PLUS,   ST_LOGGING},
     {ST_LOGGING,                KEY_PLUS,   ST_TEMP_CHART},
     {ST_TEMP_CHART,             KEY_PLUS,   ST_HUMI_CHART},
     {ST_HUMI_CHART,             KEY_PLUS,   ST_EXIT},
-    {ST_EXIT,                   KEY_PLUS,   ST_DATE_TIME},
+    {ST_EXIT,                   KEY_PLUS,   ST_DATE_TIME_MENU},
+    
+    {ST_DATE,                   KEY_PLUS,   ST_TIME},
+    {ST_TIME,                   KEY_PLUS,   ST_EXIT_DT},
+    {ST_EXIT_DT,                KEY_PLUS,   ST_DATE},
     
 // Yes, No Dialog
     {ST_YES,                    KEY_PLUS,   ST_NO},
     {ST_NO,                     KEY_PLUS,   ST_YES},
-
-// Date Time Edit
-    {ST_EDIT_HOURS,             KEY_PLUS,   ST_EDIT_MINUTES},
-    {ST_EDIT_MINUTES,           KEY_PLUS,   ST_EDIT_SECONDS},
-    {ST_EDIT_SECONDS,           KEY_PLUS,   ST_EDIT_YEAR},
-    {ST_EDIT_YEAR,              KEY_PLUS,   ST_EDIT_MONTH},
-    {ST_EDIT_MONTH,             KEY_PLUS,   ST_EDIT_DAY},
-    {ST_EDIT_DAY,               KEY_PLUS,   ST_OK},
-    {ST_OK,                     KEY_PLUS,   ST_CANCEL},
-    {ST_CANCEL,                 KEY_PLUS,   ST_EDIT_HOURS},
     
     {0,                         0,          0}
 };
@@ -103,12 +96,27 @@ const MENU_NEXTSTATE menu_nextstate[] PROGMEM = {
 const MENU_STATE menu_state[] PROGMEM = {
 //  STATE GROUP                         STATE                       STATE TEXT                  STATE_FUNC
     {ST_MAIN,                           ST_MAIN,                    NULL,                       mainScreen},
+    
     {ST_MAIN_MENU,                      ST_MAIN_MENU,               NULL,                       showMenu},
-    {ST_MAIN_MENU,                      ST_DATE_TIME,               MT_DATE_TIME,               setRTC},
-    {ST_MAIN_MENU,                      ST_LOGGING,                 MT_LOG,                     setLogging},
+    {ST_MAIN_MENU,                      ST_DATE_TIME_MENU,          MT_DATE_TIME,               NULL},
+    {ST_MAIN_MENU,                      ST_LOGGING,                 MT_LOG,                     NULL},
     {ST_MAIN_MENU,                      ST_TEMP_CHART,              MT_TEMPERATURE,             NULL},
     {ST_MAIN_MENU,                      ST_HUMI_CHART,              MT_HUMIDITY,                NULL},
     {ST_MAIN_MENU,                      ST_EXIT,                    MT_EXIT,                    mainScreen},
+    
+    {ST_DATE_TIME_MENU,                 ST_DATE_TIME_MENU,          NULL,                       showMenu},
+    {ST_DATE_TIME_MENU,                 ST_DATE,                    MT_DATE,                    NULL},
+    {ST_DATE_TIME_MENU,                 ST_TIME,                    MT_TIME,                    NULL},    
+    {ST_DATE_TIME_MENU,                 ST_EXIT_DT,                 MT_EXIT,                    mainScreen},    
+    
+    {ST_DATE,                           ST_DATE,                    NULL,                       setRtcDate},
+    {ST_TIME,                           ST_TIME,                    NULL,                       setRtcTime},
+    
+    {ST_LOGGING,                        ST_LOGGING,                 NULL,                       setLogging},
+    
+    {ST_EXIT,                           ST_EXIT,                    NULL,                       exitMainMenu},
+    {ST_EXIT_DT,                        ST_EXIT_DT,                 NULL,                       exitDateTimeMenu},    
+    
     {0,                                 NULL,                       NULL,                       NULL}
 };
 
@@ -170,6 +178,115 @@ struct {
   unsigned long lastUpdateTime;
 } eventState;
 
+
+// Classes ***************************************************************
+
+class Edit {
+  public:
+    byte pos;
+    
+  public:
+  
+    byte editStr(byte x, byte y, PGM_P pMask, char buffer[], char length, byte key) {      
+      if (key == KEY_NEXT)
+      {
+        length--;
+        if (++pos >= length)
+        {
+          pos = 0;
+          return false;
+        }
+    
+        while ('_' != pgm_read_byte(pMask + pos))
+        {
+          if (++pos >= length)
+          {
+            pos = 0;
+            return false;
+          }
+        }
+      } 
+      else if (key == KEY_PLUS)
+      {			
+        char edit = pgm_read_byte(pMask + pos);
+    
+        if (edit == '_') 
+        {   
+          char c = buffer[pos] + 1;
+          buffer[pos] = validateStr(buffer, pos, c);
+        }		
+      }
+      
+      display.setTextColor(BLACK, WHITE);
+      display.setTextSize(1);
+      display.setCursor(x, y);
+      display.println(buffer);
+      
+      if (eventState.bTP500MS)
+        display.setTextColor(BLACK, WHITE);
+      else
+        display.setTextColor(WHITE, BLACK);
+        
+      display.setCursor(x + pos * TEXTWIDTH, y);
+      display.write(buffer[pos]);
+      
+      return true;
+    }
+    
+    virtual char validateStr(char* buffer, byte pos, char c) = 0;
+};
+
+class EditTime : public Edit {
+  public:
+    static const byte BUFFER_SIZE = 6;
+    char buffer[BUFFER_SIZE];
+    
+  public:
+    EditTime()  {
+      strcpy_P(buffer, PSTR("00:00"));
+      pos = 0;
+    }
+  
+    byte editTime(byte input) {
+      return editStr(10, 15, PSTR("__:__"), buffer, BUFFER_SIZE, input); 
+    }
+  
+  
+  private :
+    char validateStr(char* buffer, byte pos, char c) {    
+      if (c > '9') return '0';
+      
+      buffer[pos] = c;
+      
+      byte h = (buffer[0] - '0') * 10 + (buffer[1] - '0');
+      byte m = (buffer[3] - '0') * 10 + (buffer[4] - '0');
+      return h <= 23 && m <= 59 ? c : '0';
+    }
+};
+
+class EditDate : public Edit {
+  public:
+    static const byte BUFFER_SIZE = 11;
+    char buffer[BUFFER_SIZE];
+    
+  public:
+    EditDate()  {
+      strcpy_P(buffer, PSTR("0000.00.00"));
+      pos = 0;
+    }
+  
+    byte editDate(byte input) {
+      return editStr(0, 22, PSTR("____.__.__"), buffer, BUFFER_SIZE, input); 
+    }
+  
+  
+  private :
+    char validateStr(char* buffer, byte pos, char c) {    
+      if (c > '9') return '0';
+      return c;
+    }
+};
+
 // Program ***************************************************************
 
 void setup()
@@ -192,7 +309,7 @@ void setup()
   rtc.startRTC(); //start the RTC
 
     // Open serial communications and wait for port to open:
-//  Serial.begin(9600);
+  Serial.begin(9600);
 //  while (!Serial) {
   //  ; // wait for serial port to connect. Needed for Leonardo only
   //}
@@ -223,10 +340,13 @@ void loop() {
     
     if (nextstate != state) {
       state = nextstate;
+      Serial.println("Search State:" + String(state));
       for (i=0; (j=pgm_read_byte(&menu_state[i].state)); i++) {
-        if (j == state) {
-          stateGroup = pgm_read_byte(&menu_state[i].group);
+        stateGroup = pgm_read_byte(&menu_state[i].group);
+        Serial.println("Found Group" + String(stateGroup));
+        if (j == state && stateGroup == state) {
           pStateFunc = (byte (*)(byte))(PGM_VOID_P) pgm_read_word(&menu_state[i].pFunc);
+          Serial.println(String(state) + ";" + String(stateGroup));
           break;
         }
       }
@@ -270,12 +390,23 @@ byte showMenu(byte input) {
     menuState=stateMachine(menuState, KEY_PLUS);
   } else if (btnState.bBtn1) {
     stateTemp = menuState;
+    stateGroup = menuState;
     menuState = 0;
     return stateTemp;
   }
   
   return state;
 }
+
+
+byte exitMainMenu(byte input) {
+  return ST_MAIN;
+}
+
+byte exitDateTimeMenu(byte input) {
+  return ST_MAIN_MENU;
+}
+
 
 unsigned char stateMachine(byte state, byte stimuli)
 {
@@ -304,6 +435,7 @@ byte mainScreen(byte inp) {
   
   return ST_MAIN;
 }
+
 
 byte setLogging(byte input) {
   static byte logState;
@@ -336,12 +468,11 @@ byte setLogging(byte input) {
   return ST_LOGGING;
 }
 
-byte setRTC(byte input) {
+byte setRtcTime(byte input) {
   display.clearDisplay();
-  displayText_f(0,0,1,PSTR("Set RTC"));
-
+  displayText_f(0,0,1,PSTR("Set RTC Time"));
   
-  static char buffer[] = "21:49";
+  static EditTime edTime;
   
   char key = 0;
   
@@ -350,80 +481,35 @@ byte setRTC(byte input) {
   else if (btnState.bBtn2)
     key = KEY_PLUS;
   
-  if (!editStr(ed, buffer, 6, key))
-    return ST_MAIN;
-
- // displayText_f(pos * TEXTWIDTH,22,1,PSTR("_"));
- // displayText(0,20,1,buffer);
- 
-  
+  if (!edTime.editTime(key)) {
+    return ST_DATE_TIME_MENU;
+  }
 
   display.display();
-  
-//  if (btnState.bBtn1) {
-//    return ST_MAIN;
-//  }
-  
+    
   return state;
 }
 
-byte editStr(PGM_VOID_P editor, char buffer[], char length, char key) {
-  static char pos = 0;	
-  EDITOR * pEditor = (EDITOR*)editor;
+byte setRtcDate(byte input) {
+  display.clearDisplay();
+  displayText_f(0,0,1,PSTR("Set RTC Date"));
   
-  if (key == KEY_NEXT)
-  {
-    length--;
-    if (++pos >= length)
-    {
-      pos = 0;
-      return false;
-    }
-    
-    PGM_P pMask = (PGM_P)pgm_read_word(&pEditor->mask);
-
-    while ('_' != pgm_read_byte(pMask + pos))
-    {
-      if (++pos >= length)
-      {
-        pos = 0;
-        return false;
-      }
-      //pos = ++pos < length ? pos : 0;
-    }
-  } 
-  else if (key == KEY_PLUS)
-  {			
-    PGM_P pMask = (PGM_P)pgm_read_word(&pEditor->mask) + pos;
-    char edit = pgm_read_byte(pMask);
-
-    if (edit == '_') 
-    {
-      PGM_P pMin = (PGM_P)pgm_read_word(&pEditor->min) + pos;
-      PGM_P pMax = (PGM_P)pgm_read_word(&pEditor->max) + pos;
-
-      char min  = pgm_read_byte(pMin);
-      char max  = pgm_read_byte(pMax);
-
-      char c = buffer[pos] + 1;
-      buffer[pos] = c > max ? min : c;
-    }		
+  static EditDate edDate;
+  
+  char key = 0;
+  
+  if (btnState.bBtn1)
+    key = KEY_NEXT;
+  else if (btnState.bBtn2)
+    key = KEY_PLUS;
+  
+  if (!edDate.editDate(key)) {
+    return ST_DATE_TIME_MENU;
   }
-  
-  display.setTextColor(BLACK, WHITE);
-  display.setTextSize(1);
-  display.setCursor(0, 20);
-  display.println(buffer);
-  
-  if (eventState.bTP500MS)
-    display.setTextColor(BLACK, WHITE);
-  else
-    display.setTextColor(WHITE, BLACK);
+
+  display.display();
     
-  display.setCursor(pos * TEXTWIDTH, 20);
-  display.write(buffer[pos]);
-  
-  return true;
+  return state;
 }
 
 void displayText_f(byte x, byte y, byte fontSize, const char *pFlashStr) {
