@@ -8,7 +8,7 @@
  	 
  */
 #include <SPI.h>
-#include <SD.h>
+//#include <SD.h>
 #include <Sensirion.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
@@ -20,11 +20,10 @@
 #define alignDateTimeValue(a, b) (a > b ? 0 :a)  // time and date 
 #define alignValue(a, b) (a > b ? 0 : a)
 
+#define CHARTONUM(a, b) ((a - '0') * b)
+
 
 // Statemachine *********************************************************
-
-byte state;
-byte stateGroup;
 
 typedef struct PROGMEM
 {
@@ -92,6 +91,7 @@ const MENU_NEXTSTATE menu_nextstate[] PROGMEM = {
     
     {0,                         0,          0}
 };
+
 
 const MENU_STATE menu_state[] PROGMEM = {
 //  STATE GROUP                         STATE                       STATE TEXT                  STATE_FUNC
@@ -186,7 +186,9 @@ class Edit {
     byte pos;
     
   public:
-  
+    Edit(): pos(0) {
+    }
+    
     byte editStr(byte x, byte y, PGM_P pMask, char buffer[], char length, byte key) {      
       if (key == KEY_NEXT)
       {
@@ -248,7 +250,13 @@ class EditTime : public Edit {
     }
   
     byte editTime(byte input) {
-      return editStr(10, 15, PSTR("__:__"), buffer, BUFFER_SIZE, input); 
+      if (!editStr(10, 15, PSTR("__:__"), buffer, BUFFER_SIZE, input)) {
+        byte h = CHARTONUM(buffer[0], 10) + CHARTONUM(buffer[1], 1);
+        byte m = CHARTONUM(buffer[3], 10) + CHARTONUM(buffer[4], 1);
+        rtc.setTime(h, m, 0);
+        return false;
+      }
+      return true;
     }
   
   
@@ -258,8 +266,8 @@ class EditTime : public Edit {
       
       buffer[pos] = c;
       
-      byte h = (buffer[0] - '0') * 10 + (buffer[1] - '0');
-      byte m = (buffer[3] - '0') * 10 + (buffer[4] - '0');
+      byte h = CHARTONUM(buffer[0], 10) + CHARTONUM(buffer[1], 1);
+      byte m = CHARTONUM(buffer[3], 10) + CHARTONUM(buffer[4], 1);
       return h <= 23 && m <= 59 ? c : '0';
     }
 };
@@ -276,7 +284,14 @@ class EditDate : public Edit {
     }
   
     byte editDate(byte input) {
-      return editStr(0, 22, PSTR("____.__.__"), buffer, BUFFER_SIZE, input); 
+      if (!editStr(0, 22, PSTR("____.__.__"), buffer, BUFFER_SIZE, input)) {
+        byte y = CHARTONUM(buffer[0], 1000) + CHARTONUM(buffer[1], 100) + CHARTONUM(buffer[2], 10) + CHARTONUM(buffer[3], 1);
+        byte m = CHARTONUM(buffer[5], 10) + CHARTONUM(buffer[6], 1);
+        byte d = CHARTONUM(buffer[8], 10) + CHARTONUM(buffer[9], 1);
+        rtc.setDate(y, m, d);
+        return false;
+      }
+      return true;
     }
   
   
@@ -284,6 +299,68 @@ class EditDate : public Edit {
     char validateStr(char* buffer, byte pos, char c) {    
       if (c > '9') return '0';
       return c;
+    }
+};
+
+class StateMachineManager {
+  public:
+    byte state;
+    byte stateGroup;
+
+  public:
+    void doHandleStates() {
+      byte nextstate;
+    
+      byte (*pStateFunc)(byte);
+      byte input;
+      byte i, j;
+      
+      state = ST_MAIN;
+      stateGroup = ST_MAIN;
+      nextstate = ST_MAIN;
+      pStateFunc = mainScreen;
+      
+      for(;;) {
+        updateEvents();
+        updateButtonFlags();
+    
+        if (pStateFunc) {
+          // When in this state, we must call the state function
+          nextstate = pStateFunc(0);
+        } else {
+          nextstate = ST_MAIN;
+        }
+        
+        if (nextstate != state) {
+          state = nextstate;
+          Serial.println("Search State:" + String(state));
+          for (i=0; (j=pgm_read_byte(&menu_state[i].state)); i++) {
+            stateGroup =pgm_read_byte(&menu_state[i].group);
+            Serial.println("Found Group" + String(stateGroup));
+            if (j == state && stateGroup == state) {
+              pStateFunc = (byte (*)(byte))(PGM_VOID_P) pgm_read_word(&menu_state[i].pFunc);
+              Serial.println(String(state) + ";" + String(stateGroup));
+              break;
+            }
+          }
+        }    
+      }
+    }
+        
+    unsigned char getNextState(byte state, byte stimuli)
+    {
+        byte nextstate = state;    // Default stay in same state
+        byte i, j;
+        for (i=0; ( j=pgm_read_byte(&menu_nextstate[i].state) ); i++ )
+        {
+            if ( j == state && 
+                 pgm_read_byte(&menu_nextstate[i].input) == stimuli)
+            {
+                nextstate = pgm_read_byte(&menu_nextstate[i].nextstate);
+                break;
+            }
+        }
+        return nextstate;
     }
 };
 
@@ -304,7 +381,7 @@ void setup()
 
 
   rtc.stopRTC(); //stop the RTC
-  rtc.setTime(0, 0, 0); //set the time here
+  rtc.setTime(20, 42, 0); //set the time here
   rtc.setDate(1, 1, 2000); //set the date here
   rtc.startRTC(); //start the RTC
 
@@ -316,42 +393,11 @@ void setup()
   
 }
 
+StateMachineManager StateMachine;
+
 void loop() {
-  byte nextstate;
-
-  byte (*pStateFunc)(byte);
-  byte input;
-  byte i, j;
   
-  state = ST_MAIN;
-  nextstate = ST_MAIN;
-  pStateFunc = mainScreen;
-  
-  for(;;) {
-    updateEvents();
-    updateButtonFlags();
-
-    if (pStateFunc) {
-      // When in this state, we must call the state function
-      nextstate = pStateFunc(0);
-    } else {
-      nextstate = ST_MAIN;
-    }
-    
-    if (nextstate != state) {
-      state = nextstate;
-      Serial.println("Search State:" + String(state));
-      for (i=0; (j=pgm_read_byte(&menu_state[i].state)); i++) {
-        stateGroup = pgm_read_byte(&menu_state[i].group);
-        Serial.println("Found Group" + String(stateGroup));
-        if (j == state && stateGroup == state) {
-          pStateFunc = (byte (*)(byte))(PGM_VOID_P) pgm_read_word(&menu_state[i].pFunc);
-          Serial.println(String(state) + ";" + String(stateGroup));
-          break;
-        }
-      }
-    }    
-  }
+  StateMachine.doHandleStates();
   
 }
 
@@ -366,7 +412,7 @@ byte showMenu(byte input) {
   display.clearDisplay();
   
   for (i=0; (j=pgm_read_byte(&menu_state[i].group)); i++) {
-    if (j == stateGroup) {
+    if (j == StateMachine.stateGroup) {
       stateTemp = pgm_read_byte(&menu_state[i].state);
       statetext = (PGM_P)pgm_read_word(&menu_state[i].pText);
       if (statetext != NULL) {
@@ -387,15 +433,15 @@ byte showMenu(byte input) {
   display.display();
   
   if (btnState.bBtn2) {
-    menuState=stateMachine(menuState, KEY_PLUS);
+    menuState=StateMachine.getNextState(menuState, KEY_PLUS);
   } else if (btnState.bBtn1) {
     stateTemp = menuState;
-    stateGroup = menuState;
+    StateMachine.stateGroup = menuState;
     menuState = 0;
     return stateTemp;
   }
   
-  return state;
+  return StateMachine.state;
 }
 
 
@@ -407,26 +453,24 @@ byte exitDateTimeMenu(byte input) {
   return ST_MAIN_MENU;
 }
 
-
-unsigned char stateMachine(byte state, byte stimuli)
-{
-    byte nextstate = state;    // Default stay in same state
-    byte i, j;
-    for (i=0; ( j=pgm_read_byte(&menu_nextstate[i].state) ); i++ )
-    {
-        if ( j == state && 
-             pgm_read_byte(&menu_nextstate[i].input) == stimuli)
-        {
-            nextstate = pgm_read_byte(&menu_nextstate[i].nextstate);
-            break;
-        }
-    }
-    return nextstate;
-}
-
 byte mainScreen(byte inp) {
   display.clearDisplay();
   displayText_f(0, 0, 1, PSTR("Menu Test"));
+  
+  
+  char buffer[8];
+  buffer[0] = rtc.getHours() / 10 + '0';
+  buffer[1] = rtc.getHours() % 10 + '0';
+  buffer[2] = ':';
+  buffer[3] = rtc.getMinutes() / 10 + '0';
+  buffer[4] = rtc.getMinutes() % 10 + '0';  
+  buffer[5] = ':';
+  buffer[6] = rtc.getSeconds() / 10 + '0';
+  buffer[7] = rtc.getSeconds() % 10 + '0';
+  buffer[8] = 0;
+  
+  displayText(0, 20, 1, buffer);
+  
   display.display();
   
   if (btnState.bBtn1) {
@@ -460,7 +504,7 @@ byte setLogging(byte input) {
   display.display();
   
   if (btnState.bBtn2) {
-    logState = stateMachine(logState, KEY_PLUS);
+    logState = StateMachine.getNextState(logState, KEY_PLUS);
   } else if (btnState.bBtn1) {
     return ST_MAIN; 
   }
@@ -487,7 +531,7 @@ byte setRtcTime(byte input) {
 
   display.display();
     
-  return state;
+  return StateMachine.state;
 }
 
 byte setRtcDate(byte input) {
@@ -509,7 +553,7 @@ byte setRtcDate(byte input) {
 
   display.display();
     
-  return state;
+  return StateMachine.state;
 }
 
 void displayText_f(byte x, byte y, byte fontSize, const char *pFlashStr) {
