@@ -33,6 +33,7 @@ void setup()
   pinMode(btn1Pin, INPUT);
   pinMode(btn2Pin, INPUT);
 
+  Display.beginDisplay();
  
   rtc.stopRTC(); //stop the RTC
   rtc.setTime(20, 42, 0); //set the time here
@@ -108,21 +109,24 @@ byte exitDateTimeMenu(byte input) {
 
 byte mainScreen(byte inp) {
   Display.clearDisplay();
-  Display.displayText_f(0, 0, 1, PSTR("Menu Test"));
+  Display.displayText_f(0, 0, 1, PSTR("App Test"));  
+  
+  char time[]= { "00:00:00" };
+  
+  itochars(rtc.getHours(), &time[0], 2);
+  itochars(rtc.getMinutes(), &time[3], 2);
+  itochars(rtc.getSeconds(), &time[6], 2);
+  
+  Display.displayText(0, 20, 1, time);
   
   
-  char buffer[8];
-  buffer[0] = rtc.getHours() / 10 + '0';
-  buffer[1] = rtc.getHours() % 10 + '0';
-  buffer[2] = ':';
-  buffer[3] = rtc.getMinutes() / 10 + '0';
-  buffer[4] = rtc.getMinutes() % 10 + '0';  
-  buffer[5] = ':';
-  buffer[6] = rtc.getSeconds() / 10 + '0';
-  buffer[7] = rtc.getSeconds() % 10 + '0';
-  buffer[8] = 0;
+  char date[]= { "0000.00.00" };
   
-  Display.displayText(0, 20, 1, buffer);
+  itochars(rtc.getYear(), &date[0], 4);
+  itochars(rtc.getMonth(), &date[5], 2);
+  itochars(rtc.getDay(), &date[8], 2);
+  
+  Display.displayText(0, 30, 1, date);
   
   Display.display();
   
@@ -133,6 +137,23 @@ byte mainScreen(byte inp) {
   return ST_MAIN;
 }
 
+void itochars(unsigned int value, char buffer[], byte digits) {
+  byte i = 0; 
+  byte d;
+  unsigned int k;
+  
+  unsigned int P[] = { 1, 10, 100, 1000, 10000 };
+  
+  k = P[digits-1]; 
+
+  while(i < digits) {
+    d = value / k;
+    value -= (d * k);
+    buffer[i] = d + '0';
+    k /= 10;
+    i++;
+  }
+}
 
 byte setLogging(byte input) {
   static byte logState;

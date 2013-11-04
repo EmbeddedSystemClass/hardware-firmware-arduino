@@ -38,19 +38,19 @@ class Edit {
         }		
       }
       
+      
+      
       Display.setTextColor(BLACK, WHITE);
+      
+      if (Events.bTP500MS) {
+        Display.setCursor(x + pos * TEXTWIDTH, y + 2);
+        Display.write('_');
+      }
+      
       Display.setTextSize(1);
       Display.setCursor(x, y);
       Display.println(buffer);
-      
-      if (Events.bTP500MS)
-        Display.setTextColor(BLACK, WHITE);
-      else
-        Display.setTextColor(WHITE, BLACK);
-        
-      Display.setCursor(x + pos * TEXTWIDTH, y);
-      Display.write(buffer[pos]);
-      
+              
       return true;
     }
     
@@ -104,10 +104,10 @@ class EditDate : public Edit {
   
     byte editDate(byte input) {
       if (!editStr(0, 22, PSTR("____.__.__"), buffer, BUFFER_SIZE, input)) {
-        byte y = CHARTONUM(buffer[0], 1000) + CHARTONUM(buffer[1], 100) + CHARTONUM(buffer[2], 10) + CHARTONUM(buffer[3], 1);
+        int y = CHARTONUM(buffer[0], 1000) + CHARTONUM(buffer[1], 100) + CHARTONUM(buffer[2], 10) + CHARTONUM(buffer[3], 1);
         byte m = CHARTONUM(buffer[5], 10) + CHARTONUM(buffer[6], 1);
         byte d = CHARTONUM(buffer[8], 10) + CHARTONUM(buffer[9], 1);
-        rtc.setDate(y, m, d);
+        rtc.setDate(d, m, y);
         return false;
       }
       return true;

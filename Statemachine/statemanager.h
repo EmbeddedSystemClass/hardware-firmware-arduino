@@ -1,46 +1,45 @@
 class StateMachineManager {
+  private:
+    byte nextstate;    
+    byte (*pStateFunc)(byte);
+  
   public:
     byte state;
     byte stateGroup;
 
   public:
-    void doHandleStates() {
-      byte nextstate;
-    
-      byte (*pStateFunc)(byte);
-      byte input;
-      byte i, j;
-      
+    StateMachineManager() {
       state = ST_MAIN;
       stateGroup = ST_MAIN;
       nextstate = ST_MAIN;
       pStateFunc = mainScreen;
-      
-      for(;;) {
-        //updateEvents();
-        //updateButtonFlags();
+      Serial.println("Init Statemachine");
+    }
     
-        if (pStateFunc) {
-          // When in this state, we must call the state function
-          nextstate = pStateFunc(0);
-        } else {
-          nextstate = ST_MAIN;
-        }
-        
-        if (nextstate != state) {
-          state = nextstate;
-          Serial.println("Search State:" + String(state));
-          for (i=0; (j=pgm_read_byte(&menu_state[i].state)); i++) {
-            stateGroup =pgm_read_byte(&menu_state[i].group);
-            Serial.println("Found Group" + String(stateGroup));
-            if (j == state && stateGroup == state) {
-              pStateFunc = (byte (*)(byte))(PGM_VOID_P) pgm_read_word(&menu_state[i].pFunc);
-              Serial.println(String(state) + ";" + String(stateGroup));
-              break;
-            }
-          }
-        }    
+    void doHandleStates() {
+      byte i, j;      
+
+      if (pStateFunc != NULL) {
+        // When in this state, we must call the state function
+        nextstate = pStateFunc(0);
+      } else {
+        nextstate = ST_MAIN;
       }
+      
+      if (nextstate != state) {
+        state = nextstate;
+        Serial.println("Search State:" + String(state));
+        for (i=0; (j=pgm_read_byte(&menu_state[i].state)); i++) {
+          stateGroup =pgm_read_byte(&menu_state[i].group);
+          Serial.println("Found Group" + String(stateGroup));
+          if (j == state && stateGroup == state) {
+            pStateFunc = (byte (*)(byte))(PGM_VOID_P) pgm_read_word(&menu_state[i].pFunc);
+            Serial.println(String(state) + ";" + String(stateGroup));
+            break;
+          }
+        }
+      }    
+
     }
         
     unsigned char getNextState(byte state, byte stimuli)
