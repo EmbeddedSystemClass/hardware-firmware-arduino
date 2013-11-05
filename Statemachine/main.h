@@ -14,6 +14,7 @@ byte mainScreen(byte inp);
 byte setLogging(byte input);
 byte setRtcTime(byte input);
 byte setRtcDate(byte input);
+void itochars(unsigned int value, char buffer[], byte digits);
 
 // Statemachine *********************************************************
 

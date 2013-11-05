@@ -24,9 +24,6 @@
 #include "statemanager.h"
 
 
-//EventManager Events;
-//StateMachineManager StateMachine;
-
 void setup()
 {  
   // initialize the pushbutton pin as an input:
@@ -40,19 +37,13 @@ void setup()
   rtc.setDate(1, 1, 2000); //set the date here
   rtc.startRTC(); //start the RTC
 
-    // Open serial communications and wait for port to open:
-  Serial.begin(9600);
-//  while (!Serial) {
-  //  ; // wait for serial port to connect. Needed for Leonardo only
-  //}
-  
+  // Open serial communications and wait for port to open:
+  Serial.begin(9600); 
 }
 
-void loop() {
-  
+void loop() {  
   Events.doHandleEvents();
-  StateMachine.doHandleStates();
-  
+  StateMachine.doHandleStates();  
 }
 
 byte showMenu(byte input) {
@@ -73,8 +64,6 @@ byte showMenu(byte input) {
         if (menuState == 0) {
           menuState = stateTemp;
         }
-//        byte textColor = menuState == stateTemp ? WHITE : BLACK;
-//        byte backColor = menuState == stateTemp ? BLACK : WHITE;
         Display.displayText_f(2, y * (TEXTHEIGHT + 1) + 1, 1, statetext);
         if (menuState == stateTemp) {
           Display.drawRect(0, y * (TEXTHEIGHT + 1), LCDWIDTH, 10, BLACK);
@@ -97,7 +86,6 @@ byte showMenu(byte input) {
   
   return StateMachine.state;
 }
-
 
 byte exitMainMenu(byte input) {
   return ST_MAIN;
@@ -135,24 +123,6 @@ byte mainScreen(byte inp) {
   }
   
   return ST_MAIN;
-}
-
-void itochars(unsigned int value, char buffer[], byte digits) {
-  byte i = 0; 
-  byte d;
-  unsigned int k;
-  
-  unsigned int P[] = { 1, 10, 100, 1000, 10000 };
-  
-  k = P[digits-1]; 
-
-  while(i < digits) {
-    d = value / k;
-    value -= (d * k);
-    buffer[i] = d + '0';
-    k /= 10;
-    i++;
-  }
 }
 
 byte setLogging(byte input) {
@@ -230,9 +200,26 @@ byte setRtcDate(byte input) {
   return StateMachine.state;
 }
 
-
 void logError(String s) {
   //displayText(0, 0, 1, s);
+}
+
+void itochars(unsigned int value, char buffer[], byte digits) {
+  byte i = 0; 
+  byte d;
+  unsigned int k;
+  
+  unsigned int P[] = { 1, 10, 100, 1000, 10000 };
+  
+  k = P[digits-1]; 
+
+  while(i < digits) {
+    d = value / k;
+    value -= (d * k);
+    buffer[i] = d + '0';
+    k /= 10;
+    i++;
+  }
 }
 
     
