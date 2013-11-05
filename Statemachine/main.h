@@ -11,6 +11,7 @@ byte mainScreen(byte inp);
 byte setLogging(byte input);
 byte setRtcTime(byte input);
 byte setRtcDate(byte input);
+byte temperatureChart(byte input);
 void itochars(unsigned int value, char buffer[], byte digits);
 
 // States, Menu ********************************************************
@@ -106,7 +107,8 @@ const MENU_STATE menu_state[] PROGMEM = {
     {ST_LOGGING,                        ST_LOGGING,                 NULL,                       setLogging},
     
     {ST_EXIT,                           ST_EXIT,                    NULL,                       exitMainMenu},
-    {ST_EXIT_DT,                        ST_EXIT_DT,                 NULL,                       exitDateTimeMenu},    
+    {ST_EXIT_DT,                        ST_EXIT_DT,                 NULL,                       exitDateTimeMenu},
+    {ST_TEMP_CHART,                     ST_TEMP_CHART,              NULL,                       temperatureChart},    
     
     {0,                                 NULL,                       NULL,                       NULL}
 };
