@@ -9,7 +9,7 @@ class Edit {
     }
     
     byte editStr(byte x, byte y, PGM_P pMask, char buffer[], char length, byte key) {      
-      if (key == KEY_NEXT)
+      if (key == KEY_ENTER)
       {
         length--;
         if (++pos >= length)
@@ -120,3 +120,36 @@ class EditDate : public Edit {
       return c;
     }
 };
+
+class EditOption {
+  public:
+    byte selected;
+
+  public:
+    void setOptions(byte x, byte y, PGM_P options[], byte count, byte input) {
+      for (int i=0; i < count; i++) {
+        Display.displayText_f(x + i * 10,  y, 1, options[i]);        
+      }
+
+      if (input == KEY_PLUS) {
+        if (++selected > count) selected = 0;
+        Display.drawRect(x + selected * 10, y, 3 * TEXTWIDTH + 3, TEXTHEIGHT + 3, BLACK);
+      }
+    }
+};
+
+class EditYesNoOption : public EditOption {
+    public:
+      byte getOption(byte input) {
+          const char * OPT[] PROGMEM = { "YES", "NO" };
+          
+          if (input==KEY_ENTER) {
+            return selected;
+          }
+          
+          setOptions(0, 20, OPT, 2, input);
+          return 0;
+      }
+};
+
+EditYesNoOption EditYesNo;

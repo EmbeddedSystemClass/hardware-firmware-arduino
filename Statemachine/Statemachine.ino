@@ -95,33 +95,27 @@ byte exitDateTimeMenu(byte input) {
   return ST_MAIN_MENU;
 }
 
-byte mainScreen(byte inp) {
+byte mainScreen(byte input) {
   Display.clearDisplay();
   Display.displayText_f(0, 0, 1, PSTR("App Test"));  
   
-  char time[]= { "00:00:00" };
-  
+  char time[]= { "00:00:00" };  
   itochars(rtc.getHours(), &time[0], 2);
   itochars(rtc.getMinutes(), &time[3], 2);
-  itochars(rtc.getSeconds(), &time[6], 2);
-  
+  itochars(rtc.getSeconds(), &time[6], 2);  
   Display.displayText(0, 20, 1, time);
-  
-  
-  char date[]= { "0000.00.00" };
-  
+    
+  char date[]= { "0000.00.00" };  
   itochars(rtc.getYear(), &date[0], 4);
   itochars(rtc.getMonth(), &date[5], 2);
-  itochars(rtc.getDay(), &date[8], 2);
-  
+  itochars(rtc.getDay(), &date[8], 2);  
   Display.displayText(0, 30, 1, date);
   
   Display.display();
   
-  if (Events.bBtn1) {
+  if (input == KEY_ENTER) {
     return ST_MAIN_MENU;
-  }
-  
+  }  
   return ST_MAIN;
 }
 
@@ -134,22 +128,10 @@ byte setLogging(byte input) {
   
   Display.clearDisplay();
   Display.displayText_f(0,  0, 1, PSTR("Reset Log"));
-  Display.displayText_f(2, 20, 1, PSTR("YES    NO"));
-  
-  switch(logState) {
-    case ST_YES:
-      Display.drawRect(0, 18, 3 * TEXTWIDTH + 3, TEXTHEIGHT + 3, BLACK);
-      break;
-    case ST_NO:
-      Display.drawRect(6 * (TEXTWIDTH + 1), 18, 2 * TEXTWIDTH + 3, TEXTHEIGHT + 3, BLACK);
-      break;
-  }
-  
+  EditYesNo.getOption(input);  
   Display.display();
   
-  if (Events.bBtn2) {
-    logState = StateMachine.getNextState(logState, KEY_PLUS);
-  } else if (Events.bBtn1) {
+  if (input == KEY_ENTER) {
     return ST_MAIN; 
   }
   
@@ -161,15 +143,8 @@ byte setRtcTime(byte input) {
   Display.displayText_f(0,0,1,PSTR("Set RTC Time"));
   
   static EditTime edTime;
-  
-  char key = 0;
-  
-  if (Events.bBtn1)
-    key = KEY_NEXT;
-  else if (Events.bBtn2)
-    key = KEY_PLUS;
-  
-  if (!edTime.editTime(key)) {
+      
+  if (!edTime.editTime(input)) {
     return ST_DATE_TIME_MENU;
   }
 
@@ -183,15 +158,8 @@ byte setRtcDate(byte input) {
   Display.displayText_f(0,0,1,PSTR("Set RTC Date"));
   
   static EditDate edDate;
-  
-  char key = 0;
-  
-  if (Events.bBtn1)
-    key = KEY_NEXT;
-  else if (Events.bBtn2)
-    key = KEY_PLUS;
-  
-  if (!edDate.editDate(key)) {
+       
+  if (!edDate.editDate(input)) {
     return ST_DATE_TIME_MENU;
   }
 

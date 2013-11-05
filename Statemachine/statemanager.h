@@ -19,11 +19,18 @@ class StateMachineManager {
     }
     
     void doHandleStates() {
-      byte i, j;      
+      byte i, j;
+
+      byte input = KEY_NONE;
+	    
+      if (Events.bBtn1) 
+        input = KEY_ENTER;
+      else if (Events.bBtn2)
+	input = KEY_PLUS;
 
       if (pStateFunc != NULL) {
         // When in this state, we must call the state function
-        nextstate = pStateFunc(0);
+        nextstate = pStateFunc(input);
       } else {
         nextstate = ST_MAIN;
       }

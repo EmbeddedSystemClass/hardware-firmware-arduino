@@ -1,7 +1,4 @@
 // Ops ******************************************************************
-#define alignDateTimeValue(a, b) (a > b ? 0 :a)  // time and date 
-#define alignValue(a, b) (a > b ? 0 : a)
-
 #define CHARTONUM(a, b) ((a - '0') * b)
 
 const byte btn1Pin = A1;     // pushbutton 1 pin
@@ -16,7 +13,7 @@ byte setRtcTime(byte input);
 byte setRtcDate(byte input);
 void itochars(unsigned int value, char buffer[], byte digits);
 
-// Statemachine *********************************************************
+// States, Menu ********************************************************
 
 typedef struct PROGMEM
 {
@@ -33,8 +30,9 @@ typedef struct PROGMEM
     byte (*pFunc)(byte input);
 } MENU_STATE;
 
-#define KEY_PLUS 1
-#define KEY_NEXT 2
+#define KEY_NONE  1
+#define KEY_PLUS  2
+#define KEY_ENTER 3
 
 #define ST_MAIN           1
 #define ST_MAIN_MENU      2
