@@ -126,28 +126,29 @@ class EditOption {
     byte selected;
 
   public:
-    void setOptions(byte x, byte y, PGM_P options[], byte count, byte input) {
+    void setOptions(byte x, byte y, char* options[], byte count, byte width, byte input) {
       for (int i=0; i < count; i++) {
-        Display.displayText_f(x + i * 10,  y, 1, options[i]);        
+        Display.displayText(x + 2, y + i * (TEXTHEIGHT + 2) + 2, 1, options[i]);        
       }
 
       if (input == KEY_PLUS) {
-        if (++selected > count) selected = 0;
-        Display.drawRect(x + selected * 10, y, 3 * TEXTWIDTH + 3, TEXTHEIGHT + 3, BLACK);
+        selected = selected + 1 < count ? selected + 1 :  0;
       }
+      
+      Display.drawRect(x, y + selected * (TEXTHEIGHT + 2), width + 3, TEXTHEIGHT + 3, BLACK);
     }
 };
 
 class EditYesNoOption : public EditOption {
     public:
       byte getOption(byte input) {
-          const char * OPT[] PROGMEM = { "YES", "NO" };
+          char * OPT[] = { "YES", "NO" };
           
           if (input==KEY_ENTER) {
             return selected;
           }
           
-          setOptions(0, 20, OPT, 2, input);
+          setOptions(5, 15, OPT, 2, TEXTWIDTH * 3, input);
           return 0;
       }
 };
