@@ -1,15 +1,16 @@
 // Charts ****************************************************************
 
 #define TEMP_CHART_COUNT  24
-#define DISPLAYHIGHT      84
-#define DISPLAYWIDTH      48
-#define MARGIN						 8
+#define DISPLAYHEIGHT     48
+#define DISPLAYWIDTH      84
+#define MARGIN		   8
+#define CHARTHEIGHT       32
 
 class Chart {  
   public:
     void drawChart(byte values[], byte count, int rangeMin, int rangeMax) {            
       int min = rangeMax;
-			int max = rangeMin;
+      int max = rangeMin;
 			
 			// find min and max values *********************
       for (byte i = 0; i < count; i++) {
@@ -31,28 +32,32 @@ class Chart {
         }
       }
       
-			// calculate delta and offset ******************
+      // calculate delta and offset ******************
 			
-      byte delta = abs(max - min);      
-      byte offset = DISPLAYHIGHT * min / d;
+      int delta = max - min;      
+      int offset = CHARTHEIGHT * min / delta;
 
-			// draw axis ***********************************
-			// y-axis max, min
-			Display.drawText(0, 0, rangeMax, 1, BLACK);
-			Display.drawText(0, DISPLAYHEIGHT-TEXTHEIGHT, rangeMin, 1, BLACK);
-			// y-axis
-			Display.drawLine(2, TEXTHEIGHT, 2, DISPLAYHEIGHT-TEXTHEIGHT, BLACK);
-			// x-axis
-			byte y = DISPLAYHIGHT * 0 / delta - offset;
-
-
-			// draw values *********************************
+      // draw axis ***********************************
+      // y-axis max, min
+      char buffer[4] = { "000" };
+      itochars(max, buffer, 3);
+      Display.displayText(0, 0, 1, buffer);
+      itochars(abs(min), buffer, 3);
+      Display.displayText(0, DISPLAYHEIGHT-TEXTHEIGHT, 1, buffer);
+      // y-axis
+      Display.drawLine(2, TEXTHEIGHT, 2, DISPLAYHEIGHT-TEXTHEIGHT, BLACK);
+      // x-axis
+      Serial.println(String(min)+","+String(max)+","+String(offset));
+      
+      Display.drawLine(2, offset, DISPLAYWIDTH, offset, BLACK);
+      
+      // draw values *********************************
 
       
       
       for (byte i = 0; i < count; i++) {
-        byte y = DISPLAYHIGHT * values[i] / delta - offset;    
-//        Display.fillRect(i * 14, 0, 14, y, BLACK);
+        byte y = CHARTHEIGHT * values[i] / delta - offset;    
+        Display.fillRect(i * 3 + 3, 16, 3, y, BLACK);
       }
     }
 

@@ -21,6 +21,7 @@
 #include "events.h"
 #include "displaymanager.h"
 #include "edit.h"
+#include "charts.h"
 #include "statemanager.h"
 
 
@@ -171,6 +172,10 @@ byte setRtcDate(byte input) {
 byte temperatureChart(byte input) {
   
   Display.clearDisplay(); 
+  
+  for (int i= 0; i < 24; i++)
+    TemperatureChart.assignValue(i);
+  
   
   TemperatureChart.drawTempChart(input);
 
