@@ -173,7 +173,7 @@ byte temperatureChart(byte input) {
   
   Display.clearDisplay(); 
   
-  for (int i= 0; i < 24; i++)
+  for (int8_t i= -5; i < 24-5; i++)
     TemperatureChart.assignValue(i);
   
   
