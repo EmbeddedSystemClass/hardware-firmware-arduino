@@ -170,30 +170,10 @@ byte setRtcDate(byte input) {
 
 byte temperatureChart(byte input) {
   
-  int temp[] = { 10,10,10,20,20,20 };
-  int min =  128;
-  int max = -128;
+  Display.clearDisplay(); 
   
-  for (byte i = 0; i < 6; i++) {
-    min = min(temp[i], min);
-    max = max(temp[i], max);
-  }
+  TemperatureChart.drawTempChart(input);
 
-  byte d = abs(max - min);
-  byte offset = LCDHEIGHT * min / d;  
-  
-  Display.clearDisplay();  
-  
-  for (byte i = 0; i < 6; i++) {
-    byte y1 = LCDHEIGHT * temp[i] / d - offset;
-    //byte y2 = LCDHEIGHT * temp[i+1] / d - offset;
-    Display.fillRect(i * 14, 0, 14, y1, BLACK);
-  }
-  
-  
-
-//  Display.drawLine(TEXTWIDTH + 2, 2, TEXTWIDTH + 2, LCDHEIGHT - 2, BLACK);
-//  Display.drawLine(TEXTWIDTH + 2, LCDHEIGHT - 2, LCDWIDTH - 2, LCDHEIGHT - 2, BLACK);
   Display.display();
 }
 
