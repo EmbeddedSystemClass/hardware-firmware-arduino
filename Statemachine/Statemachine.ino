@@ -44,7 +44,8 @@ void setup()
 
 void loop() {  
   Events.doHandleEvents();
-  StateMachine.doHandleStates();  
+  StateMachine.doHandleStates();
+  TempHumiMeasure.doMeasure();
 }
 
 byte showMenu(byte input) {
