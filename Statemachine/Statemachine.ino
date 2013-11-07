@@ -11,7 +11,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
 #include <SPI.h>
-#include <SD.h>
+//#include <SD.h>
 #include <Sensirion.h>
 #include <avr/pgmspace.h>
 #include <swRTC.h>
