@@ -2,8 +2,14 @@
 
 #define TEXTHEIGHT 8
 #define TEXTWIDTH  6
+#define BLACK      ST7735_WHITE
+#define WHITE      ST7735_BLACK
 
-class DisplayManager : public Adafruit_PCD8544 {
+#define ST7735_TFTWIDTH  128
+#define ST7735_TFTHEIGHT 160
+
+
+class DisplayManager : public Adafruit_ST7735 {
 
     // pin 7 - Serial clock out (SCLK)
     // pin 6 - Serial data out (DIN)
@@ -13,28 +19,34 @@ class DisplayManager : public Adafruit_PCD8544 {
   
   public:    
   
-    DisplayManager() : Adafruit_PCD8544(7, 6, 5, 4, 3) {
+    DisplayManager() : Adafruit_ST7735(10, 9, 8) {
     }
   
     void beginDisplay() {
        // Initialize Display
-      begin();
-      // you can change the contrast around to adapt the display
-      // for the best viewing!
-      setContrast(60);
+      initR(INITR_BLACKTAB);
+      
       clearDisplay();   // clears the screen and buffer
     }
+    
+    void clearDisplay() {
+      fillScreen(ST7735_BLACK);
+    }
+    
+    void display() {
+    };
     
     void displayText_f(byte x, byte y, byte fontSize, const char *pFlashStr) {
       displayText_f(x, y, fontSize, BLACK, WHITE, pFlashStr);
     }
     
-    void displayText_f(byte x, byte y, byte fontSize, byte textColor, byte backColor, const char *pFlashStr) {
-      setTextColor(textColor, backColor);
+    void displayText_f(byte x, byte y, byte fontSize, uint16_t textColor, uint16_t backColor, const char *pFlashStr) {
+      setTextWrap(false);
+      setTextColor(textColor);
       setTextSize(fontSize);
       
       for (byte i = 0; (const char)(pgm_read_byte(&pFlashStr[i])) && i < 40; i++) {
-        setCursor(x + i * 6, y);
+        setCursor(x + i * 6 * fontSize, y);
         char c = pgm_read_byte(&pFlashStr[i]);
         if (c == '\0') break;
         write(pgm_read_byte(&pFlashStr[i]));
@@ -46,7 +58,7 @@ class DisplayManager : public Adafruit_PCD8544 {
       displayText(x, y, fontSize, str, BLACK, WHITE);
     }
     
-    void displayText(byte x, byte y, byte fontSize, char str[], byte textColor, byte backColor)
+    void displayText(byte x, byte y, byte fontSize, char str[], uint16_t textColor, uint16_t backColor)
     {
       setTextColor(textColor, backColor);
       setTextSize(fontSize);
