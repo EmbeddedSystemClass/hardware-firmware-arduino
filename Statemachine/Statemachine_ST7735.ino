@@ -8,8 +8,8 @@
  	 
  */
 
-#include <Adafruit_GFX.h>
-#include <Adafruit_PCD8544.h>
+#include <Adafruit_GFX.h>    // Core graphics library
+#include <Adafruit_ST7735.h> // Hardware-specific library
 #include <SPI.h>
 //#include <SD.h>
 #include <Sensirion.h>
@@ -58,7 +58,7 @@ byte showMenu(byte input) {
   
   static byte menuState;
   
-  Display.clearDisplay();
+  //Display.clearDisplay();
   
   for (i=0; (j=pgm_read_byte(&menu_state[i].group)); i++) {
     if (j == StateMachine.stateGroup) {
@@ -70,7 +70,7 @@ byte showMenu(byte input) {
         }
         Display.displayText_f(2, y * (TEXTHEIGHT + 1) + 1, 1, statetext);
         if (menuState == stateTemp) {
-          Display.drawRect(0, y * (TEXTHEIGHT + 1), LCDWIDTH, 10, BLACK);
+          Display.drawRect(0, y * (TEXTHEIGHT + 1), ST7735_TFTWIDTH, 10, BLACK);
         }
         y++;
       }
@@ -100,20 +100,20 @@ byte exitDateTimeMenu(byte input) {
 }
 
 byte mainScreen(byte input) {
-  Display.clearDisplay();
-  Display.displayText_f(0, 0, 1, PSTR("App Test"));  
+  //Display.clearDisplay();
+  Display.displayText_f(0, 0, 2, PSTR("App Test"));  
   
   char time[]= { "00:00:00" };  
   itochars(rtc.getHours(), &time[0], 2);
   itochars(rtc.getMinutes(), &time[3], 2);
   itochars(rtc.getSeconds(), &time[6], 2);  
-  Display.displayText(0, 20, 1, time);
+  Display.displayText(0, 40, 2, time, ST7735_YELLOW, ST7735_BLACK);
     
   char date[]= { "0000.00.00" };  
   itochars(rtc.getYear(), &date[0], 4);
   itochars(rtc.getMonth(), &date[5], 2);
   itochars(rtc.getDay(), &date[8], 2);  
-  Display.displayText(0, 30, 1, date);
+  Display.displayText(0, 80, 1, date);
   
   Display.display();
   
@@ -130,7 +130,7 @@ byte setLogging(byte input) {
     logState = ST_YES;
   }
   
-  Display.clearDisplay();
+  //Display.clearDisplay();
   Display.displayText_f(0,  0, 1, PSTR("Reset Log"));
   EditYesNo.getOption(input);  
   Display.display();
@@ -143,7 +143,7 @@ byte setLogging(byte input) {
 }
 
 byte setRtcTime(byte input) {
-  Display.clearDisplay();
+  //Display.clearDisplay();
   Display.displayText_f(0,0,1,PSTR("Set RTC Time"));
   
   static EditTime edTime;
@@ -158,7 +158,7 @@ byte setRtcTime(byte input) {
 }
 
 byte setRtcDate(byte input) {
-  Display.clearDisplay();
+  //Display.clearDisplay();
   Display.displayText_f(0,0,1,PSTR("Set RTC Date"));
   
   static EditDate edDate;
@@ -174,7 +174,7 @@ byte setRtcDate(byte input) {
 
 byte temperatureChart(byte input) {
   
-  Display.clearDisplay(); 
+  //Display.clearDisplay(); 
   
   for (int8_t i= -5; i < 24-5; i++)
     TemperatureChart.assignValue(i);
