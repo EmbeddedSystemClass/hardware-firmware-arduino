@@ -1,7 +1,10 @@
 
-class THMeasureManager {
+Sensirion sht = Sensirion(8, 9);
+
+class ShtMeasureManager {
   private:
     unsigned int rawData;
+    byte shtError;
   public:
     unsigned bMeasure:1;
     unsigned bTempMeasure:1; 
@@ -9,15 +12,15 @@ class THMeasureManager {
     unsigned bReady:1;   
     int8_t temperature;
     uint8_t humidity;
-    unsigned int rawData;
-  
+
   void doMeasure() {
-    if (!bMeasure && millis() % 5000UL == 0) {      // Time for new measurements?
+    if (!bMeasure && MeasureEvents.bShtMeasure) {      // Time for new measurements?
       bMeasure = true;
       bTempMeasure = true;
       sht.meas(TEMP, &rawData, NONBLOCK); // Start temp measurement
       //Serial.println("start temp measure");
     }
+    
     if (bMeasure && (shtError = sht.measRdy())) { // Check measurement status
       if (bTempMeasure) {                    // Process temp or humi?
         bTempMeasure = false;
@@ -39,4 +42,4 @@ class THMeasureManager {
 
 };
 
-THMeasureManager TempHumiMeasure;
+ShtMeasureManager ShtMeasure;

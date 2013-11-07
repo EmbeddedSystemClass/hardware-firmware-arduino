@@ -113,8 +113,6 @@ const MENU_STATE menu_state[] PROGMEM = {
     {0,                                 NULL,                       NULL,                       NULL}
 };
 
-//Adafruit_PCD8544 adaDisplay = Adafruit_PCD8544(7, 6, 5, 4, 3);
-
 // Software RTC **********************************************************
 swRTC rtc;
 

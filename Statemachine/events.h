@@ -7,7 +7,7 @@ class EventManager {
   private:
     byte lastButtonState;
     byte counter;
-    unsigned long lastUpdateTime;
+    unsigned long lastTimerUpdate;
   
   public:
     unsigned bBtn1:1;
@@ -16,9 +16,11 @@ class EventManager {
     unsigned bT50MS:1;
     unsigned bT500MS:1;
     unsigned bTP500MS:1;
+  
+    unsigned bMeasure:1;
 
     void doHandleEvents() {
-      updateEvents();
+      updateTimerEvents();
       updateButtonFlags();
     }
 
@@ -37,21 +39,46 @@ class EventManager {
       }  
     }
     
-    void updateEvents() {
+    void updateTimerEvents() {
       // generate 50ms, 500ms timer events
-      if (millis() - lastUpdateTime > 50) {
-        lastUpdateTime = millis();
+      if (millis() - lastTimerUpdate > 50) {
+        lastTimerUpdate = millis();
         counter++;
         bT50MS = true;
         if (counter % 10 == 0) {
           bT500MS = true;
-	  bTP500MS = bTP500MS ? false : true;
-	}
+          bTP500MS = bTP500MS ? false : true;
+        }
       } else {
-	bT50MS = false;
-	bT500MS = false;
+        bT50MS = false;
+        bT500MS = false;
       }
     }
 };
 
 EventManager Events;
+
+class MeasureEventManager {
+    private:
+      unsigned long lastUpdate;
+    
+    public:
+      unsigned long interval;    
+      unsigned bShtMeasure:1;  
+    
+    public:
+      MeasureEventManager() {
+        interval = 5; // secounds
+      }
+      
+      void doHandleEvents() {
+        if (rtc.getTimestamp(0) - lastUpdate > interval) {
+          lastUpdate = rtc.getTimestamp();
+          bShtMeasure = true;
+        } else {
+          bShtMeasure = false;
+        }
+      }      
+};
+
+MeasureEventManager MeasureEvents;
