@@ -25,7 +25,7 @@ class DisplayManager : public Adafruit_ST7735 {
     void beginDisplay() {
        // Initialize Display
       initR(INITR_BLACKTAB);
-      
+      setRotation(0);
       clearDisplay();   // clears the screen and buffer
     }
     

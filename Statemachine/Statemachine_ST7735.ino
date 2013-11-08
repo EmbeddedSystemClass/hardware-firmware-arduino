@@ -24,6 +24,7 @@
 #include "charts.h"
 #include "measure.h"
 #include "statemanager.h"
+#include "screen.h"
 
 
 void setup()
@@ -100,6 +101,46 @@ byte exitDateTimeMenu(byte input) {
 }
 
 byte mainScreen(byte input) {
+  static byte y = 0;
+  
+  MenuScreen.draw();
+  MenuScreen.frame1.setRect(0, y, ST7735_TFTWIDTH, TEXTHEIGHT +3);
+  
+  
+  if (Events.bT1000MS) {
+    y=y+TEXTHEIGHT +3;  
+    y =y % 100;  
+    y = y == 0 ? 20 : y;
+  }
+  
+  return ST_MAIN;
+}
+
+
+byte __mainScreen(byte input) {
+  static byte y = 20; 
+  
+  char buffer[4] = { "000" };
+  
+  //MainScreen.label1.setVisible(Events.bTP1000MS);
+//  MainScreen.frame1.setVisible(Events.bTP1000MS);
+
+  itochars(y, buffer, 3);
+  
+  MainScreen.label1.setText(0, y, buffer);
+  MainScreen.frame1.setRect(20, y, y, 10);
+  MainScreen.draw();
+  
+  if (Events.bT1000MS) {
+    y=y+10;  
+    y =y % 100;  
+    y = y == 0 ? 20 : y;
+  }
+  
+  return ST_MAIN;
+}
+
+byte _mainScreen(byte input) {
   //Display.clearDisplay();
   Display.displayText_f(0, 0, 2, PSTR("App Test"));  
   

@@ -15,7 +15,9 @@ class EventManager {
 
     unsigned bT50MS:1;
     unsigned bT500MS:1;
+    unsigned bT1000MS:1;
     unsigned bTP500MS:1;
+    unsigned bTP1000MS:1;
   
     unsigned bMeasure:1;
 
@@ -49,9 +51,14 @@ class EventManager {
           bT500MS = true;
           bTP500MS = bTP500MS ? false : true;
         }
+        if (counter % 20 == 0) {
+          bT1000MS = true;
+          bTP1000MS = bTP1000MS ? false : true;
+        }
       } else {
         bT50MS = false;
         bT500MS = false;
+        bT1000MS = false;
       }
     }
 };
