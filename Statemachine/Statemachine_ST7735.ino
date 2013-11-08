@@ -26,7 +26,6 @@
 #include "statemanager.h"
 #include "screen.h"
 
-
 void setup()
 {  
   // initialize the pushbutton pin as an input:
@@ -51,7 +50,13 @@ void loop() {
   ShtMeasure.doMeasure();
 }
 
+
 byte showMenu(byte input) {
+  MenuScreen.draw();
+  return MenuScreen.input(input);
+}
+
+byte _showMenu(byte input) {
   byte i, j;
   byte y = 0;
   byte stateTemp = 0;
@@ -101,64 +106,10 @@ byte exitDateTimeMenu(byte input) {
 }
 
 byte mainScreen(byte input) {
-  static byte y = 0;
-  
-  MenuScreen.draw();
-  MenuScreen.frame1.setRect(0, y, ST7735_TFTWIDTH, TEXTHEIGHT +3);
-  
-  
-  if (Events.bT1000MS) {
-    y=y+TEXTHEIGHT +3;  
-    y =y % 100;  
-    y = y == 0 ? 20 : y;
-  }
-  
-  return ST_MAIN;
-}
-
-
-byte __mainScreen(byte input) {
-  static byte y = 20; 
-  
-  char buffer[4] = { "000" };
-  
-  //MainScreen.label1.setVisible(Events.bTP1000MS);
-//  MainScreen.frame1.setVisible(Events.bTP1000MS);
-
-  itochars(y, buffer, 3);
-  
-  MainScreen.label1.setText(0, y, buffer);
-  MainScreen.frame1.setRect(20, y, y, 10);
   MainScreen.draw();
   
-  if (Events.bT1000MS) {
-    y=y+10;  
-    y =y % 100;  
-    y = y == 0 ? 20 : y;
-  }
-  
-  return ST_MAIN;
-}
-
-byte _mainScreen(byte input) {
-  //Display.clearDisplay();
-  Display.displayText_f(0, 0, 2, PSTR("App Test"));  
-  
-  char time[]= { "00:00:00" };  
-  itochars(rtc.getHours(), &time[0], 2);
-  itochars(rtc.getMinutes(), &time[3], 2);
-  itochars(rtc.getSeconds(), &time[6], 2);  
-  Display.displayText(0, 40, 2, time, ST7735_YELLOW, ST7735_BLACK);
-    
-  char date[]= { "0000.00.00" };  
-  itochars(rtc.getYear(), &date[0], 4);
-  itochars(rtc.getMonth(), &date[5], 2);
-  itochars(rtc.getDay(), &date[8], 2);  
-  Display.displayText(0, 80, 1, date);
-  
-  Display.display();
-  
   if (input == KEY_ENTER) {
+    Display.clearDisplay();
     return ST_MAIN_MENU;
   }  
   return ST_MAIN;

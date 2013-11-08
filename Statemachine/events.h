@@ -42,6 +42,10 @@ class EventManager {
     }
     
     void updateTimerEvents() {
+      bT50MS = false;
+      bT500MS = false;
+      bT1000MS = false;
+      
       // generate 50ms, 500ms timer events
       if (millis() - lastTimerUpdate > 50) {
         lastTimerUpdate = millis();
@@ -55,11 +59,7 @@ class EventManager {
           bT1000MS = true;
           bTP1000MS = bTP1000MS ? false : true;
         }
-      } else {
-        bT50MS = false;
-        bT500MS = false;
-        bT1000MS = false;
-      }
+      } 
     }
 };
 
