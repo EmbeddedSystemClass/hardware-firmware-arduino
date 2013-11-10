@@ -52,7 +52,7 @@ typedef struct PROGMEM
 #define ST_NO          254
 #define ST_EXIT        255
 
-const char MT_MAIN[] PROGMEM          = "Menu Test";
+const char MT_MAIN[] PROGMEM          = "Main Menu";
 const char MT_DATE_TIME[] PROGMEM     = "Date Time";
 const char MT_DATE[] PROGMEM          = "Date";
 const char MT_TIME[] PROGMEM          = "Time";
@@ -89,14 +89,14 @@ const MENU_STATE menu_state[] PROGMEM = {
 //  STATE GROUP                         STATE                       STATE TEXT                  STATE_FUNC
     {ST_MAIN,                           ST_MAIN,                    NULL,                       mainScreen},
     
-    {ST_MAIN_MENU,                      ST_MAIN_MENU,               NULL,                       showMenu},
+    {ST_MAIN_MENU,                      ST_MAIN_MENU,               MT_MAIN,                    showMenu},
     {ST_MAIN_MENU,                      ST_DATE_TIME_MENU,          MT_DATE_TIME,               NULL},
     {ST_MAIN_MENU,                      ST_LOGGING,                 MT_LOG,                     NULL},
     {ST_MAIN_MENU,                      ST_TEMP_CHART,              MT_TEMPERATURE,             NULL},
     {ST_MAIN_MENU,                      ST_HUMI_CHART,              MT_HUMIDITY,                NULL},
     {ST_MAIN_MENU,                      ST_EXIT,                    MT_EXIT,                    mainScreen},
     
-    {ST_DATE_TIME_MENU,                 ST_DATE_TIME_MENU,          NULL,                       showMenu},
+    {ST_DATE_TIME_MENU,                 ST_DATE_TIME_MENU,          MT_DATE_TIME,               showMenu},
     {ST_DATE_TIME_MENU,                 ST_DATE,                    MT_DATE,                    NULL},
     {ST_DATE_TIME_MENU,                 ST_TIME,                    MT_TIME,                    NULL},    
     {ST_DATE_TIME_MENU,                 ST_EXIT_DT,                 MT_EXIT,                    mainScreen},    

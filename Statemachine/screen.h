@@ -2,7 +2,22 @@
 
 class Screen {
   public:
-    virtual void draw() {
+    unsigned bInvalidate:1;
+    unsigned bVisible:1;
+  public:
+    Screen() {
+    }
+    
+    virtual void hide() {
+      Display.clearDisplay();
+      bVisible = false;
+    }
+    
+    virtual void show() {
+      if (!bVisible) {
+        bInvalidate = true;
+      }
+      bVisible = true;
     }
 };
 
@@ -52,10 +67,6 @@ class Label : public Component {
       }
       
       void setText(byte px, byte py, char* newText) {
-        
-        if (px == oldX && py == oldY && strcmp(text, newText) == 0)
-          return;
-
         x = px;
         y = py;
         oldLength = strlen(text);
@@ -112,7 +123,7 @@ class Frame : public Component {
      Display.drawRect(oldX, oldY, oldW, oldH, BACKCOLOR);
      
      if (bVisible)  
-       Display.drawRect(x, y, w, h, ST7735_WHITE);
+       Display.drawRect(x, y, w, h, ST7735_YELLOW);
      
      oldX = x;
      oldY = y;
@@ -123,17 +134,17 @@ class Frame : public Component {
    }
 };
 
-class MainScreen {
-  public:
-    Label label1;
-    
+class MainScreen : public Screen {
+  
   public:
     MainScreen() {      
-      label1.setText("App Test");
     }
     
     void draw() {
-      label1.draw();
+
+      if (bInvalidate) {
+        Display.displayText_f(0, 0, 2, ST7735_YELLOW, BACKCOLOR, PSTR("App Test"));
+      }
       
       if (Events.bT1000MS) {
         char time[9]= { "00:00:00" };  
@@ -141,76 +152,96 @@ class MainScreen {
         itochars(rtc.getMinutes(), &time[3], 2);
         itochars(rtc.getSeconds(), &time[6], 2);  
         
-        Display.displayText(5, 20, 2, time);
+        Display.displayText(5, 30, 2, time, ST7735_GREEN, BACKCOLOR);
       }
+      
+      bInvalidate = false;
     }
+    
 };
 
 MainScreen MainScreen;
 
 
-class MenuScreen {
+class MenuScreen : public Screen {
   private:
-    unsigned bInvalidate:1;
     byte menuState;
-    byte stateTemp;
     
-  public:    
+  public: 
+    unsigned bInvalidateTitle:1;  
     Frame frame1;
     
   public:
-    MenuScreen() {      
-      //frame1.setRect(0,0, ST7735_TFTWIDTH, TEXTHEIGHT + 2);
-      bInvalidate = true;
+    MenuScreen() {
+      bInvalidateTitle = true;
     }
     
-    byte input(byte input) {
-      
-      
+    byte input(byte input) {      
       if (Events.bBtn2) {
         menuState=StateMachine.getNextState(menuState, KEY_PLUS);
         bInvalidate = true;
       } else if (Events.bBtn1) {
-        stateTemp = menuState;
         StateMachine.stateGroup = menuState;
         menuState = 0;
-        Display.clearDisplay();
-        bInvalidate = true;
-        return stateTemp;
+        hide();
+        return StateMachine.stateGroup;
       } 
       
       return StateMachine.state;
     }
     
     void draw() {
-      if (!bInvalidate)
+      if (!bInvalidate) { 
         return;
-      
-      byte i, j;
+      }
+        
+      byte i;
       byte y = 0;
+      byte group;
+      byte state;
       
       PGM_P statetext;
       
-      for (i=0; (j=pgm_read_byte(&menu_state[i].group)); i++) {
-        if (j == StateMachine.stateGroup) {
-          stateTemp = pgm_read_byte(&menu_state[i].state);
+      for (i=0; (group = pgm_read_byte(&menu_state[i].group)); i++) {
+        if (group == StateMachine.stateGroup) {
+          state = pgm_read_byte(&menu_state[i].state);
           statetext = (PGM_P)pgm_read_word(&menu_state[i].pText);
           if (statetext != NULL) {
-            if (menuState == 0) {
-              menuState = stateTemp;
+            if (state == group) {
+              if (bInvalidateTitle) {
+                Display.fillRect(0, y, ST7735_TFTHEIGHT, TEXTHEIGHT + 10, ST7735_WHITE);
+                Display.displayText_f(4, y + 2, 2, BACKCOLOR, ST7735_WHITE, statetext);
+                bInvalidateTitle = false;
+              }
+              y += 3;
+            } else {
+              if (menuState == 0) {
+                menuState = state;              
+              }
+              if (menuState == state) {
+                frame1.setRect(0, y + 3, ST7735_TFTHEIGHT, TEXTHEIGHT * 2 + 3);
+                frame1.bInvalidate = true;
+                frame1.draw();
+                Display.displayText_f(4, y + 5, 2, ST7735_YELLOW, BACKCOLOR, statetext);
+              } else {
+                Display.displayText_f(4, y + 5, 2, statetext);
+              }
             }
-            Display.displayText_f(2, y * (TEXTHEIGHT + 1) + 1, 1, statetext);
-            if (menuState == stateTemp) {
-              frame1.setRect(0, y * (TEXTHEIGHT + 1), ST7735_TFTWIDTH, 10);
-            }
-            y++;
+            y += TEXTHEIGHT * 2 + 3;
           }
         }
       }
-      
-      frame1.draw();
+     
       
       bInvalidate = false;
+    }
+    
+    void show() {
+      if (!bVisible) {
+        bInvalidate = true;
+        bInvalidateTitle = true;
+      }
+      bVisible = true;
     }
 };
 

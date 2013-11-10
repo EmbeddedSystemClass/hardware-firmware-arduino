@@ -9,14 +9,7 @@
 #define ST7735_TFTHEIGHT 160
 
 
-class DisplayManager : public Adafruit_ST7735 {
-
-    // pin 7 - Serial clock out (SCLK)
-    // pin 6 - Serial data out (DIN)
-    // pin 5 - Data/Command select (D/C)
-    // pin 4 - LCD chip select (CS)
-    // pin 3 - LCD reset (RST)
-  
+class DisplayManager : public Adafruit_ST7735 {  
   public:    
   
     DisplayManager() : Adafruit_ST7735(10, 9, 8) {
@@ -25,7 +18,7 @@ class DisplayManager : public Adafruit_ST7735 {
     void beginDisplay() {
        // Initialize Display
       initR(INITR_BLACKTAB);
-      setRotation(0);
+      setRotation(1);
       clearDisplay();   // clears the screen and buffer
     }
     
@@ -42,7 +35,7 @@ class DisplayManager : public Adafruit_ST7735 {
     
     void displayText_f(byte x, byte y, byte fontSize, uint16_t textColor, uint16_t backColor, const char *pFlashStr) {
       setTextWrap(false);
-      setTextColor(textColor);
+      setTextColor(textColor, backColor);
       setTextSize(fontSize);
       
       for (byte i = 0; (const char)(pgm_read_byte(&pFlashStr[i])) && i < 40; i++) {

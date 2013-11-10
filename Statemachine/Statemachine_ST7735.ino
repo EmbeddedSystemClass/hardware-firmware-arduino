@@ -52,6 +52,7 @@ void loop() {
 
 
 byte showMenu(byte input) {
+  MenuScreen.show();
   MenuScreen.draw();
   return MenuScreen.input(input);
 }
@@ -106,10 +107,12 @@ byte exitDateTimeMenu(byte input) {
 }
 
 byte mainScreen(byte input) {
+  MainScreen.show();
+  
   MainScreen.draw();
   
   if (input == KEY_ENTER) {
-    Display.clearDisplay();
+    MainScreen.hide();
     return ST_MAIN_MENU;
   }  
   return ST_MAIN;
