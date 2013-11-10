@@ -1,11 +1,11 @@
 // Charts ****************************************************************
 
 #define TEMP_CHART_COUNT  24
-#define DISPLAYHEIGHT     48
-#define DISPLAYWIDTH      84
+#define DISPLAYHEIGHT     ST7735_TFTWIDTH
+#define DISPLAYWIDTH      ST7735_TFTHEIGHT
 #define MARGIN		   8
-#define CHARTHEIGHT       47
-#define CHARTWIDTH        76
+#define CHARTHEIGHT       120
+#define CHARTWIDTH        150
 #define CHART_X            8
 #define CHART_Y            0
 

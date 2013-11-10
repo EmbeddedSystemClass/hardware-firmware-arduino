@@ -113,7 +113,9 @@ class Frame : public Component {
      y = py;
      w = pw;
      h = ph;
-     bInvalidate = !(x == oldX && y == oldY && w == oldW && h == oldH);
+     if (x != oldX || y != oldY || w != oldW || h != oldH) {
+       bInvalidate = true;
+     }
    }
    
    void draw() {
@@ -146,7 +148,7 @@ class MainScreen : public Screen {
         Display.displayText_f(0, 0, 2, ST7735_YELLOW, BACKCOLOR, PSTR("App Test"));
       }
       
-      if (Events.bT1000MS) {
+      if (bInvalidate || Events.bT1000MS) {
         char time[9]= { "00:00:00" };  
         itochars(rtc.getHours(), &time[0], 2);
         itochars(rtc.getMinutes(), &time[3], 2);
@@ -165,81 +167,89 @@ MainScreen MainScreen;
 
 class MenuScreen : public Screen {
   private:
-    byte menuState;
+    byte selected;  // selected menu item
+    byte count;     // number of menu items
     
   public: 
-    unsigned bInvalidateTitle:1;  
-    Frame frame1;
+    unsigned bInvalidateText:1;  
+    Frame selectedFrame;
     
   public:
-    MenuScreen() {
-      bInvalidateTitle = true;
-    }
-    
     byte input(byte input) {      
       if (Events.bBtn2) {
-        menuState=StateMachine.getNextState(menuState, KEY_PLUS);
+        selected %= count;
+        selected++;
         bInvalidate = true;
       } else if (Events.bBtn1) {
-        StateMachine.stateGroup = menuState;
-        menuState = 0;
+        StateMachine.stateGroup = getSelectedState();
         hide();
         return StateMachine.stateGroup;
       } 
       
       return StateMachine.state;
-    }
+    }    
     
     void draw() {
-      if (!bInvalidate) { 
+      if (!bInvalidate) {
         return;
       }
-        
-      byte i;
-      byte y = 0;
+      
+      if (bInvalidateText) { 
+        drawMenu();
+        bInvalidateText = false;
+        selectedFrame.bInvalidate = true;
+      }
+      
+      selectedFrame.setRect(0, 4 + selected * TEXTHEIGHT * 2 + selected * 4, ST7735_TFTHEIGHT, TEXTHEIGHT * 2 + 4);
+      selectedFrame.draw();
+    }
+    
+    void drawMenu() {        
+      byte y = 2;
       byte group;
       byte state;
       
-      PGM_P statetext;
+      PGM_P menuText;
       
-      for (i=0; (group = pgm_read_byte(&menu_state[i].group)); i++) {
+      count = 0;
+      
+      for (byte i=0; (group = pgm_read_byte(&menu_state[i].group)); i++) {
         if (group == StateMachine.stateGroup) {
           state = pgm_read_byte(&menu_state[i].state);
-          statetext = (PGM_P)pgm_read_word(&menu_state[i].pText);
-          if (statetext != NULL) {
+          menuText = (PGM_P)pgm_read_word(&menu_state[i].pText);
+          if (menuText != NULL) {
             if (state == group) {
-              if (bInvalidateTitle) {
-                Display.fillRect(0, y, ST7735_TFTHEIGHT, TEXTHEIGHT + 10, ST7735_WHITE);
-                Display.displayText_f(4, y + 2, 2, BACKCOLOR, ST7735_WHITE, statetext);
-                bInvalidateTitle = false;
-              }
-              y += 3;
+              Display.fillRect(0, 0, ST7735_TFTHEIGHT, TEXTHEIGHT + 10, ST7735_WHITE);  // draw menu title
+              Display.displayText_f(4, y, 2, BACKCOLOR, ST7735_WHITE, menuText);              
+              y += 4;
             } else {
-              if (menuState == 0) {
-                menuState = state;              
-              }
-              if (menuState == state) {
-                frame1.setRect(0, y + 3, ST7735_TFTHEIGHT, TEXTHEIGHT * 2 + 3);
-                frame1.bInvalidate = true;
-                frame1.draw();
-                Display.displayText_f(4, y + 5, 2, ST7735_YELLOW, BACKCOLOR, statetext);
-              } else {
-                Display.displayText_f(4, y + 5, 2, statetext);
-              }
+              Display.displayText_f(4, y, 2, menuText);  // draw menu item
+              count++;
             }
-            y += TEXTHEIGHT * 2 + 3;
+            y += TEXTHEIGHT * 2 + 4;
           }
         }
       }
-     
       
-      bInvalidate = false;
+      selected = 1;
+    }
+    
+    byte getSelectedState() {
+      byte group;
+            
+      for (byte i = 0; (group = pgm_read_byte(&menu_state[i].group)); i++) {
+        if (group == StateMachine.stateGroup) {
+          return pgm_read_byte(&menu_state[i + selected].state);
+        }
+      }
+      
+      return 0;
     }
     
     void show() {
       if (!bVisible) {
         bInvalidate = true;
-        bInvalidateTitle = true;
+        bInvalidateText = true;
       }
       bVisible = true;
     }

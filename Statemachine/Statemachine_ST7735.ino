@@ -50,52 +50,10 @@ void loop() {
   ShtMeasure.doMeasure();
 }
 
-
 byte showMenu(byte input) {
   MenuScreen.show();
   MenuScreen.draw();
   return MenuScreen.input(input);
-}
-
-byte _showMenu(byte input) {
-  byte i, j;
-  byte y = 0;
-  byte stateTemp = 0;
-  PGM_P statetext;
-  
-  static byte menuState;
-  
-  //Display.clearDisplay();
-  
-  for (i=0; (j=pgm_read_byte(&menu_state[i].group)); i++) {
-    if (j == StateMachine.stateGroup) {
-      stateTemp = pgm_read_byte(&menu_state[i].state);
-      statetext = (PGM_P)pgm_read_word(&menu_state[i].pText);
-      if (statetext != NULL) {
-        if (menuState == 0) {
-          menuState = stateTemp;
-        }
-        Display.displayText_f(2, y * (TEXTHEIGHT + 1) + 1, 1, statetext);
-        if (menuState == stateTemp) {
-          Display.drawRect(0, y * (TEXTHEIGHT + 1), ST7735_TFTWIDTH, 10, BLACK);
-        }
-        y++;
-      }
-    }
-  }
-  
-  Display.display();
-  
-  if (Events.bBtn2) {
-    menuState=StateMachine.getNextState(menuState, KEY_PLUS);
-  } else if (Events.bBtn1) {
-    stateTemp = menuState;
-    StateMachine.stateGroup = menuState;
-    menuState = 0;
-    return stateTemp;
-  }
-  
-  return StateMachine.state;
 }
 
 byte exitMainMenu(byte input) {
@@ -176,8 +134,8 @@ byte temperatureChart(byte input) {
   
   
   TemperatureChart.drawTempChart(input);
-
-  Display.display();
+  
+  return ST_TEMP_CHART;
 }
 
 void logError(String s) {
