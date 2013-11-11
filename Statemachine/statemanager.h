@@ -1,3 +1,6 @@
+#ifndef _STATEMACHINEH_
+#define _STATEMACHINEH_
+
 // Statemachine **********************************************************
 
 class StateMachineManager {
@@ -69,3 +72,5 @@ class StateMachineManager {
 };
 
 StateMachineManager StateMachine;
+
+#endif

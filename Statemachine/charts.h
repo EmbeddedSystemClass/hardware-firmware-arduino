@@ -1,3 +1,6 @@
+#ifndef _CHARTSH_
+#define _CHARTSH_
+
 // Charts ****************************************************************
 
 #define TEMP_CHART_COUNT  24
@@ -86,3 +89,5 @@ class TemperatureChartDiagram : public Chart {
 };
 
 TemperatureChartDiagram TemperatureChart;
+
+#endif

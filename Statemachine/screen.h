@@ -1,3 +1,6 @@
+#ifndef _SCREENH_
+#define _SCREENH_
+
 #define BACKCOLOR ST7735_BLACK
 
 class Screen {
@@ -44,52 +47,6 @@ class Component {
       bVisible = state;
     }
 };
-
-class Label : public Component {
-    private:
-      byte oldX;
-      byte oldY;
-      byte oldLength;
-    public:
-      char *text;
-      byte x;
-      byte y;
-      byte textSize;
-      
-    public:
-      Label() : Component() {
-        textSize = 1;
-      }
-    
-      void setText(char* newtext) {
-        bInvalidate = true;
-        text = newtext;
-      }
-      
-      void setText(byte px, byte py, char* newText) {
-        x = px;
-        y = py;
-        oldLength = strlen(text);
-        text = newText;
-        bInvalidate = true;
-      }
-    
-      void draw() {
-        if (!bInvalidate)
-          return;
-        
-        Display.fillRect(oldX, oldY, oldLength * TEXTWIDTH, textSize * TEXTHEIGHT, BACKCOLOR);
-        
-        if (bVisible)  
-          Display.displayText(x, y, textSize, text, ST7735_YELLOW, BACKCOLOR);          
-        
-        oldX = x;
-        oldY = y;
-        
-        bInvalidate = false;
-      }
-};
-
 
 class Frame : public Component {
   private:
@@ -253,6 +210,85 @@ class MenuScreen : public Screen {
       }
       bVisible = true;
     }
+    
+    static byte handleMenu(byte input) {
+    }
 };
 
 MenuScreen MenuScreen;
+
+class EditTimeScreen : public Screen {
+  public:
+    EditTime edTime;
+
+  public:
+    byte editTime(byte input) {      
+      if (!edTime.editTime(input)) {
+        hide();
+        return ST_DATE_TIME_MENU;
+      }
+      
+      return StateMachine.state;
+    } 
+    
+    void show() {
+      if (!bVisible) {
+        bInvalidate = true;        
+        edTime.bInvalidateText = true;
+        edTime.bInvalidatePos = true;
+      }
+      bVisible = true;
+    }
+    
+    void draw() {
+      if (!bInvalidate) {
+        return;
+      }
+      
+      Display.fillRect(0, 0, ST7735_TFTHEIGHT, TEXTHEIGHT + 10, ST7735_WHITE);  // draw menu title
+      Display.displayText_f(4, 2, 2, BACKCOLOR, ST7735_WHITE, PSTR("SET TIME"));
+      
+      bInvalidate = false;    
+    }
+};
+
+EditTimeScreen EditTimeScreen;
+
+class EditDateScreen : public Screen {
+  public:
+    EditDate edDate;
+
+  public:
+    byte editDate(byte input) {      
+      if (!edDate.editDate(input)) {
+        hide();
+        return ST_DATE_TIME_MENU;
+      }
+      
+      return StateMachine.state;
+    } 
+    
+    void show() {
+      if (!bVisible) {
+        bInvalidate = true;        
+        edDate.bInvalidateText = true;
+        edDate.bInvalidatePos = true;
+      }
+      bVisible = true;
+    }
+    
+    void draw() {
+      if (!bInvalidate) {
+        return;
+      }
+      
+      Display.fillRect(0, 0, ST7735_TFTHEIGHT, TEXTHEIGHT + 10, ST7735_WHITE);  // draw menu title
+      Display.displayText_f(4, 2, 2, BACKCOLOR, ST7735_WHITE, PSTR("SET Date"));
+      
+      bInvalidate = false;    
+    }
+};
+
+EditDateScreen EditDateScreen;
+
+#endif

@@ -1,3 +1,5 @@
+#ifndef _MEASUREH_
+#define _MEASUREH_
 
 Sensirion sht = Sensirion(8, 9);
 
@@ -43,3 +45,5 @@ class ShtMeasureManager {
 };
 
 ShtMeasureManager ShtMeasure;
+
+#endif

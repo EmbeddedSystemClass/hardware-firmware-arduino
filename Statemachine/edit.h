@@ -1,16 +1,28 @@
+#ifndef _EDITH_
+#define _EDITH_
+
 // Editors ***************************************************************
+
+#define BACKCOLOR ST7735_BLACK
 
 class Edit {
   public:
+    unsigned bInvalidateText:1;
+    unsigned bInvalidatePos:1;
+    
     byte pos;
     
   public:
     Edit(): pos(0) {
+      bInvalidateText = true;
+      bInvalidatePos = true;
     }
     
     byte editStr(byte x, byte y, PGM_P pMask, char buffer[], char length, byte key) {      
       if (key == KEY_ENTER)
       {
+        bInvalidatePos = true;
+        
         length--;
         if (++pos >= length)
         {
@@ -35,22 +47,28 @@ class Edit {
         {   
           char c = buffer[pos] + 1;
           buffer[pos] = validateStr(buffer, pos, c);
-        }		
+        }
+        bInvalidateText = true;
       }
       
+      byte y2 = y + 4;
+      byte y3 = y2 + TEXTHEIGHT * 2  + 2;
       
-      
-      Display.setTextColor(BLACK, WHITE);
-      
-      if (Events.bTP500MS) {
-        Display.setCursor(x + pos * TEXTWIDTH, y + 2);
-        Display.write('_');
+      if (bInvalidatePos) {
+        Display.drawLine(x, y, x + strlen(buffer) * TEXTWIDTH * 2, y, BACKCOLOR);      
+        Display.drawLine(x, y3, x + strlen(buffer) * TEXTWIDTH * 2, y3, BACKCOLOR);
+
+        Display.drawLine(x + pos * TEXTWIDTH * 2, y, x + (pos + 1) * TEXTWIDTH * 2 - 2, y, ST7735_YELLOW);
+        Display.drawLine(x + pos * TEXTWIDTH * 2, y3, x + (pos + 1) * TEXTWIDTH * 2 - 2, y3, ST7735_YELLOW);
+        
+        bInvalidatePos = false;
       }
       
-      Display.setTextSize(1);
-      Display.setCursor(x, y);
-      Display.println(buffer);
-              
+      if (bInvalidateText) {
+        Display.displayText(x, y2, 2, buffer, ST7735_YELLOW, BACKCOLOR);
+        bInvalidateText = false;
+      }
+      
       return true;
     }
     
@@ -69,7 +87,7 @@ class EditTime : public Edit {
     }
   
     byte editTime(byte input) {
-      if (!editStr(10, 15, PSTR("__:__"), buffer, BUFFER_SIZE, input)) {
+      if (!editStr(10, 30, PSTR("__:__"), buffer, BUFFER_SIZE, input)) {
         byte h = CHARTONUM(buffer[0], 10) + CHARTONUM(buffer[1], 1);
         byte m = CHARTONUM(buffer[3], 10) + CHARTONUM(buffer[4], 1);
         rtc.setTime(h, m, 0);
@@ -103,7 +121,7 @@ class EditDate : public Edit {
     }
   
     byte editDate(byte input) {
-      if (!editStr(0, 22, PSTR("____.__.__"), buffer, BUFFER_SIZE, input)) {
+      if (!editStr(10, 30, PSTR("____.__.__"), buffer, BUFFER_SIZE, input)) {
         int y = CHARTONUM(buffer[0], 1000) + CHARTONUM(buffer[1], 100) + CHARTONUM(buffer[2], 10) + CHARTONUM(buffer[3], 1);
         byte m = CHARTONUM(buffer[5], 10) + CHARTONUM(buffer[6], 1);
         byte d = CHARTONUM(buffer[8], 10) + CHARTONUM(buffer[9], 1);
@@ -154,3 +172,5 @@ class EditYesNoOption : public EditOption {
 };
 
 EditYesNoOption EditYesNo;
+
+#endif

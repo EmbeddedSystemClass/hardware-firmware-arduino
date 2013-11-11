@@ -23,6 +23,9 @@
 #include "edit.h"
 #include "charts.h"
 #include "measure.h"
+
+#include "menu.h"
+
 #include "statemanager.h"
 #include "screen.h"
 
@@ -96,33 +99,17 @@ byte setLogging(byte input) {
 }
 
 byte setRtcTime(byte input) {
-  //Display.clearDisplay();
-  Display.displayText_f(0,0,1,PSTR("Set RTC Time"));
-  
-  static EditTime edTime;
-      
-  if (!edTime.editTime(input)) {
-    return ST_DATE_TIME_MENU;
-  }
-
-  Display.display();
-    
-  return StateMachine.state;
+  EditTimeScreen.show();
+  byte r = EditTimeScreen.editTime(input);
+  EditTimeScreen.draw();
+  return r;
 }
 
 byte setRtcDate(byte input) {
-  //Display.clearDisplay();
-  Display.displayText_f(0,0,1,PSTR("Set RTC Date"));
-  
-  static EditDate edDate;
-       
-  if (!edDate.editDate(input)) {
-    return ST_DATE_TIME_MENU;
-  }
-
-  Display.display();
-    
-  return StateMachine.state;
+  EditDateScreen.show();
+  byte r = EditDateScreen.editDate(input);
+  EditDateScreen.draw();
+  return r;  
 }
 
 byte temperatureChart(byte input) {

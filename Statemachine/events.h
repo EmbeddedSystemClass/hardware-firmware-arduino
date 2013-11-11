@@ -1,3 +1,6 @@
+#ifndef _EVENTSH_
+#define _EVENTSH_
+
 // Events ****************************************************************
 
 #define BTN1 0
@@ -89,3 +92,5 @@ class MeasureEventManager {
 };
 
 MeasureEventManager MeasureEvents;
+
+#endif

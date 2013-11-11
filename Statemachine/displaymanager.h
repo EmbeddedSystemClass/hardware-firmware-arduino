@@ -1,3 +1,6 @@
+#ifndef _DISPLAYMANAGERH_
+#define _DISPLAYMANAGERH_
+
 // Display Nokia 5110 ****************************************************
 
 #define TEXTHEIGHT 8
@@ -61,3 +64,5 @@ class DisplayManager : public Adafruit_ST7735 {
 };
 
 DisplayManager Display;
+
+#endif
