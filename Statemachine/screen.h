@@ -291,4 +291,36 @@ class EditDateScreen : public Screen {
 
 EditDateScreen EditDateScreen;
 
+class LogSettingsScreen : public Screen {
+  public:
+    EditYesNoOption logOption;
+  
+  public:
+    byte edit(byte input) {
+      return logOption.getOption(input);
+    }
+    
+    void show() {
+      if (!bVisible) {
+        bInvalidate = true;        
+        logOption.bInvalidate = true;        
+      }
+      bVisible = true;
+    }
+    
+    void draw() {
+      if (!bInvalidate) {
+        return;
+      }
+      
+      Display.fillRect(0, 0, ST7735_TFTHEIGHT, TEXTHEIGHT + 10, ST7735_WHITE);  // draw menu title
+      Display.displayText_f(4, 2, 2, BACKCOLOR, ST7735_WHITE, PSTR("SET Logging"));
+      
+      bInvalidate = false;    
+    }
+    
+};
+
+LogSettingsScreen LogSettingsScreen;
+
 #endif

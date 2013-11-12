@@ -80,16 +80,9 @@ byte mainScreen(byte input) {
 }
 
 byte setLogging(byte input) {
-  static byte logState;
+  LogSettingsScreen.show();
   
-  if (logState == 0) {
-    logState = ST_YES;
-  }
-  
-  //Display.clearDisplay();
-  Display.displayText_f(0,  0, 1, PSTR("Reset Log"));
-  EditYesNo.getOption(input);  
-  Display.display();
+  LogSettingsScreen.edit(input);
   
   if (input == KEY_ENTER) {
     return ST_MAIN; 

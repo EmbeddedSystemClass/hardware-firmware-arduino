@@ -141,19 +141,30 @@ class EditDate : public Edit {
 
 class EditOption {
   public:
+    unsigned bInvalidateSelection:1;
+    unsigned bInvalidateText:1;
     byte selected;
 
   public:
+	  EditOption() {
+      bInvalidateSelection = true;
+      bInvalidateText = true;
+    }
+    
     void setOptions(byte x, byte y, char* options[], byte count, byte width, byte input) {
-      for (int i=0; i < count; i++) {
-        Display.displayText(x + 2, y + i * (TEXTHEIGHT + 2) + 2, 1, options[i]);        
-      }
-
       if (input == KEY_PLUS) {
         selected = selected + 1 < count ? selected + 1 :  0;
+        bInvalidateSelection = true;
       }
       
-      Display.drawRect(x, y + selected * (TEXTHEIGHT + 2), width + 3, TEXTHEIGHT + 3, BLACK);
+      if (bInvalidateSelection) {        
+        Display.drawRect(x, y + selected * (TEXTHEIGHT * 2 + 2), width + 3, TEXTHEIGHT * 2 + 3, BLACK);
+      }
+      if (invalidateText) {
+        for (int i=0; i < count; i++) {
+            Display.displayText(x + 2, y + i * (TEXTHEIGHT + 2) + 2, 1, ST7735_YELLOW, BACKCOLOR, options[i]);        
+        }
+      }
     }
 };
 
@@ -166,7 +177,7 @@ class EditYesNoOption : public EditOption {
             return selected;
           }
           
-          setOptions(5, 15, OPT, 2, TEXTWIDTH * 3, input);
+          setOptions(5, 30, OPT, 2, TEXTWIDTH * 3, input);
           return 0;
       }
 };
