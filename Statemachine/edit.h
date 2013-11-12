@@ -146,7 +146,7 @@ class EditOption {
     byte selected;
 
   public:
-	  EditOption() {
+    EditOption() {
       bInvalidateSelection = true;
       bInvalidateText = true;
     }
@@ -157,13 +157,19 @@ class EditOption {
         bInvalidateSelection = true;
       }
       
-      if (bInvalidateSelection) {        
-        Display.drawRect(x, y + selected * (TEXTHEIGHT * 2 + 2), width + 3, TEXTHEIGHT * 2 + 3, BLACK);
-      }
-      if (invalidateText) {
+      if (bInvalidateSelection) {
         for (int i=0; i < count; i++) {
-            Display.displayText(x + 2, y + i * (TEXTHEIGHT + 2) + 2, 1, ST7735_YELLOW, BACKCOLOR, options[i]);        
+          Display.drawRect(x, y + i * (TEXTHEIGHT * 2 + 2) , width + 8, TEXTHEIGHT * 2 + 4, BACKCOLOR);
         }
+        Display.drawRect(x, y + selected * (TEXTHEIGHT * 2 + 2), width + 8, TEXTHEIGHT * 2 + 4, ST7735_YELLOW);
+        bInvalidateSelection = false;
+      }
+      if (bInvalidateText) {
+        y += 3;
+        for (int i=0; i < count; i++) {
+            Display.displayText(x + 4, y + i * (TEXTHEIGHT * 2 + 2), 2, options[i], ST7735_YELLOW, BACKCOLOR);
+        }
+        bInvalidateText = false;
       }
     }
 };
@@ -177,7 +183,7 @@ class EditYesNoOption : public EditOption {
             return selected;
           }
           
-          setOptions(5, 30, OPT, 2, TEXTWIDTH * 3, input);
+          setOptions(5, 30, OPT, 2, TEXTWIDTH * 2 * 3, input);
           return 0;
       }
 };

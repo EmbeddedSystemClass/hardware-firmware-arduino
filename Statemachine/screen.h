@@ -22,6 +22,9 @@ class Screen {
       }
       bVisible = true;
     }
+    
+    virtual byte execute(byte input) {
+    }
 };
 
 class Component {
@@ -106,17 +109,38 @@ class MainScreen : public Screen {
       }
       
       if (bInvalidate || Events.bT1000MS) {
-        char time[9]= { "00:00:00" };  
-        itochars(rtc.getHours(), &time[0], 2);
-        itochars(rtc.getMinutes(), &time[3], 2);
-        itochars(rtc.getSeconds(), &time[6], 2);  
+        char buffer[9]= { "00:00:00" };  
+        itochars(rtc.getHours(), &buffer[0], 2);
+        itochars(rtc.getMinutes(), &buffer[3], 2);
+        itochars(rtc.getSeconds(), &buffer[6], 2);  
         
-        Display.displayText(5, 30, 2, time, ST7735_GREEN, BACKCOLOR);
+        Display.displayText(5, 30, 2, buffer, ST7735_GREEN, BACKCOLOR);
+        
+        itochars(ShtMeasure.temperature, buffer, 2);
+        strcpy(&buffer[2], " C");
+        Display.displayText(5, 50, 2, buffer, ST7735_RED, BACKCOLOR);
+        
+        itochars(ShtMeasure.humidity, buffer, 2);
+        strcpy(&buffer[2], " %");
+        Display.displayText(5, 70, 2, buffer, ST7735_RED, BACKCOLOR);
       }
       
       bInvalidate = false;
     }
     
+    byte execute(byte input) {
+      if (!bVisible) {
+        show();
+      }
+      
+      draw();
+  
+      if (input == KEY_ENTER) {
+        hide();
+        return ST_MAIN_MENU;
+      }  
+      return ST_MAIN;
+    }
 };
 
 MainScreen MainScreen;
@@ -131,21 +155,7 @@ class MenuScreen : public Screen {
     unsigned bInvalidateText:1;  
     Frame selectedFrame;
     
-  public:
-    byte input(byte input) {      
-      if (Events.bBtn2) {
-        selected %= count;
-        selected++;
-        bInvalidate = true;
-      } else if (Events.bBtn1) {
-        StateMachine.stateGroup = getSelectedState();
-        hide();
-        return StateMachine.stateGroup;
-      } 
-      
-      return StateMachine.state;
-    }    
-    
+  public:   
     void draw() {
       if (!bInvalidate) {
         return;
@@ -211,7 +221,27 @@ class MenuScreen : public Screen {
       bVisible = true;
     }
     
-    static byte handleMenu(byte input) {
+    byte execute(byte input) {
+      if (!bVisible) {
+        show();
+      }
+  
+      if (input == KEY_PLUS) {
+        selected %= count;
+        selected++;
+        bInvalidate = true;
+      } else if (input == KEY_ENTER) {
+        StateMachine.stateGroup = getSelectedState();
+        hide();
+        return StateMachine.stateGroup;
+      } 
+      
+      draw();
+      
+      return StateMachine.state;
+    }
+    
+    static byte xy(byte intput) {
     }
 };
 
@@ -250,6 +280,16 @@ class EditTimeScreen : public Screen {
       
       bInvalidate = false;    
     }
+    
+    byte execute(byte input) {
+      if (!bVisible) {
+        show();
+      }     
+      
+      draw();
+      
+      return editTime(input);      
+    }
 };
 
 EditTimeScreen EditTimeScreen;
@@ -287,6 +327,16 @@ class EditDateScreen : public Screen {
       
       bInvalidate = false;    
     }
+    
+    byte execute(byte input) {
+      if (!bVisible) {
+        show();
+      }     
+      
+      draw();
+      
+      return editDate(input);      
+    }
 };
 
 EditDateScreen EditDateScreen;
@@ -295,15 +345,12 @@ class LogSettingsScreen : public Screen {
   public:
     EditYesNoOption logOption;
   
-  public:
-    byte edit(byte input) {
-      return logOption.getOption(input);
-    }
-    
+  public:    
     void show() {
       if (!bVisible) {
         bInvalidate = true;        
-        logOption.bInvalidate = true;        
+        logOption.bInvalidateText = true;
+        logOption.bInvalidateSelection = true;
       }
       bVisible = true;
     }
@@ -314,11 +361,25 @@ class LogSettingsScreen : public Screen {
       }
       
       Display.fillRect(0, 0, ST7735_TFTHEIGHT, TEXTHEIGHT + 10, ST7735_WHITE);  // draw menu title
-      Display.displayText_f(4, 2, 2, BACKCOLOR, ST7735_WHITE, PSTR("SET Logging"));
+      Display.displayText_f(4, 2, 2, BACKCOLOR, ST7735_WHITE, PSTR("Set Logging"));
       
       bInvalidate = false;    
     }
     
+    byte execute(byte input) {
+      if (!bVisible) {
+        show();
+      }     
+      
+      draw();
+      
+      logOption.getOption(input);
+      
+      if (input == KEY_ENTER) {
+        hide();
+        return ST_MAIN_MENU;
+      }
+    }
 };
 
 LogSettingsScreen LogSettingsScreen;

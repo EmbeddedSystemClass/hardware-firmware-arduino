@@ -23,9 +23,7 @@
 #include "edit.h"
 #include "charts.h"
 #include "measure.h"
-
 #include "menu.h"
-
 #include "statemanager.h"
 #include "screen.h"
 
@@ -54,9 +52,7 @@ void loop() {
 }
 
 byte showMenu(byte input) {
-  MenuScreen.show();
-  MenuScreen.draw();
-  return MenuScreen.input(input);
+  return MenuScreen.execute(input);
 }
 
 byte exitMainMenu(byte input) {
@@ -68,41 +64,19 @@ byte exitDateTimeMenu(byte input) {
 }
 
 byte mainScreen(byte input) {
-  MainScreen.show();
-  
-  MainScreen.draw();
-  
-  if (input == KEY_ENTER) {
-    MainScreen.hide();
-    return ST_MAIN_MENU;
-  }  
-  return ST_MAIN;
+  return MainScreen.execute(input);
 }
 
 byte setLogging(byte input) {
-  LogSettingsScreen.show();
-  
-  LogSettingsScreen.edit(input);
-  
-  if (input == KEY_ENTER) {
-    return ST_MAIN; 
-  }
-  
-  return ST_LOGGING;
+  return LogSettingsScreen.execute(input);
 }
 
 byte setRtcTime(byte input) {
-  EditTimeScreen.show();
-  byte r = EditTimeScreen.editTime(input);
-  EditTimeScreen.draw();
-  return r;
+  return EditTimeScreen.execute(input);
 }
 
 byte setRtcDate(byte input) {
-  EditDateScreen.show();
-  byte r = EditDateScreen.editDate(input);
-  EditDateScreen.draw();
-  return r;  
+  return EditDateScreen.execute(input);  
 }
 
 byte temperatureChart(byte input) {

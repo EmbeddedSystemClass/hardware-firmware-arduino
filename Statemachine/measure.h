@@ -1,7 +1,7 @@
 #ifndef _MEASUREH_
 #define _MEASUREH_
 
-Sensirion sht = Sensirion(8, 9);
+Sensirion sht = Sensirion(7, 8);
 
 class ShtMeasureManager {
   private:
@@ -30,6 +30,7 @@ class ShtMeasureManager {
         temperature = (int8_t)sht.calcTemp(rawData);     // Convert raw sensor data
         sht.meas(HUMI, &rawData, NONBLOCK); // Start humi measurement
         //Serial.println("start humi measure");
+        //Serial.println(temperature);
       } 
       else if (bHumiMeasure) 
       {

@@ -14,22 +14,7 @@ byte setRtcDate(byte input);
 byte temperatureChart(byte input);
 void itochars(unsigned int value, char buffer[], byte digits);
 
-// States, Menu ********************************************************
 
-typedef struct PROGMEM
-{
-    byte state;
-    byte input;
-    byte nextstate;
-} MENU_NEXTSTATE;
-
-typedef struct PROGMEM
-{
-    byte group;
-    byte state;
-    PGM_P pText;
-    byte (*pFunc)(byte input);
-} MENU_STATE;
 
 #define KEY_NONE  1
 #define KEY_PLUS  2

@@ -1,6 +1,23 @@
 #ifndef _MENUH_
 #define _MENUH_
 
+// States, Menu ********************************************************
+
+typedef struct PROGMEM
+{
+    byte state;
+    byte input;
+    byte nextstate;
+} MENU_NEXTSTATE;
+
+typedef struct PROGMEM
+{
+    byte group;
+    byte state;
+    PGM_P pText;
+    byte (*pFunc)(byte input);
+} MENU_STATE;
+
 const char MT_MAIN[] PROGMEM          = "Main Menu";
 const char MT_DATE_TIME[] PROGMEM     = "Date Time";
 const char MT_DATE[] PROGMEM          = "Date";
