@@ -16,6 +16,7 @@ class ShtMeasureManager {
     uint8_t humidity;
 
   void doMeasure() {
+    bReady = false;
     if (!bMeasure && MeasureEvents.bShtMeasure) {      // Time for new measurements?
       bMeasure = true;
       bTempMeasure = true;

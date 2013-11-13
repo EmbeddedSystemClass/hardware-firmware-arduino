@@ -25,6 +25,7 @@
 #include "measure.h"
 #include "menu.h"
 #include "statemanager.h"
+#include "clock.h"
 #include "screen.h"
 
 void setup()

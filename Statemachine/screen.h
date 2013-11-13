@@ -96,8 +96,29 @@ class Frame : public Component {
    }
 };
 
+class TempGauge {
+  public:
+    
+  public:
+    TempGauge() {
+    }
+    
+    void draw(byte x, byte y, byte value) {
+      
+      Display.fillCircle(x + 3, y, 3, ST7735_WHITE);
+      Display.fillRect(x, y , 7, 40, ST7735_WHITE);
+      Display.fillCircle(x + 3, y + 46, 8, ST7735_WHITE);
+      
+      Display.fillRect(x + 2, y + 2, 3, 40, ST7735_RED);
+      Display.fillCircle(x + 3, y + 46, 6, ST7735_RED);
+      
+      Display.fillRect(x + 2, y, 3, 40 - value, ST7735_BLACK);
+    }
+};
+
 class MainScreen : public Screen {
-  
+  public:
+    TempGauge tempGauge;
   public:
     MainScreen() {      
     }
@@ -108,21 +129,25 @@ class MainScreen : public Screen {
         Display.displayText_f(0, 0, 2, ST7735_YELLOW, BACKCOLOR, PSTR("App Test"));
       }
       
+      char buffer[9]= { "00:00:00" };  
       if (bInvalidate || Events.bT1000MS) {
-        char buffer[9]= { "00:00:00" };  
         itochars(rtc.getHours(), &buffer[0], 2);
         itochars(rtc.getMinutes(), &buffer[3], 2);
         itochars(rtc.getSeconds(), &buffer[6], 2);  
         
         Display.displayText(5, 30, 2, buffer, ST7735_GREEN, BACKCOLOR);
-        
+      }
+      
+      if (bInvalidate || ShtMeasure.bReady) {        
         itochars(ShtMeasure.temperature, buffer, 2);
         strcpy(&buffer[2], " C");
-        Display.displayText(5, 50, 2, buffer, ST7735_RED, BACKCOLOR);
+        Display.displayText(25, 60, 2, buffer, ST7735_RED, BACKCOLOR);
         
         itochars(ShtMeasure.humidity, buffer, 2);
         strcpy(&buffer[2], " %");
-        Display.displayText(5, 70, 2, buffer, ST7735_RED, BACKCOLOR);
+        Display.displayText(25, 80, 2, buffer, ST7735_RED, BACKCOLOR);
+        
+        tempGauge.draw(10, 60, ShtMeasure.temperature);
       }
       
       bInvalidate = false;
@@ -160,7 +185,6 @@ class MenuScreen : public Screen {
       if (!bInvalidate) {
         return;
       }
-      
       if (bInvalidateText) { 
         drawMenu();
         bInvalidateText = false;
