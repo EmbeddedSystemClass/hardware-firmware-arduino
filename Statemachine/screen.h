@@ -120,6 +120,7 @@ class TempGauge {
 class MainScreen : public Screen {
   public:
     TempGauge tempGauge;
+    TempGauge outTempGauge;
   public:
     MainScreen() {      
     }
@@ -149,6 +150,14 @@ class MainScreen : public Screen {
         Display.displayText(25, 80, 2, buffer, ST7735_RED, BACKCOLOR);
         
         tempGauge.draw(10, 60, ShtMeasure.temperature);
+      }
+      
+      if (bInvalidate || DS1821.bReady) {        
+        itochars(DS1821.temperature, buffer, 2);
+        strcpy(&buffer[2], " C");
+        Display.displayText(105, 60, 2, buffer, ST7735_RED, BACKCOLOR);
+        
+        outTempGauge.draw(90, 60, DS1821.temperature);
       }
       
       bInvalidate = false;

@@ -15,7 +15,7 @@
 #include <Sensirion.h>
 #include <avr/pgmspace.h>
 #include <swRTC.h>
-
+#include <OneWire.h>
 
 #include "main.h"
 #include "events.h"
@@ -50,6 +50,7 @@ void loop() {
   MeasureEvents.doHandleEvents();
   StateMachine.doHandleStates();
   ShtMeasure.doMeasure();
+  DS1821.doMeasure();
 }
 
 byte showMenu(byte input) {
