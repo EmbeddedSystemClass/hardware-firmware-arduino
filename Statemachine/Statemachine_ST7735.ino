@@ -81,16 +81,7 @@ byte setRtcDate(byte input) {
 }
 
 byte temperatureChart(byte input) {
-  
-  //Display.clearDisplay(); 
-  
-  for (int8_t i= -5; i < 24-5; i++)
-    TemperatureChart.assignValue(i);
-  
-  
-  TemperatureChart.drawTempChart(input);
-  
-  return ST_TEMP_CHART;
+  return TempChartScreen.execute(input);
 }
 
 void logError(String s) {

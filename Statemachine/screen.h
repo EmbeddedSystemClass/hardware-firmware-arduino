@@ -104,15 +104,16 @@ class TempGauge {
     }
     
     void draw(byte x, byte y, byte value) {
-      
       Display.fillCircle(x + 3, y, 3, ST7735_WHITE);
       Display.fillRect(x, y , 7, 40, ST7735_WHITE);
       Display.fillCircle(x + 3, y + 46, 8, ST7735_WHITE);
       
-      Display.fillRect(x + 2, y + 2, 3, 40, ST7735_RED);
-      Display.fillCircle(x + 3, y + 46, 6, ST7735_RED);
+      uint16_t color = value > 20 ? ST7735_RED : ST7735_BLUE;
       
-      Display.fillRect(x + 2, y, 3, 40 - value, ST7735_BLACK);
+      Display.fillRect(x + 2, y + 2, 3, 40, color);
+      Display.fillCircle(x + 3, y + 46, 6, color);
+      
+      Display.fillRect(x + 2, y, 3, map(value, -20, 40, 0, 40), ST7735_BLACK);
     }
 };
 
@@ -407,5 +408,34 @@ class LogSettingsScreen : public Screen {
 };
 
 LogSettingsScreen LogSettingsScreen;
+
+class TempChartScreen : public Screen {
+  public:
+    TemperatureChartDiagram chart;
+  public:
+    byte execute(byte input) {
+      if (!bVisible) {
+        show();
+      }  
+      
+      if (bInvalidate) {        
+        for (int8_t i= 0; i < 24; i++)
+          chart.assignValue(random(-20, 30));
+    
+        chart.drawTempChart(input);
+        
+        bInvalidate = false;
+      }
+      
+      if (input == KEY_ENTER) {
+        hide();
+        return ST_MAIN_MENU;
+      }
+        
+      return StateMachine.state;
+    }
+};
+
+TempChartScreen TempChartScreen;
 
 #endif

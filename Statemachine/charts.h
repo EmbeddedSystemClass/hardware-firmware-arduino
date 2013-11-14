@@ -4,17 +4,18 @@
 // Charts ****************************************************************
 
 #define TEMP_CHART_COUNT  24
+
 #define DISPLAYHEIGHT     ST7735_TFTWIDTH
 #define DISPLAYWIDTH      ST7735_TFTHEIGHT
 #define MARGIN		   8
-#define CHARTHEIGHT       120
-#define CHARTWIDTH        150
-#define CHART_X            8
-#define CHART_Y            0
+#define CHARTHEIGHT       112
+#define CHARTWIDTH        138
+#define CHART_X            22
+#define CHART_Y            12
 
-class Chart {  
+class Chart {    
   public:
-    void drawChart(int8_t values[], byte count, int rangeMin, int rangeMax) {            
+    void drawChart(int8_t values[], byte count, int rangeMin, int rangeMax) {
       int8_t min = rangeMax;
       int8_t max = rangeMin;
 			
@@ -38,33 +39,42 @@ class Chart {
         }
       }
       
-      // draw axis ***********************************
-      // y-axis max, min
-//      char buffer[4] = { "000" };
-//      itochars(max, buffer, 3);
-//      Display.displayText(0, 0, 1, buffer);
-//      itochars(abs(min), buffer, 3);
-//      Display.displayText(0, DISPLAYHEIGHT-TEXTHEIGHT, 1, buffer);
-
       // range ***************************************
       byte range = max - min;
+      byte zero = map(0, min, max, CHARTHEIGHT, CHART_Y);
+      
+      // draw values *********************************
+      byte w = (CHARTWIDTH) / count - 1;
+      for (byte i = 0; i < count; i++) {
+        byte y = map(values[i], min, max, CHARTHEIGHT, CHART_Y);
+        //Serial.println(String(values[i]) + ";" + String(y) + ";" + String(zero));
+        if (y < zero) 
+          Display.fillRect(i * w + CHART_X, y, w, zero - y, ST7735_RED);
+        else
+          Display.fillRect(i * w + CHART_X, zero, w, y - zero, ST7735_BLUE);
+      }
+      
       // y-axis
-      Display.drawLine(CHART_X, CHART_Y, CHART_X, CHARTHEIGHT + CHART_Y, BLACK);
+      Display.drawLine(CHART_X, CHART_Y - 3, CHART_X, CHARTHEIGHT + 3, ST7735_WHITE);
+      //Display.fillTriangle(CHART_X, CHART_Y - 10, CHART_X - 3, CHART_Y - 3, CHART_X + 3, CHART_Y - 3, ST7735_WHITE);
       for (int8_t i = min; i <= max; i+=5) {
-        byte y = (i - min) * CHARTHEIGHT / range;
-        Display.drawLine(0, y, CHART_X, y, BLACK);
+        byte y = map(i, min, max, CHARTHEIGHT, CHART_Y);
+        Display.drawLine(CHART_X - 2, y, CHART_X, y, BLACK);
+        if ( i % 10 == 0 ) {
+          char buffer[4] = { "000" };
+          itochars(abs(i), buffer, 3);
+          Display.displayText(CHART_X - 3 * TEXTWIDTH - 2, y - TEXTHEIGHT / 2, 1, buffer, ST7735_WHITE, ST7735_BLACK);
+        }
       }
       
       // x-axis (zero line)
-      byte zero = (0 - min) * CHARTHEIGHT / range;
-      Display.drawLine(CHART_X, zero, CHARTWIDTH, zero, BLACK);
+      Display.drawLine(CHART_X, zero, CHARTWIDTH, zero, ST7735_WHITE);
       
-      // draw values *********************************
-      byte w = (CHARTWIDTH) / count;
-      for (byte i = 0; i < count; i++) {
-        byte y = (values[i] - min) * CHARTHEIGHT / range;
-        Display.fillRect(i * w + CHART_X, zero, w, y - zero, BLACK);
+      for(byte i = 0; i < count; i++) {
+        Display.drawLine(CHART_X + i * w, zero + 2, CHART_X + i * w, zero, ST7735_WHITE); 
       }
+      
+      Display.displayText_f(CHARTWIDTH , zero - TEXTHEIGHT / 2, 1, PSTR("t"));
     }
 
 		
@@ -76,6 +86,7 @@ class TemperatureChartDiagram : public Chart {
   
   public:
     void drawTempChart(byte input) {
+      Display.displayText_f(45, 5, 1, PSTR("Temperature"));
       drawChart(values, TEMP_CHART_COUNT, -120, 120);
     }
     
@@ -87,7 +98,5 @@ class TemperatureChartDiagram : public Chart {
       values[i] = value;
     }
 };
-
-TemperatureChartDiagram TemperatureChart;
 
 #endif
