@@ -1,6 +1,8 @@
 #ifndef _MEASUREH_
 #define _MEASUREH_
 
+// DATA  PIN 7
+// SCLK  PIN 8
 Sensirion sht = Sensirion(7, 8);
 
 class ShtMeasureManager {

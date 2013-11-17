@@ -14,7 +14,13 @@
 
 class DisplayManager : public Adafruit_ST7735 {  
   public:    
-  
+    // CS  PIN 10
+    // DC  PIN  9
+    // RST PIN  8
+    
+    // (for UNO thats sclk = 13 and sid = 11) and pin 10 must be
+    // an output. This is much faster - also required if you want
+    // to use the microSD card (see the image drawing example)
     DisplayManager() : Adafruit_ST7735(10, 9, 8) {
     }
   
