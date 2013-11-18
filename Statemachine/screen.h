@@ -420,25 +420,33 @@ LogSettingsScreen LogSettingsScreen;
 
 class TempChartScreen : public Screen {
   public:
-    TemperatureChartDiagram chart;
+    byte selected;
+    TemperatureChartDiagram inChart;  	// in temperature
+    TemperatureChartDiagram outChart;   // out temperature
+
   public:
     byte execute(byte input) {
       if (!bVisible) {
         show();
       }  
       
-      if (bInvalidate) {        
-        for (int8_t i= 0; i < 24; i++)
-          chart.assignValue(random(-20, 30));
-    
-        chart.drawTempChart(input);
-        
+      if (bInvalidate) {
+        if (selected == 0) {                
+          inChart.drawTempChart(input);
+        } else if (selected == 1) {
+          outChart.drawTempChart(input);
+        }        
         bInvalidate = false;
       }
       
       if (input == KEY_ENTER) {
         hide();
         return ST_MAIN_MENU;
+      } else if (input == KEY_PLUS) {
+        selected++;
+        selected %= 2;
+        Display.clearDisplay()
+        bInvalidate = true;
       }
         
       return StateMachine.state;

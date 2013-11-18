@@ -78,7 +78,7 @@ class MeasureEventManager {
     
     public:
       MeasureEventManager() {
-        interval = 5; // secounds
+        interval = 5; // seconds
       }
       
       void doHandleEvents() {
@@ -92,5 +92,35 @@ class MeasureEventManager {
 };
 
 MeasureEventManager MeasureEvents;
+
+class LogEventManager {
+    private:
+      unsigned long lastUpdate;
+    
+    public:
+      unsigned long interval;    
+      unsigned bLog:1;  
+    
+    public:
+      LogEventManager() {
+        interval = 5; // seconds
+      }
+      
+      void doHandleEvents() {
+        if (rtc.getTimestamp(0) - lastUpdate > interval) {
+          lastUpdate = rtc.getTimestamp();
+          bLog = true;		
+        } else {
+          bLog = false;
+        }
+      }
+      
+      void doLog() {
+        InTempChartScreen.chart.assignValue(ShtMeasure.temperature);
+        OutTempChartScreen.chart.assignValue(DS1821.temperature);
+      }
+};
+
+LogEventManager LogEvents;
 
 #endif
