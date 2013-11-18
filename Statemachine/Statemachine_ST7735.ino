@@ -20,12 +20,15 @@
 #include "main.h"
 #include "events.h"
 #include "displaymanager.h"
-#include "edit.h"
-#include "charts.h"
+//#include "edit.h"
+//#include "charts.h"
 #include "measure.h"
+#include "data.h"
 #include "menu.h"
 #include "statemanager.h"
 #include "clock.h"
+#include "edit.h"
+#include "charts.h"
 #include "screen.h"
 
 void setup()
@@ -51,6 +54,7 @@ void loop() {
   StateMachine.doHandleStates();
   ShtMeasure.doMeasure();
   DS1821.doMeasure();
+  LogData.process();  
 }
 
 byte showMenu(byte input) {
@@ -106,5 +110,6 @@ void itochars(unsigned int value, char buffer[], byte digits) {
     i++;
   }
 }
+
 
     

@@ -3,8 +3,6 @@
 
 // Charts ****************************************************************
 
-#define TEMP_CHART_COUNT  24
-
 #define DISPLAYHEIGHT     ST7735_TFTWIDTH
 #define DISPLAYWIDTH      ST7735_TFTHEIGHT
 #define MARGIN		   8
@@ -80,22 +78,21 @@ class Chart {
 		
 };
 
-class TemperatureChartDiagram : public Chart {
-  public:    
-    int8_t values[TEMP_CHART_COUNT];
+class InTemperatureChartDiagram : public Chart {
   
   public:
     void drawTempChart(byte input) {
-      Display.displayText_f(45, 5, 1, PSTR("Temperature"));
-      drawChart(values, TEMP_CHART_COUNT, -120, 120);
+      Display.displayText_f(45, 5, 1, PSTR("In Temperature"));
+      drawChart(LogData.logInTemperature, LOG_DATA_SIZE, -120, 120);
     }
-    
-    void assignValue(int8_t value) {
-      byte i = 0;
-      for (; i < TEMP_CHART_COUNT - 1; i++) {
-        values[i] = values[i + 1];
-      }
-      values[i] = value;
+};
+
+class OutTemperatureChartDiagram : public Chart {
+  
+  public:
+    void drawTempChart(byte input) {
+      Display.displayText_f(45, 5, 1, PSTR("Out Temperature"));
+      drawChart(LogData.logOutTemperature, LOG_DATA_SIZE, -120, 120);
     }
 };
 

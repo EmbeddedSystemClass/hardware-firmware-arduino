@@ -421,8 +421,8 @@ LogSettingsScreen LogSettingsScreen;
 class TempChartScreen : public Screen {
   public:
     byte selected;
-    TemperatureChartDiagram inChart;  	// in temperature
-    TemperatureChartDiagram outChart;   // out temperature
+    InTemperatureChartDiagram inChart;  	// in temperature
+    OutTemperatureChartDiagram outChart;   // out temperature
 
   public:
     byte execute(byte input) {
@@ -445,7 +445,7 @@ class TempChartScreen : public Screen {
       } else if (input == KEY_PLUS) {
         selected++;
         selected %= 2;
-        Display.clearDisplay()
+        Display.clearDisplay();
         bInvalidate = true;
       }
         

@@ -109,15 +109,10 @@ class LogEventManager {
       void doHandleEvents() {
         if (rtc.getTimestamp(0) - lastUpdate > interval) {
           lastUpdate = rtc.getTimestamp();
-          bLog = true;		
+          bLog = true;
         } else {
           bLog = false;
         }
-      }
-      
-      void doLog() {
-        InTempChartScreen.chart.assignValue(ShtMeasure.temperature);
-        OutTempChartScreen.chart.assignValue(DS1821.temperature);
       }
 };
 
