@@ -82,7 +82,7 @@ class MeasureEventManager {
       }
       
       void doHandleEvents() {
-        if (rtc.getTimestamp(0) - lastUpdate > interval) {
+        if (rtc.getTimestamp() - lastUpdate > interval) {
           lastUpdate = rtc.getTimestamp();
           bShtMeasure = true;
         } else {
@@ -103,11 +103,11 @@ class LogEventManager {
     
     public:
       LogEventManager() {
-        interval = 5; // seconds
+        interval = 3600; // seconds
       }
       
       void doHandleEvents() {
-        if (rtc.getTimestamp(0) - lastUpdate > interval) {
+        if (rtc.getTimestamp() - lastUpdate > interval) {
           lastUpdate = rtc.getTimestamp();
           bLog = true;
         } else {

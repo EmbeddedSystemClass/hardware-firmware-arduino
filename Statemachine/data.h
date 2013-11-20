@@ -16,19 +16,17 @@ class LogData {
     }
   
     void assignOutTemperature(int8_t value) {
-      byte i = 0;
-      for (; i < LOG_DATA_SIZE - 1; i++) {
-        logOutTemperature[i] = logInTemperature[i + 1];
+      for (byte i = 0; i < LOG_DATA_SIZE - 1; i++) {
+        logOutTemperature[i + 1] = logOutTemperature[i];
       }
-      logOutTemperature[i] = value;
+      logOutTemperature[0] = value;
     }
     
     void assignInTemperature(int8_t value) {
-      byte i = 0;
-      for (; i < LOG_DATA_SIZE - 1; i++) {
-        logInTemperature[i] = logInTemperature[i + 1];
+      for (byte i = 0; i < LOG_DATA_SIZE - 1; i++) {
+        logInTemperature[i + 1] = logInTemperature[i];
       }
-      logInTemperature[i] = value;
+      logInTemperature[0] = value;
     }
 };
 
