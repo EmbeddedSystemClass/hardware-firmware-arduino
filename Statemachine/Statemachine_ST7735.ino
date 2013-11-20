@@ -51,6 +51,7 @@ void setup()
 void loop() {  
   Events.doHandleEvents();
   MeasureEvents.doHandleEvents();
+  LogEvents.doHandleStates();
   StateMachine.doHandleStates();
   ShtMeasure.doMeasure();
   DS1821.doMeasure();
