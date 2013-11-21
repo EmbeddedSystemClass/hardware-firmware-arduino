@@ -99,20 +99,28 @@ class LogEventManager {
     
     public:
       unsigned long interval;    
-      unsigned bLog:1;  
-    
+      unsigned bLog:1;
+      unsigned bEnabled:1;
+         
     public:
       LogEventManager() {
         interval = 3600; // seconds
       }
       
       void doHandleEvents() {
+        if (!bEnabled)
+          return;
         if (rtc.getTimestamp() - lastUpdate > interval) {
           lastUpdate = rtc.getTimestamp();
           bLog = true;
         } else {
           bLog = false;
         }
+      }
+      
+      void start() {
+        bEnabled = true;
+        lastUpdate = rtc.getTimestamp() - interval + 10;
       }
 };
 

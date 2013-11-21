@@ -20,8 +20,6 @@
 #include "main.h"
 #include "events.h"
 #include "displaymanager.h"
-//#include "edit.h"
-//#include "charts.h"
 #include "measure.h"
 #include "data.h"
 #include "menu.h"
@@ -45,7 +43,9 @@ void setup()
   rtc.startRTC(); //start the RTC
 
   // Open serial communications and wait for port to open:
-  Serial.begin(9600); 
+  Serial.begin(9600);
+  
+  LogEvents.start();
 }
 
 void loop() {  
