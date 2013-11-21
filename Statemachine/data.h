@@ -5,29 +5,28 @@ class LogData {
   public:
     int8_t logOutTemperature[LOG_DATA_SIZE];
     int8_t logInTemperature[LOG_DATA_SIZE];
-    
+    int8_t count;
   public:
   
     void process() {
       if (LogEvents.bLog) {
-        assignInTemperature(ShtMeasure.temperature);
-        assignOutTemperature(DS1821.temperature);
+			  if (count < LOG_DATA_SIZE) count++;
+        assignValues(logOutTemperature, DS1821.temperature, count);
+        assignValues(logInTemperature, ShtMeasure.temperature, count);
       }
     }
   
-    void assignOutTemperature(int8_t value) {
-      for (byte i = 0; i < LOG_DATA_SIZE - 1; i++) {
-        logOutTemperature[i + 1] = logOutTemperature[i];
-      }
-      logOutTemperature[0] = value;
-    }
-    
-    void assignInTemperature(int8_t value) {
-      for (byte i = 0; i < LOG_DATA_SIZE - 1; i++) {
-        logInTemperature[i + 1] = logInTemperature[i];
-      }
-      logInTemperature[0] = value;
-    }
+    void assignValues(int8_t values[], int8_t value, byte n) {
+			byte i;
+			if (n >= LOG_DATA_SIZE) {
+			  for (i = 0; i < LOG_DATA_SIZE - 1; i++) {
+			    values[i] = values[i + 1];
+			  }
+				n = LOG_DATA_SIZE - 1;
+			}
+		  values[n] = value;
+    }    
 };
+
 
 LogData LogData;
