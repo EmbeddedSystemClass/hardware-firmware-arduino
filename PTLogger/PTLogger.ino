@@ -8,23 +8,21 @@
  	 
  */
 
-#include <Adafruit_GFX.h>    // Core graphics library
-#include <Adafruit_ST7735.h> // Hardware-specific library
+#include <LiquidCrystal.h>
 #include <SPI.h>
 //#include <SD.h>
 #include <avr/pgmspace.h>
 #include <swRTC.h>
-#include <OneWire.h>
-
 #include "main.h"
+#include "display.h"
 #include "events.h"
-#include "displaymanager.h"
 #include "measure.h"
 #include "data.h"
 #include "menu.h"
 #include "statemanager.h"
 #include "edit.h"
-#include "screen.h"
+
+Display lcd(12, 11, 5, 4, 3, 2);
 
 void setup()
 {  
@@ -32,7 +30,7 @@ void setup()
   pinMode(btn1Pin, INPUT);
   pinMode(btn2Pin, INPUT);
 
-  Display.beginDisplay();
+  lcd.begin(16, 4);
  
   rtc.stopRTC(); //stop the RTC
   rtc.setTime(20, 42, 0); //set the time here
@@ -50,13 +48,34 @@ void loop() {
   MeasureEvents.doHandleEvents();
   LogEvents.doHandleEvents();
   StateMachine.doHandleStates();
-  ShtMeasure.doMeasure();
-  DS1821.doMeasure();
+  PT1000.doMeasure();  
   LogData.process();  
 }
 
 byte showMenu(byte input) {
-  return MenuScreen.execute(input);
+  byte y = 2;
+  byte group;
+  byte state;
+  
+  PGM_P menuText;
+  
+  count = 0;
+  
+  for (byte i=0; (group = pgm_read_byte(&menu_state[i].group)); i++) {
+    if (group == StateMachine.stateGroup) {
+      state = pgm_read_byte(&menu_state[i].state);
+      menuText = (PGM_P)pgm_read_word(&menu_state[i].pText);
+      if (menuText != NULL) {
+        if (state == group) {          
+          lcd.print_f(0, 0, menuText);   // draw menu title                     
+        } else {
+          lcd.print_f(0, y, menuText);  // draw menu item          
+        }
+        y++;
+      }
+    }
+  }
+  return ST_MAIN;
 }
 
 byte exitMainMenu(byte input) {
@@ -68,23 +87,28 @@ byte exitDateTimeMenu(byte input) {
 }
 
 byte mainScreen(byte input) {
-  return MainScreen.execute(input);
+  //return MainScreen.execute(input);
+  return ST_MAIN;
 }
 
 byte setLogging(byte input) {
-  return LogSettingsScreen.execute(input);
+  //return LogSettingsScreen.execute(input);
+  return ST_MAIN;
 }
 
 byte setRtcTime(byte input) {
-  return EditTimeScreen.execute(input);
+  //return EditTimeScreen.execute(input);/
+  return ST_MAIN;
 }
 
 byte setRtcDate(byte input) {
-  return EditDateScreen.execute(input);  
+  //return EditDateScreen.execute(input);  
+  return ST_MAIN;
 }
 
 byte temperatureChart(byte input) {
-  return TempChartScreen.execute(input);
+  //return TempChartScreen.execute(input);
+  return ST_MAIN;
 }
 
 void logError(String s) {
