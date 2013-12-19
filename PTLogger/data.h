@@ -14,8 +14,8 @@ class LogData {
           count++;
         }
           
-        assignValues(logOutTemperature, DS1821.temperature, count);
-        assignValues(logInTemperature, ShtMeasure.temperature, count);
+        //assignValues(logOutTemperature, DS1821.temperature, count);
+        //assignValues(logInTemperature, ShtMeasure.temperature, count);
       }
     }
   

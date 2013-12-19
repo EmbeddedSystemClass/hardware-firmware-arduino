@@ -22,15 +22,13 @@
 #include "statemanager.h"
 #include "edit.h"
 
-Display lcd(12, 11, 5, 4, 3, 2);
-
 void setup()
 {  
   // initialize the pushbutton pin as an input:
   pinMode(btn1Pin, INPUT);
   pinMode(btn2Pin, INPUT);
 
-  lcd.begin(16, 4);
+  lcd.begin(16, 2);
  
   rtc.stopRTC(); //stop the RTC
   rtc.setTime(20, 42, 0); //set the time here
@@ -48,18 +46,19 @@ void loop() {
   MeasureEvents.doHandleEvents();
   LogEvents.doHandleEvents();
   StateMachine.doHandleStates();
-  PT1000.doMeasure();  
+//  PT1000.doMeasure();  
   LogData.process();  
 }
 
 byte showMenu(byte input) {
+  
   byte y = 2;
   byte group;
   byte state;
   
   PGM_P menuText;
   
-  count = 0;
+  static byte count = 0;
   
   for (byte i=0; (group = pgm_read_byte(&menu_state[i].group)); i++) {
     if (group == StateMachine.stateGroup) {
@@ -75,7 +74,7 @@ byte showMenu(byte input) {
       }
     }
   }
-  return ST_MAIN;
+  return StateMachine.state;
 }
 
 byte exitMainMenu(byte input) {
@@ -87,7 +86,28 @@ byte exitDateTimeMenu(byte input) {
 }
 
 byte mainScreen(byte input) {
-  //return MainScreen.execute(input);
+  static byte enter = 0;
+  if(!enter) {  
+    lcd.clear();
+    lcd.print_f(0, 0, PSTR("Logger V1.0"));
+    enter = true;
+  }
+
+
+  char buffer[9]= { "00:00:00" };  
+  if (Events.bT1000MS) {
+    itochars(rtc.getHours(), &buffer[0], 2);
+    itochars(rtc.getMinutes(), &buffer[3], 2);
+    itochars(rtc.getSeconds(), &buffer[6], 2);  
+    
+    lcd.print(0, 1, buffer);
+  }
+
+
+  if (input == KEY_ENTER) {
+    enter = false;
+    return ST_TIME;
+  }  
   return ST_MAIN;
 }
 
@@ -97,8 +117,20 @@ byte setLogging(byte input) {
 }
 
 byte setRtcTime(byte input) {
-  //return EditTimeScreen.execute(input);/
-  return ST_MAIN;
+  static EditTime edTime;
+  static byte enter = 0;
+  
+  if(!enter) {
+    lcd.clear();
+    lcd.print_f(0, 0, PSTR("Set Time"));
+    enter = true;
+  }
+  
+  if (!edTime.editTime(input)) {
+    enter = false;
+    return ST_MAIN;
+  }
+  return ST_TIME;
 }
 
 byte setRtcDate(byte input) {

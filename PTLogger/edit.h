@@ -51,23 +51,17 @@ class Edit {
         bInvalidateText = true;
       }
       
-      byte y2 = y + 4;
-      byte y3 = y2 + TEXTHEIGHT * 2  + 2;
-      
-      if (bInvalidatePos) {
-        Display.drawLine(x, y, x + strlen(buffer) * TEXTWIDTH * 2, y, BACKCOLOR);      
-        Display.drawLine(x, y3, x + strlen(buffer) * TEXTWIDTH * 2, y3, BACKCOLOR);
-
-        Display.drawLine(x + pos * TEXTWIDTH * 2, y, x + (pos + 1) * TEXTWIDTH * 2 - 2, y, ST7735_YELLOW);
-        Display.drawLine(x + pos * TEXTWIDTH * 2, y3, x + (pos + 1) * TEXTWIDTH * 2 - 2, y3, ST7735_YELLOW);
-        
-        bInvalidatePos = false;
-      }
-      
       if (bInvalidateText) {
-        Display.displayText(x, y2, 2, buffer, ST7735_YELLOW, BACKCOLOR);
+        lcd.print(0, 1, buffer);
         bInvalidateText = false;
       }
+      
+      
+        lcd.setCursor(pos, 1);
+        lcd.blink();
+        
+        
+      
       
       return true;
     }
@@ -91,6 +85,7 @@ class EditTime : public Edit {
         byte h = CHARTONUM(buffer[0], 10) + CHARTONUM(buffer[1], 1);
         byte m = CHARTONUM(buffer[3], 10) + CHARTONUM(buffer[4], 1);
         rtc.setTime(h, m, 0);
+        lcd.noBlink();
         return false;
       }
       return true;
@@ -152,38 +147,38 @@ class EditOption {
     }
     
     void setOptions(byte x, byte y, char* options[], byte count, byte width, byte input) {
-      if (input == KEY_PLUS) {
-        selected = selected + 1 < count ? selected + 1 :  0;
-        bInvalidateSelection = true;
-      }
-      
-      if (bInvalidateSelection) {
-        for (int i=0; i < count; i++) {
-          Display.drawRect(x, y + i * (TEXTHEIGHT * 2 + 2) , width + 8, TEXTHEIGHT * 2 + 4, BACKCOLOR);
-        }
-        Display.drawRect(x, y + selected * (TEXTHEIGHT * 2 + 2), width + 8, TEXTHEIGHT * 2 + 4, ST7735_YELLOW);
-        bInvalidateSelection = false;
-      }
-      if (bInvalidateText) {
-        y += 3;
-        for (int i=0; i < count; i++) {
-            Display.displayText(x + 4, y + i * (TEXTHEIGHT * 2 + 2), 2, options[i], ST7735_YELLOW, BACKCOLOR);
-        }
-        bInvalidateText = false;
-      }
+//      if (input == KEY_PLUS) {
+//        selected = selected + 1 < count ? selected + 1 :  0;
+//        bInvalidateSelection = true;
+//      }
+//      
+//      if (bInvalidateSelection) {
+//        for (int i=0; i < count; i++) {
+//          Display.drawRect(x, y + i * (TEXTHEIGHT * 2 + 2) , width + 8, TEXTHEIGHT * 2 + 4, BACKCOLOR);
+//        }
+//        Display.drawRect(x, y + selected * (TEXTHEIGHT * 2 + 2), width + 8, TEXTHEIGHT * 2 + 4, ST7735_YELLOW);
+//        bInvalidateSelection = false;
+//      }
+//      if (bInvalidateText) {
+//        y += 3;
+//        for (int i=0; i < count; i++) {
+//            Display.displayText(x + 4, y + i * (TEXTHEIGHT * 2 + 2), 2, options[i], ST7735_YELLOW, BACKCOLOR);
+//        }
+//        bInvalidateText = false;
+//      }
     }
 };
 
 class EditYesNoOption : public EditOption {
     public:
       byte getOption(byte input) {
-          char * OPT[] = { "YES", "NO" };
-          
-          if (input==KEY_ENTER) {
-            return selected;
-          }
-          
-          setOptions(5, 30, OPT, 2, TEXTWIDTH * 2 * 3, input);
+//          char * OPT[] = { "YES", "NO" };
+//          
+//          if (input==KEY_ENTER) {
+//            return selected;
+//          }
+//          
+//          setOptions(5, 30, OPT, 2, TEXTWIDTH * 2 * 3, input);
           return 0;
       }
 };
