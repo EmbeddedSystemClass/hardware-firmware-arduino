@@ -84,7 +84,8 @@ class EditTime : public Edit {
       if (!editStr(10, 30, PSTR("__:__"), buffer, BUFFER_SIZE, input)) {
         byte h = CHARTONUM(buffer[0], 10) + CHARTONUM(buffer[1], 1);
         byte m = CHARTONUM(buffer[3], 10) + CHARTONUM(buffer[4], 1);
-        rtc.setTime(h, m, 0);
+        DateTime dt = rtc.now();
+        rtc.adjust(DateTime(dt.year(), dt.month(), dt.day(), h, m, 0));
         lcd.noBlink();
         return false;
       }
@@ -120,7 +121,8 @@ class EditDate : public Edit {
         int y = CHARTONUM(buffer[0], 1000) + CHARTONUM(buffer[1], 100) + CHARTONUM(buffer[2], 10) + CHARTONUM(buffer[3], 1);
         byte m = CHARTONUM(buffer[5], 10) + CHARTONUM(buffer[6], 1);
         byte d = CHARTONUM(buffer[8], 10) + CHARTONUM(buffer[9], 1);
-        rtc.setDate(d, m, y);
+        DateTime dt = rtc.now();
+        rtc.adjust(DateTime(y, m, d, dt.hour(), dt.minute(), dt.second()));
         return false;
       }
       return true;

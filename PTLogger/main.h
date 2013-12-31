@@ -35,6 +35,7 @@ byte setRtcDate(byte input);
 void itochars(unsigned int value, char buffer[], byte digits);
 
 
-// Software RTC **********************************************************
-swRTC rtc;
+// RTC **********************************************************
+RTC_DS1307 rtc;
+
 

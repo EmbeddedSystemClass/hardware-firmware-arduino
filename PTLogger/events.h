@@ -109,8 +109,8 @@ class MeasureEventManager {
       }
       
       void doHandleEvents() {
-        if (rtc.getTimestamp() - lastUpdate > interval) {
-          lastUpdate = rtc.getTimestamp();
+        if (rtc.now().unixtime() - lastUpdate > interval) {
+          lastUpdate = rtc.now().unixtime();
           bMeasure = true;
         } else {
           bMeasure = false;
@@ -137,8 +137,8 @@ class LogEventManager {
       void doHandleEvents() {
         if (!bEnabled)
           return;
-        if (rtc.getTimestamp() - lastUpdate > interval) {
-          lastUpdate = rtc.getTimestamp();
+        if (rtc.now().unixtime() - lastUpdate > interval) {
+          lastUpdate = rtc.now().unixtime();
           bLog = true;
         } else {
           bLog = false;
@@ -147,7 +147,7 @@ class LogEventManager {
       
       void start() {
         bEnabled = true;
-        lastUpdate = rtc.getTimestamp() - interval + 10;
+        lastUpdate = rtc.now().unixtime() - interval + 10;
       }
 };
 

@@ -8,11 +8,12 @@
  	 
  */
 
+#include <Wire.h>
+#include "RTClib.h"
 #include <LiquidCrystal.h>
 #include <SPI.h>
 //#include <SD.h>
 #include <avr/pgmspace.h>
-#include <swRTC.h>
 #include "main.h"
 #include "display.h"
 #include "events.h"
@@ -24,19 +25,20 @@
 
 void setup()
 {  
-  // initialize the pushbutton pin as an input:
-  pinMode(btn1Pin, INPUT);
-  pinMode(btn2Pin, INPUT);
+  Wire.begin();  
 
   lcd.begin(16, 2);
  
-  rtc.stopRTC(); //stop the RTC
-  rtc.setTime(20, 42, 0); //set the time here
-  rtc.setDate(1, 1, 2000); //set the date here
-  rtc.startRTC(); //start the RTC
-
+  
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
+  
+  
+  if (! rtc.isrunning()) {
+    lcd.print_f(1, 1, PSTR("RTC is NOT running!"));
+    // following line sets the RTC to the date & time this sketch was compiled
+    rtc.adjust(DateTime(__DATE__, __TIME__));
+  }
   
   LogEvents.start();
 }
@@ -96,9 +98,10 @@ byte mainScreen(byte input) {
 
   char buffer[9]= { "00:00:00" };  
   if (Events.bT1000MS) {
-    itochars(rtc.getHours(), &buffer[0], 2);
-    itochars(rtc.getMinutes(), &buffer[3], 2);
-    itochars(rtc.getSeconds(), &buffer[6], 2);  
+    DateTime dt = rtc.now();
+    itochars(dt.hour(), &buffer[0], 2);
+    itochars(dt.minute(), &buffer[3], 2);
+    itochars(dt.second(), &buffer[6], 2);  
     
     lcd.print(0, 1, buffer);
   }
