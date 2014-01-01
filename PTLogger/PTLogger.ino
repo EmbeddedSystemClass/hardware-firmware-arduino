@@ -54,28 +54,49 @@ void loop() {
 
 byte showMenu(byte input) {
   
-  byte y = 2;
   byte group;
   byte state;
   
   PGM_P menuText;
-  
-  static byte count = 0;
-  
-  for (byte i=0; (group = pgm_read_byte(&menu_state[i].group)); i++) {
-    if (group == StateMachine.stateGroup) {
-      state = pgm_read_byte(&menu_state[i].state);
-      menuText = (PGM_P)pgm_read_word(&menu_state[i].pText);
-      if (menuText != NULL) {
-        if (state == group) {          
-          lcd.print_f(0, 0, menuText);   // draw menu title                     
-        } else {
-          lcd.print_f(0, y, menuText);  // draw menu item          
+  static byte enter = 0;
+  static byte count = 1;
+
+  if(!enter) { 
+    enter = true;
+    
+    lcd.clear();
+    
+    for (byte i=0; (group = pgm_read_byte(&menu_state[i].group)); i++) {
+      if (group == StateMachine.stateGroup) {
+        state = pgm_read_byte(&menu_state[i].state);
+        menuText = (PGM_P)pgm_read_word(&menu_state[i].pText);
+        if (menuText != NULL) {
+          if (state == group) {          
+            lcd.print_f(0, 0, menuText);   // draw menu title                     
+          }
+          
+          state = pgm_read_byte(&menu_state[i + count].state);
+          menuText = (PGM_P)pgm_read_word(&menu_state[i + count].pText);
+          lcd.print_f(0, 1, menuText);
+          
+          if (group != pgm_read_byte(&menu_state[i + count + 1].group)) {
+            count = 0;
+          }
+          break;
         }
-        y++;
       }
     }
   }
+  
+  if (input == KEY_PLUS) {
+    count++;
+    enter = 0;
+  } else if (input == KEY_ENTER) {
+    enter = 0;
+    StateMachine.stateGroup = state;
+    return StateMachine.stateGroup;
+  }
+  
   return StateMachine.state;
 }
 
@@ -109,7 +130,7 @@ byte mainScreen(byte input) {
 
   if (input == KEY_ENTER) {
     enter = false;
-    return ST_TIME;
+    return ST_MAIN_MENU;
   }  
   return ST_MAIN;
 }
