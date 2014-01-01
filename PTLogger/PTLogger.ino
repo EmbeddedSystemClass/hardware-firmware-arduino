@@ -55,7 +55,7 @@ void loop() {
 byte showMenu(byte input) {
   
   byte group;
-  byte state;
+  static byte state;
   
   PGM_P menuText;
   static byte enter = 0;
@@ -158,13 +158,20 @@ byte setRtcTime(byte input) {
 }
 
 byte setRtcDate(byte input) {
-  //return EditDateScreen.execute(input);  
-  return ST_MAIN;
-}
-
-byte temperatureChart(byte input) {
-  //return TempChartScreen.execute(input);
-  return ST_MAIN;
+  static EditDate edDate;
+  static byte enter = 0;
+  
+  if(!enter) {
+    lcd.clear();
+    lcd.print_f(0, 0, PSTR("Set Date"));
+    enter = true;
+  }
+  
+  if (!edDate.editDate(input)) {
+    enter = false;
+    return ST_MAIN;
+  }
+  return ST_DATE;
 }
 
 void logError(String s) {

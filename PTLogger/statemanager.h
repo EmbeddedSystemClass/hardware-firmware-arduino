@@ -41,13 +41,13 @@ class StateMachineManager {
       
       if (nextstate != state) {
         state = nextstate;
-        //Serial.println("Search State:" + String(state));
+        Serial.println("Search State:" + String(state));
         for (i=0; (j=pgm_read_byte(&menu_state[i].state)); i++) {
           stateGroup =pgm_read_byte(&menu_state[i].group);
-          //Serial.println("Found Group" + String(stateGroup));
+          Serial.println("Found Group" + String(stateGroup));
           if (j == state && stateGroup == state) {
             pStateFunc = (byte (*)(byte))(PGM_VOID_P) pgm_read_word(&menu_state[i].pFunc);
-            //Serial.println(String(state) + ";" + String(stateGroup));
+            Serial.println(String(state) + ";" + String(stateGroup));
             break;
           }
         }
