@@ -133,6 +133,37 @@ class EditDate : public Edit {
     }
 };
 
+class EditNumber : public Edit {
+  public:
+    static const byte BUFFER_SIZE = 6;
+    char buffer[BUFFER_SIZE];
+    
+  public:
+    EditNumber()  {
+      strcpy_P(buffer, PSTR("0000"));
+      pos = 0;
+    }
+  
+    byte editNumber(byte input) {
+      if (!editStr(10, 30, PSTR("____"), buffer, BUFFER_SIZE, input)) {        
+        return false;
+      }
+      return true;
+    }
+  
+  
+  private :
+    char validateStr(char* buffer, byte pos, char c) {    
+      if (c > '9') return '0';
+      
+      buffer[pos] = c;
+      
+      byte h = CHARTONUM(buffer[0], 10) + CHARTONUM(buffer[1], 1);
+      byte m = CHARTONUM(buffer[3], 10) + CHARTONUM(buffer[4], 1);
+      return h <= 23 && m <= 59 ? c : '0';
+    }
+};
+
 class EditOption {
   public:
     unsigned bInvalidateSelection:1;
