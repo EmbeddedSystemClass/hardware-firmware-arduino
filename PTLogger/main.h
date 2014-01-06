@@ -3,7 +3,8 @@
 
 #define KEY_NONE          1
 #define KEY_PLUS          2
-#define KEY_ENTER         3
+#define KEY_MINUS         3
+#define KEY_ENTER         4
 
 #define ST_MAIN           1
 #define ST_MAIN_MENU      2

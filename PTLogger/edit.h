@@ -27,6 +27,7 @@ class Edit {
         if (++pos >= length)
         {
           pos = 0;
+					lcd.noBlink();
           return false;
         }
     
@@ -35,6 +36,7 @@ class Edit {
           if (++pos >= length)
           {
             pos = 0;
+						lcd.noBlink();
             return false;
           }
         }
@@ -53,16 +55,12 @@ class Edit {
       
       if (bInvalidateText) {
         lcd.print(0, 1, buffer);
+	      lcd.blink();
         bInvalidateText = false;
-      }
+      }      
       
-      
-        lcd.setCursor(pos, 1);
-        lcd.blink();
-        
-        
-      
-      
+			lcd.setCursor(pos, 1);
+			
       return true;
     }
     
@@ -86,7 +84,6 @@ class EditTime : public Edit {
         byte m = CHARTONUM(buffer[3], 10) + CHARTONUM(buffer[4], 1);
         DateTime dt = rtc.now();
         rtc.adjust(DateTime(dt.year(), dt.month(), dt.day(), h, m, 0));
-        lcd.noBlink();
         return false;
       }
       return true;
@@ -148,40 +145,31 @@ class EditOption {
       bInvalidateText = true;
     }
     
-    void setOptions(byte x, byte y, char* options[], byte count, byte width, byte input) {
-//      if (input == KEY_PLUS) {
-//        selected = selected + 1 < count ? selected + 1 :  0;
-//        bInvalidateSelection = true;
-//      }
-//      
-//      if (bInvalidateSelection) {
-//        for (int i=0; i < count; i++) {
-//          Display.drawRect(x, y + i * (TEXTHEIGHT * 2 + 2) , width + 8, TEXTHEIGHT * 2 + 4, BACKCOLOR);
-//        }
-//        Display.drawRect(x, y + selected * (TEXTHEIGHT * 2 + 2), width + 8, TEXTHEIGHT * 2 + 4, ST7735_YELLOW);
-//        bInvalidateSelection = false;
-//      }
-//      if (bInvalidateText) {
-//        y += 3;
-//        for (int i=0; i < count; i++) {
-//            Display.displayText(x + 4, y + i * (TEXTHEIGHT * 2 + 2), 2, options[i], ST7735_YELLOW, BACKCOLOR);
-//        }
-//        bInvalidateText = false;
-//      }
+    void setOptions(char* options[], byte count, byte input) {
+      if (input == KEY_PLUS) {
+        selected = selected + 1 < count ? selected + 1 :  0;
+        bInvalidateSelection = true;
+      }
+      
+      if (bInvalidateSelection) {
+				lcd.print(0, 1, "                ");
+				lcd.print(0, 1, options[selected]);
+        bInvalidateText = false;
+      }
     }
 };
 
 class EditYesNoOption : public EditOption {
     public:
-      byte getOption(byte input) {
-//          char * OPT[] = { "YES", "NO" };
-//          
-//          if (input==KEY_ENTER) {
-//            return selected;
-//          }
-//          
-//          setOptions(5, 30, OPT, 2, TEXTWIDTH * 2 * 3, input);
-          return 0;
+      byte editOption(byte input) {
+        char * OPT[] = { "YES", "NO" };
+          
+        if (input==KEY_ENTER) {
+          return selected;
+        }
+          
+        setOptions(OPT, 2, input);
+        return 0;
       }
 };
 

@@ -52,54 +52,6 @@ void loop() {
   LogData.process();  
 }
 
-byte showMenu(byte input) {
-  
-  byte group;
-  static byte state;
-  
-  PGM_P menuText;
-  static byte enter = 0;
-  static byte count = 1;
-
-  if(!enter) { 
-    enter = true;
-    
-    lcd.clear();
-    
-    for (byte i=0; (group = pgm_read_byte(&menu_state[i].group)); i++) {
-      if (group == StateMachine.stateGroup) {
-        state = pgm_read_byte(&menu_state[i].state);
-        menuText = (PGM_P)pgm_read_word(&menu_state[i].pText);
-        if (menuText != NULL) {
-          if (state == group) {          
-            lcd.print_f(0, 0, menuText);   // draw menu title                     
-          }
-          
-          state = pgm_read_byte(&menu_state[i + count].state);
-          menuText = (PGM_P)pgm_read_word(&menu_state[i + count].pText);
-          lcd.print_f(0, 1, menuText);
-          
-          if (group != pgm_read_byte(&menu_state[i + count + 1].group)) {
-            count = 0;
-          }
-          break;
-        }
-      }
-    }
-  }
-  
-  if (input == KEY_PLUS) {
-    count++;
-    enter = 0;
-  } else if (input == KEY_ENTER) {
-    enter = 0;
-    StateMachine.stateGroup = state;
-    return StateMachine.stateGroup;
-  }
-  
-  return StateMachine.state;
-}
-
 byte exitMainMenu(byte input) {
   return ST_MAIN;
 }
@@ -116,7 +68,6 @@ byte mainScreen(byte input) {
     enter = true;
   }
 
-
   char buffer[9]= { "00:00:00" };  
   if (Events.bT1000MS) {
     DateTime dt = rtc.now();
@@ -127,7 +78,6 @@ byte mainScreen(byte input) {
     lcd.print(0, 1, buffer);
   }
 
-
   if (input == KEY_ENTER) {
     enter = false;
     return ST_MAIN_MENU;
@@ -136,8 +86,20 @@ byte mainScreen(byte input) {
 }
 
 byte setLogging(byte input) {
-  //return LogSettingsScreen.execute(input);
-  return ST_MAIN;
+  static byte enter = 0;
+  static EditYesNoOption edOption;
+  
+  if(!enter) {
+    lcd.clear();
+    lcd.print_f(0, 0, PSTR("Enable Logging"));
+    enter = true;
+  }
+	
+  if (!edOption.editOption(input)) {
+    enter = false;
+    return ST_MAIN;
+  }
+  return ST_LOGGING;
 }
 
 byte setRtcTime(byte input) {
@@ -173,6 +135,75 @@ byte setRtcDate(byte input) {
   }
   return ST_DATE;
 }
+
+byte showMenu(byte input) {
+    	
+  static byte state; 
+  static byte invalidate = true;
+  static byte selected = 1;
+
+  if (invalidate) { 
+    byte group;	
+    byte count;
+    byte n;
+    byte error;
+    PGM_P menuText;
+
+    invalidate = false;
+    
+    lcd.clear();
+    
+    for (byte i = 0; (group = pgm_read_byte(&menu_state[i].group)); i++) {
+      if (group == StateMachine.stateGroup) {
+        if (n == 0) n = i;
+	count++;
+      }
+    }	
+     
+    if (count < 2) {
+      error = true;
+    } else {
+      if (selected > count) selected = 1;						
+        menuText = (PGM_P)pgm_read_word(&menu_state[n].pText);
+	if (menuText != NULL) {         
+	  lcd.print_f(0, 0, menuText);   // draw menu title
+	  state = pgm_read_byte(&menu_state[n + selected].state);
+	  menuText = (PGM_P)pgm_read_word(&menu_state[n + selected].pText);
+	  byte textLength = strlen_P(menuText);
+	  if (textLength > 0) {						
+	    lcd.print_f(0, (LCD_SIZE - textLength) / 2, menuText);   // draw menu item
+	    if (count > 1) {						
+	      lcd.print_f(0, 1,  PSTR("<"));
+	      lcd.print_f(0, LCD_SIZE, PSTR(">"));					
+	    }
+	  } else {
+	    error = true;
+	  }
+	} else {
+	  error = true;
+	}			
+      }	
+      
+      if (error) {
+	lcd.print_f(0, 0, PSTR("Menu Error"));
+      }
+  }
+  
+  if (input == KEY_PLUS) {
+    selected++;
+    invalidate = true;
+  } else if (input == KEY_MINUS) {
+    selected--;
+    invalidate = true;
+  } else if (input == KEY_ENTER) {
+    invalidate = true;
+    StateMachine.stateGroup = state;
+    return StateMachine.stateGroup;
+  }
+  
+  return StateMachine.state;
+}
+
 
 void logError(String s) {
   //displayText(0, 0, 1, s);
