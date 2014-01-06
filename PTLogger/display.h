@@ -1,7 +1,7 @@
 #ifndef _DISPLAYH_
 #define _DISPLAYH_
 
-#define LCD_SIZE 15
+#define LCD_SIZE 16
 
 class Display : public LiquidCrystal {
   public:

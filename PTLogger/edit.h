@@ -55,7 +55,7 @@ class Edit {
       
       if (bInvalidateText) {
         lcd.print(0, 1, buffer);
-	      lcd.blink();
+	lcd.blink();
         bInvalidateText = false;
       }      
       
@@ -135,7 +135,7 @@ class EditDate : public Edit {
 
 class EditNumber : public Edit {
   public:
-    static const byte BUFFER_SIZE = 6;
+    static const byte BUFFER_SIZE = 5;
     char buffer[BUFFER_SIZE];
     
   public:
@@ -153,27 +153,19 @@ class EditNumber : public Edit {
   
   
   private :
-    char validateStr(char* buffer, byte pos, char c) {    
-      if (c > '9') return '0';
-      
-      buffer[pos] = c;
-      
-      byte h = CHARTONUM(buffer[0], 10) + CHARTONUM(buffer[1], 1);
-      byte m = CHARTONUM(buffer[3], 10) + CHARTONUM(buffer[4], 1);
-      return h <= 23 && m <= 59 ? c : '0';
+    char validateStr(char* buffer, byte pos, char c) {          
+      return c >= '0' && c <= '9' ? c : '0';
     }
 };
 
 class EditOption {
   public:
     unsigned bInvalidateSelection:1;
-    unsigned bInvalidateText:1;
     byte selected;
 
   public:
     EditOption() {
       bInvalidateSelection = true;
-      bInvalidateText = true;
     }
     
     void setOptions(char* options[], byte count, byte input) {
@@ -183,9 +175,9 @@ class EditOption {
       }
       
       if (bInvalidateSelection) {
-				lcd.print(0, 1, "                ");
-				lcd.print(0, 1, options[selected]);
-        bInvalidateText = false;
+	lcd.print(0, 1, "                ");
+	lcd.print(0, 1, options[selected]);
+        bInvalidateSelection = false;
       }
     }
 };
@@ -200,10 +192,9 @@ class EditYesNoOption : public EditOption {
         }
           
         setOptions(OPT, 2, input);
-        return 0;
+        return true;
       }
 };
 
-EditYesNoOption EditYesNo;
 
 #endif

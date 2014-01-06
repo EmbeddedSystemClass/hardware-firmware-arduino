@@ -161,10 +161,10 @@ byte showMenu(byte input) {
   static byte selected = 1;
 
   if (invalidate) { 
-    byte group;	
-    byte count;
-    byte n;
-    byte error;
+    byte group = 0;	
+    byte count = 0;
+    byte n = 0;
+    byte error = 0;
     PGM_P menuText;
 
     invalidate = false;
@@ -175,14 +175,15 @@ byte showMenu(byte input) {
       if (group == StateMachine.stateGroup) {
         if (n == 0) n = i;
         count++;
+        Serial.println(String(count));
       }
     }	
 
     if (count < 2) {
-      error = true;
+      error = 1;
     } 
     else {
-      if (selected > count) selected = 1;						
+      if (selected >= count) selected = 1;						
       menuText = (PGM_P)pgm_read_word(&menu_state[n].pText);
       if (menuText != NULL) {         
         lcd.print_f(0, 0, menuText);   // draw menu title
@@ -190,23 +191,24 @@ byte showMenu(byte input) {
         menuText = (PGM_P)pgm_read_word(&menu_state[n + selected].pText);
         byte textLength = strlen_P(menuText);
         if (textLength > 0) {						
-          lcd.print_f(0, (LCD_SIZE - textLength) / 2, menuText);   // draw menu item
+          lcd.print_f((LCD_SIZE - textLength) / 2, 1, menuText);   // draw menu item
           if (count > 1) {						
-            lcd.print_f(0, 1,  PSTR("<"));
-            lcd.print_f(0, LCD_SIZE, PSTR(">"));					
+            lcd.print_f(0, 1, PSTR("<"));
+            lcd.print_f(LCD_SIZE - 1, 1, PSTR(">"));					
           }
         } 
         else {
-          error = true;
+          error = 2;
         }
       } 
       else {
-        error = true;
+        error = 3;
       }			
     }	
 
-    if (error) {
+    if (error > 0) {
       lcd.print_f(0, 0, PSTR("Menu Error"));
+      lcd.println(String(error));
     }
   }
 
@@ -220,6 +222,7 @@ byte showMenu(byte input) {
   } 
   else if (input == KEY_ENTER) {
     invalidate = true;
+    selected = 1;
     StateMachine.stateGroup = state;
     return StateMachine.stateGroup;
   }
