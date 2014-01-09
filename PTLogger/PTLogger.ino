@@ -12,7 +12,7 @@
 #include "RTClib.h"
 #include <LiquidCrystal.h>
 #include <SPI.h>
-//#include <SD.h>
+#include <SD.h>
 #include <avr/pgmspace.h>
 #include "main.h"
 #include "display.h"
@@ -22,6 +22,13 @@
 #include "menu.h"
 #include "statemanager.h"
 #include "edit.h"
+
+// SD Card ****************************************************************
+// pin 11 - MOSI
+// pin 12 - MISO
+// pin 13 - CLK
+// pin 10 - CS
+const int sdChipSelect = 10;
 
 void setup()
 {  
@@ -39,7 +46,16 @@ void setup()
     // following line sets the RTC to the date & time this sketch was compiled
     rtc.adjust(DateTime(__DATE__, __TIME__));
   }
-
+  /*
+  // see if the card is present and can be initialized:
+  if (!SD.begin(sdChipSelect)) {
+    Serial.println(F("Card failed, or not present"));
+    // don't do anything more:
+    return;
+  } else {
+    Serial.println(F("card initialized."));
+  }
+*/
   LogEvents.start();
 }
 
@@ -91,12 +107,15 @@ byte setLogState(byte input) {
   static EditYesNoOption edOption;
 
   if(!enter) {
+    edOption.selected = LogEvents.bEnabled ? 1 : 0;
+    edOption.bInvalidate = true;
     lcd.clear();
     lcd.print_f(0, 0, PSTR("Enable Logging"));
     enter = true;
   }
 
   if (!edOption.editOption(input)) {
+    LogEvents.bEnabled = edOption.selected == 1;
     enter = false;
     return ST_MAIN;
   }
@@ -108,12 +127,15 @@ byte setLogInterval(byte input) {
   static EditNumber edNumber;
 
   if(!enter) {
+    itochars(LogEvents.interval, edNumber.buffer, edNumber.BUFFER_SIZE);
+    edNumber.bInvalidate = true;
     lcd.clear();
     lcd.print_f(0, 0, PSTR("Logging Interval"));
     enter = true;
   }
 
   if (!edNumber.editNumber(input)) {
+    LogEvents.interval = atoi(edNumber.buffer);
     enter = false;
     return ST_MAIN;
   }
@@ -125,6 +147,7 @@ byte setRtcTime(byte input) {
   static byte enter = 0;
 
   if(!enter) {
+    edTime.bInvalidate = true;
     lcd.clear();
     lcd.print_f(0, 0, PSTR("Set Time"));
     enter = true;
@@ -142,6 +165,7 @@ byte setRtcDate(byte input) {
   static byte enter = 0;
 
   if(!enter) {
+    edDate.bInvalidate = true;
     lcd.clear();
     lcd.print_f(0, 0, PSTR("Set Date"));
     enter = true;
@@ -254,6 +278,20 @@ void itochars(unsigned int value, char buffer[], byte digits) {
   }
 }
 
+String getTimeStr() {
+  String s;
+  //s += formatNumber(rtc.now().Hours(), 2) + F(":");
+  //s += formatNumber(rtc.now().Minutes(), 2) + F(":");
+  //s += formatNumber(rtc.now().Seconds(), 2);
+  return s;
+}
 
+String getDateStr() {
+  String s;
+  //s += formatNumber(rtc.now().Year(), 4) + F("-");
+  //s += formatNumber(rtc.now().Month(), 2) + F("-");
+  //s += formatNumber(rtc.now().Day(), 2);
+  return s;
+}
 
 

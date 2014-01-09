@@ -1,34 +1,42 @@
+#include <SD.h>
 
-#define LOG_DATA_SIZE    24
-
-class LogData {
-  public:
-    int8_t logOutTemperature[LOG_DATA_SIZE];
-    int8_t logInTemperature[LOG_DATA_SIZE];
-    int8_t count;
+class LogData {      
   public:
   
     void process() {
       if (LogEvents.bLog) {
-	if (count < LOG_DATA_SIZE) {
-          count++;
-        }
-          
-        //assignValues(logOutTemperature, DS1821.temperature, count);
-        //assignValues(logInTemperature, ShtMeasure.temperature, count);
+        logData();
       }
+    }  
+    
+    void logData()
+    {    
+      // make a string for assembling the data to log:  
+      String dataString;
+      // 00:00:00,00.00,00.00
+      dataString += getTimeStr() + F(";");
+      //dataString += "values..."; // test dummy
+      
+      // dataString += String(shtState.temperature) + F(";");
+      // dataString += String(shtState.humidity) + F(";");
+
+      // open the file. note that only one file can be open at a time,
+      // so you have to close this one before opening another.
+ /*     File dataFile = SD.open("datalog.txt", FILE_WRITE);
+
+      // if the file is available, write to it:
+      if (dataFile) {
+        dataFile.println(dataString);
+        dataFile.close();
+        // print to the serial port too:
+        Serial.println(dataString);
+      }    
+      // if the file isn't open, pop up an error:
+      else {
+        Serial.println(F("error opening datalog.txt"));
+      }   
+*/
     }
-  
-    void assignValues(int8_t values[], int8_t value, byte n) {
-      byte i;
-      if (n >= LOG_DATA_SIZE) {
-	for (i = 0; i < LOG_DATA_SIZE - 1; i++) {
-	  values[i] = values[i + 1];
-	}
-	n = LOG_DATA_SIZE - 1;
-      }
-      values[n] = value;
-    }    
 };
 
 

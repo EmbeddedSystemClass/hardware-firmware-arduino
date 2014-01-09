@@ -36,6 +36,8 @@ byte setLogState(byte input);
 byte setLogInterval(byte input);
 byte setRtcTime(byte input);
 byte setRtcDate(byte input);
+String getTimeStr();
+String getDateStr();
 
 void itochars(unsigned int value, char buffer[], byte digits);
 

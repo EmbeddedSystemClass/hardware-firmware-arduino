@@ -7,22 +7,17 @@
 
 class Edit {
   public:
-    unsigned bInvalidateText:1;
-    unsigned bInvalidatePos:1;
-    
+    unsigned bInvalidate:1;        
     byte pos;
     
   public:
     Edit(): pos(0) {
-      bInvalidateText = true;
-      bInvalidatePos = true;
+      bInvalidate = true;      
     }
     
     byte editStr(byte x, byte y, PGM_P pMask, char buffer[], char length, byte key) {      
       if (key == KEY_ENTER)
       {
-        bInvalidatePos = true;
-        
         length--;
         if (++pos >= length)
         {
@@ -50,13 +45,13 @@ class Edit {
           char c = buffer[pos] + 1;
           buffer[pos] = validateStr(buffer, pos, c);
         }
-        bInvalidateText = true;
+        bInvalidate = true;
       }
       
-      if (bInvalidateText) {
+      if (bInvalidate) {
         lcd.print(0, 1, buffer);
-	lcd.blink();
-        bInvalidateText = false;
+        lcd.blink();
+        bInvalidate = false;
       }      
       
 			lcd.setCursor(pos, 1);
@@ -160,24 +155,24 @@ class EditNumber : public Edit {
 
 class EditOption {
   public:
-    unsigned bInvalidateSelection:1;
+    unsigned bInvalidate:1;
     byte selected;
 
   public:
     EditOption() {
-      bInvalidateSelection = true;
+      bInvalidate = true;
     }
     
     void setOptions(char* options[], byte count, byte input) {
       if (input == KEY_PLUS) {
         selected = selected + 1 < count ? selected + 1 :  0;
-        bInvalidateSelection = true;
+        bInvalidate = true;
       }
       
-      if (bInvalidateSelection) {
-	lcd.print(0, 1, "                ");
-	lcd.print(0, 1, options[selected]);
-        bInvalidateSelection = false;
+      if (bInvalidate) {
+        lcd.print(0, 1, "                ");
+        lcd.print(0, 1, options[selected]);
+        bInvalidate = false;
       }
     }
 };
@@ -185,7 +180,7 @@ class EditOption {
 class EditYesNoOption : public EditOption {
     public:
       byte editOption(byte input) {
-        char * OPT[] = { "YES", "NO" };
+        char * OPT[] = { "NO", "YES" };
           
         if (input==KEY_ENTER) {
           return selected;
@@ -193,7 +188,7 @@ class EditYesNoOption : public EditOption {
           
         setOptions(OPT, 2, input);
         return true;
-      }
+      }      
 };
 
 
