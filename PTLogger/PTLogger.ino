@@ -127,7 +127,7 @@ byte setLogInterval(byte input) {
   static EditNumber edNumber;
 
   if(!enter) {
-    itochars(LogEvents.interval, edNumber.buffer, edNumber.BUFFER_SIZE);
+    itochars(LogEvents.interval, edNumber.buffer, edNumber.BUFFER_SIZE - 1);
     edNumber.bInvalidate = true;
     lcd.clear();
     lcd.print_f(0, 0, PSTR("Logging Interval"));

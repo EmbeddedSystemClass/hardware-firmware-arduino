@@ -74,7 +74,7 @@ class EditTime : public Edit {
     }
   
     byte editTime(byte input) {
-      if (!editStr(10, 30, PSTR("__:__"), buffer, BUFFER_SIZE, input)) {
+      if (!editStr(0, 1, PSTR("__:__"), buffer, BUFFER_SIZE, input)) {
         byte h = CHARTONUM(buffer[0], 10) + CHARTONUM(buffer[1], 1);
         byte m = CHARTONUM(buffer[3], 10) + CHARTONUM(buffer[4], 1);
         DateTime dt = rtc.now();
@@ -109,7 +109,7 @@ class EditDate : public Edit {
     }
   
     byte editDate(byte input) {
-      if (!editStr(10, 30, PSTR("____.__.__"), buffer, BUFFER_SIZE, input)) {
+      if (!editStr(0, 1, PSTR("____.__.__"), buffer, BUFFER_SIZE, input)) {
         int y = CHARTONUM(buffer[0], 1000) + CHARTONUM(buffer[1], 100) + CHARTONUM(buffer[2], 10) + CHARTONUM(buffer[3], 1);
         byte m = CHARTONUM(buffer[5], 10) + CHARTONUM(buffer[6], 1);
         byte d = CHARTONUM(buffer[8], 10) + CHARTONUM(buffer[9], 1);
@@ -140,7 +140,7 @@ class EditNumber : public Edit {
     }
   
     byte editNumber(byte input) {
-      if (!editStr(10, 30, PSTR("____"), buffer, BUFFER_SIZE, input)) {        
+      if (!editStr(0, 1, PSTR("____"), buffer, BUFFER_SIZE, input)) {        
         return false;
       }
       return true;
@@ -183,7 +183,7 @@ class EditYesNoOption : public EditOption {
         char * OPT[] = { "NO", "YES" };
           
         if (input==KEY_ENTER) {
-          return selected;
+          return false;
         }
           
         setOptions(OPT, 2, input);
