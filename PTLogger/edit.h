@@ -54,8 +54,7 @@ class Edit {
         bInvalidate = false;
       }      
       
-			lcd.setCursor(pos, 1);
-			
+      lcd.setCursor(pos, 1);			
       return true;
     }
     
@@ -83,7 +82,12 @@ class EditTime : public Edit {
       }
       return true;
     }
-  
+    
+    void setTime(DateTime dt) {
+      itochars(dt.hour(), buffer, 2);
+      itochars(dt.minute(), &buffer[3], 2);
+      bInvalidate = true;
+    }
   
   private :
     char validateStr(char* buffer, byte pos, char c) {    
@@ -120,6 +124,12 @@ class EditDate : public Edit {
       return true;
     }
   
+    void setDate(DateTime dt) {
+      itochars(dt.year(), buffer, 4);
+      itochars(dt.month(), &buffer[5], 2);
+      itochars(dt.day(), &buffer[8], 2);
+      bInvalidate = true;      
+    }
   
   private :
     char validateStr(char* buffer, byte pos, char c) {    

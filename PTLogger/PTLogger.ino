@@ -147,7 +147,7 @@ byte setRtcTime(byte input) {
   static byte enter = 0;
 
   if(!enter) {
-    edTime.bInvalidate = true;
+    edTime.setTime(rtc.now());
     lcd.clear();
     lcd.print_f(0, 0, PSTR("Set Time"));
     enter = true;
@@ -165,7 +165,7 @@ byte setRtcDate(byte input) {
   static byte enter = 0;
 
   if(!enter) {
-    edDate.bInvalidate = true;
+    edDate.setDate(rtc.now());
     lcd.clear();
     lcd.print_f(0, 0, PSTR("Set Date"));
     enter = true;
