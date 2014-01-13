@@ -18,7 +18,7 @@ typedef struct PROGMEM
     byte (*pFunc)(byte input);
 } MENU_STATE;
 
-const char MT_MAIN[] PROGMEM          = "Main Menu";
+const char MT_MAIN_MENU[] PROGMEM     = "Main Menu";
 const char MT_DATE_TIME[] PROGMEM     = "Date Time";
 const char MT_DATE[] PROGMEM          = "Date";
 const char MT_TIME[] PROGMEM          = "Time";
@@ -29,7 +29,8 @@ const char MT_EXIT[] PROGMEM          = "Exit";
 
 const MENU_NEXTSTATE menu_nextstate[] PROGMEM = {
 //  STATE                       INPUT       NEXT STATE
-    {ST_MAIN,                   KEY_PLUS,   ST_MAIN_MENU},
+    {ST_MAIN,                   KEY_PLUS,   ST_SHOW_VALUES},
+    {ST_SHOW_VALUES,            KEY_PLUS,   ST_MAIN_MENU},
     
 // Main Menu    
     {ST_MAIN_MENU,              KEY_PLUS,   ST_DATE_TIME},
@@ -47,8 +48,9 @@ const MENU_NEXTSTATE menu_nextstate[] PROGMEM = {
 const MENU_STATE menu_state[] PROGMEM = {
 //  STATE GROUP                         STATE                       STATE TEXT                  STATE_FUNC
     {ST_MAIN,                           ST_MAIN,                    NULL,                       mainScreen},
+    {ST_SHOW_VALUES,                    ST_SHOW_VALUES,             NULL,                       showValues},
     
-    {ST_MAIN_MENU,                      ST_MAIN_MENU,               MT_MAIN,                    showMenu},
+    {ST_MAIN_MENU,                      ST_MAIN_MENU,               MT_MAIN_MENU,               showMenu},
     {ST_MAIN_MENU,                      ST_DATE_TIME_MENU,          MT_DATE_TIME,               NULL},
     {ST_MAIN_MENU,                      ST_LOG_MENU,                MT_LOG,                     NULL},    
     {ST_MAIN_MENU,                      ST_EXIT,                    MT_EXIT,                    mainScreen},

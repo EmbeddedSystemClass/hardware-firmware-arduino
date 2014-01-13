@@ -17,6 +17,7 @@
 #define ST_LOG_STATE         9
 #define ST_LOG_INTERVAL     10
 #define ST_EXIT_LOG         11
+#define ST_SHOW_VALUES      12
 
 #define ST_OK	           251
 #define ST_CANCEL          252
@@ -29,6 +30,7 @@ const byte btn2Pin = A2;     // pushbutton 2 pin
 
 
 byte showMenu(byte input);
+byte showValues(byte input);
 byte exitMainMenu(byte input);
 byte exitDateTimeMenu(byte input);
 byte mainScreen(byte inp);

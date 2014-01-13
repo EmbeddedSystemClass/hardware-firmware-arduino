@@ -98,8 +98,35 @@ byte mainScreen(byte input) {
   if (input == KEY_ENTER) {
     enter = false;
     return ST_MAIN_MENU;
-  }  
+  } else if (input == KEY_PLUS) {
+    enter = false;
+    return ST_SHOW_VALUES;
+  }
+  
   return ST_MAIN;
+}
+
+byte showValues(byte input) {
+  static byte enter = 0;
+  if (!enter) {
+    lcd.clear();
+    lcd.print_f(0, 0, PSTR("Values"));
+    enter = true;
+  }
+  lcd.print_f(0, 1, PSTR("Temperatur:"));  
+  char buffer[4] = { "   " };
+  itochars(PT1000.temperature, buffer, 3);
+  lcd.print(0, 11, buffer);
+  
+  if (input == KEY_ENTER) {
+    enter = false;
+    return ST_MAIN_MENU;
+  } else if (input == KEY_PLUS) {
+    enter = false;
+    return ST_MAIN;
+  }
+  
+  return ST_SHOW_VALUES;
 }
 
 byte setLogState(byte input) {

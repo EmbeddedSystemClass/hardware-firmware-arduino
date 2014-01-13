@@ -1,15 +1,15 @@
-//#ifndef _MEASUREH_
-//#define _MEASUREH_
+#ifndef _MEASUREH_
+#define _MEASUREH_
+
+// PT1000 Tabelle *****************************
 //
-//// PT1000 Tabelle *****************************
-////
-////   Spannungsteiler mit Rv = 1600 Ohm
-//// 	 ADC Bereich von 684 bis 1023
-////
-////   		Offset 684 subtrahieren
-////
-//// ********************************************
+//   Spannungsteiler mit Rv = 1600 Ohm
+// 	 ADC Bereich von 684 bis 1023
 //
+//   		Offset 684 subtrahieren
+//
+// ********************************************
+
 //const int PT1000[] PROGMEM = {
 //	-50,	-50,	-49,	-49,	-48,	-48,	-48,	-47,	-47,	-46,	-46,	-45,	-45,	-44,	-44,	-44,	-43,
 //	-43,	-42,	-42,	-41,	-41,	-40,	-40,	-39,	-39,	-38,	-38,	-38,	-37,	-37,	-36,	-36,	-35,
@@ -32,25 +32,27 @@
 //	130,	131,	132,	132,	133,	134,	135,	136,	136,	137,	138,	139,	139,	140,	141,	142,	143,
 //	144,	144,	145,	146,	147,	148,	148,	149,	150,	151,	152,	153,	153,	154,	155,	156,	157
 //};
-//
-//
-//
-//class PT1000 {
-//	public:
-//		unsigned bReady:1;       
-//		int8_t temperature;
-//
-//	public:
-//		void doMeasure() {
-//			bReady = false;
-//			
-//			if (MeasureEvents.bMeasure) {
-//				// todo implement measure
-//				bReady = true;
-//			}
-//		}
-//};
-//
-//PT1000 PT1000;
-//
-//#endif
+
+
+
+class PT1000 {
+public:
+unsigned bReady:
+  1;       
+  int8_t temperature;
+
+public:
+  void doMeasure() {
+    bReady = false;
+
+    if (MeasureEvents.bMeasure) {
+      // todo implement measure
+      bReady = true;
+    }
+  }
+};
+
+PT1000 PT1000;
+
+#endif
+
