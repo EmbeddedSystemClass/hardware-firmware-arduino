@@ -48,14 +48,14 @@ void setup()
   }
   /*
   // see if the card is present and can be initialized:
-  if (!SD.begin(sdChipSelect)) {
-    Serial.println(F("Card failed, or not present"));
-    // don't do anything more:
-    return;
-  } else {
-    Serial.println(F("card initialized."));
-  }
-*/
+   if (!SD.begin(sdChipSelect)) {
+   Serial.println(F("Card failed, or not present"));
+   // don't do anything more:
+   return;
+   } else {
+   Serial.println(F("card initialized."));
+   }
+   */
   LogEvents.start();
 }
 
@@ -85,7 +85,7 @@ byte mainScreen(byte input) {
   }
 
   char buffer[9]= { 
-    "00:00:00"   };  
+    "00:00:00"     };  
   if (Events.bT1000MS) {
     DateTime dt = rtc.now();
     itochars(dt.hour(), &buffer[0], 2);
@@ -98,11 +98,12 @@ byte mainScreen(byte input) {
   if (input == KEY_ENTER) {
     enter = false;
     return ST_MAIN_MENU;
-  } else if (input == KEY_PLUS) {
+  } 
+  else if (input == KEY_PLUS) {
     enter = false;
     return ST_SHOW_VALUES;
   }
-  
+
   return ST_MAIN;
 }
 
@@ -111,21 +112,26 @@ byte showValues(byte input) {
   if (!enter) {
     lcd.clear();
     lcd.print_f(0, 0, PSTR("Values"));
+    lcd.print_f(0, 1, PSTR("Temperatur:"));
     enter = true;
   }
-  lcd.print_f(0, 1, PSTR("Temperatur:"));  
-  char buffer[4] = { "   " };
-  itochars(PT1000.temperature, buffer, 3);
-  lcd.print(0, 11, buffer);
-  
+
+  if (Events.bT1000MS) {
+      
+    char buffer[4] = { "   " };
+    itochars(PT1000.temperature, buffer, 3);
+    lcd.print(11, 1, buffer);
+  }
+
   if (input == KEY_ENTER) {
     enter = false;
     return ST_MAIN_MENU;
-  } else if (input == KEY_PLUS) {
+  } 
+  else if (input == KEY_PLUS) {
     enter = false;
     return ST_MAIN;
   }
-  
+
   return ST_SHOW_VALUES;
 }
 
@@ -292,7 +298,7 @@ void itochars(unsigned int value, char buffer[], byte digits) {
   unsigned int k;
 
   unsigned int P[] = { 
-    1, 10, 100, 1000, 10000   };
+    1, 10, 100, 1000, 10000     };
 
   k = P[digits-1]; 
 
@@ -320,5 +326,6 @@ String getDateStr() {
   //s += formatNumber(rtc.now().Day(), 2);
   return s;
 }
+
 
 
