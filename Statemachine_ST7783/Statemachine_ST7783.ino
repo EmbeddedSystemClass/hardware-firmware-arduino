@@ -19,8 +19,8 @@
 #include <OneWire.h>
 
 #include "main.h"
-#include "events.h"
 #include "displaymanager.h"
+#include "events.h"
 #include "measure.h"
 #include "data.h"
 #include "menu.h"
@@ -35,6 +35,8 @@ void setup()
   // initialize the pushbutton pin as an input:
   //pinMode(btn1Pin, INPUT);
   //pinMode(btn2Pin, INPUT);
+  
+  pinMode(13, OUTPUT);
 
   Display.beginDisplay();
   Display.clearDisplay();

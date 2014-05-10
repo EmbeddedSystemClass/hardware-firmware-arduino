@@ -44,11 +44,11 @@ class DisplayManager : public SWTFT {
     void display() {
     };
     
-    void displayText_f(byte x, byte y, byte fontSize, const char *pFlashStr) {
+    void displayText_f(int x, int y, int fontSize, const char *pFlashStr) {
       displayText_f(x, y, fontSize, BLACK, WHITE, pFlashStr);
     }
     
-    void displayText_f(byte x, byte y, byte fontSize, uint16_t textColor, uint16_t backColor, const char *pFlashStr) {
+    void displayText_f(int x, int y, int fontSize, uint16_t textColor, uint16_t backColor, const char *pFlashStr) {
       setTextWrap(false);
       setTextColor(textColor, backColor);
       setTextSize(fontSize);
@@ -61,12 +61,12 @@ class DisplayManager : public SWTFT {
       }
     }
     
-    void displayText(byte x, byte y, byte fontSize, char str[])
+    void displayText(int x, int y, int fontSize, char str[])
     {
       displayText(x, y, fontSize, str, BLACK, WHITE);
     }
     
-    void displayText(byte x, byte y, byte fontSize, char str[], uint16_t textColor, uint16_t backColor)
+    void displayText(int x, int y, int fontSize, char str[], uint16_t textColor, uint16_t backColor)
     {
       setTextColor(textColor, backColor);
       setTextSize(fontSize);

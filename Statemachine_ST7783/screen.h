@@ -96,6 +96,57 @@ class Frame : public Component {
    }
 };
 
+class Button {
+  public: 
+    Button() {
+    }
+    
+    int x, y, width, height;
+    
+    bool hitTest(int tx, int ty) {
+      if(tx > x && tx < (x + width)) {
+        if(ty > y && ty < (y + height)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    
+    void draw(int x, int y, int width, int height) {
+      this->x = x;
+      this->y = y;
+      this->height = height;
+      this->width = width;
+      Button::drawButton(x, y, width, height);
+    }
+    
+    static void drawButton(int x, int y, int width, int height) {
+      int r = min(width, height) >> 3;
+    
+      Display.fillRoundRect(x, y, width, height, r, Display.color565(80, 160, 240));
+      for(byte i=0; i < 3; i++) {
+        Display.drawRoundRect(x + i, y + i, width - i - i, height - i - i, r, Display.color565(80, 160 - i*8, 240));
+      }
+    }
+    
+    static void drawButton(int x, int y, int width, int height, const char *pFlashStr1, const char *pFlashStr2) {
+      drawButton(x, y, width, height);
+      
+      byte yd = pFlashStr1 && pFlashStr2 ? 3 : 2;
+      
+      int tx = x + (width / 2) - (strlen_P(pFlashStr1) * TEXTWIDTH * 3 / 2);
+      int ty = y + (height / yd) - (TEXTHEIGHT * 3 / 2); 
+      
+      Display.displayText_f(tx, ty, 3, WHITE, Display.color565(80, 160, 240), pFlashStr1);
+      
+      if(pFlashStr2) {
+        tx = x + (width / 2) - (strlen_P(pFlashStr2) * TEXTWIDTH * 3 / 2);
+        ty = y + 2 * (height / yd) - (TEXTHEIGHT * 3 / 2); 
+        Display.displayText_f(tx, ty, 3, WHITE, Display.color565(80, 160, 240), pFlashStr2);
+      }
+    }
+};
+
 class TempGauge {
   public:
     
@@ -121,6 +172,7 @@ class MainScreen : public Screen {
   public:
     TempGauge tempGauge;
     TempGauge outTempGauge;
+    Button    menuButton;
   public:
     MainScreen() {      
     }
@@ -129,6 +181,7 @@ class MainScreen : public Screen {
 
       if (bInvalidate) {
         Display.displayText_f(0, 0, 2, YELLOW, BACKCOLOR, PSTR("App Test"));
+        menuButton.draw(5, 170, 60, 60);
       }
       
       char buffer[9]= { "00:00:00" };  
@@ -170,9 +223,14 @@ class MainScreen : public Screen {
       
       draw();
   
-      if (input == KEY_ENTER) {
+      if(Events.bOnTouch && menuButton.hitTest(Events.touchX, Events.touchY)) {
         hide();
         return ST_MAIN_MENU;
+      }
+  
+      if (input == KEY_ENTER) {
+        //hide();
+        //return ST_MAIN_MENU;
       }  
       return ST_MAIN;
     }
@@ -279,7 +337,7 @@ class MenuScreen : public Screen {
     }
 };
 
-MenuScreen MenuScreen;
+//MenuScreen MenuScreen;
 
 class EditTimeScreen : public Screen {
   public:
@@ -454,5 +512,32 @@ class TempChartScreen : public Screen {
 };
 
 TempChartScreen TempChartScreen;
+
+class TileMenu : Screen {
+  public:
+    void draw() {
+      if (!bInvalidate) {
+        return;
+      }
+      
+      Button::drawButton(  0,   0, 118, 118, PSTR("Date"), PSTR("Time"));
+      Button::drawButton(120,   0, 118, 118, PSTR("Log"),  NULL);
+      Button::drawButton(  0, 120, 118, 118, PSTR("Temp"), NULL);
+      Button::drawButton(120, 120, 118, 118, PSTR("Humi"), NULL);
+      Button::drawButton(  0, 240, 240,  80, PSTR("Exit"), NULL);
+      
+      bInvalidate = false;
+    }
+    
+    byte execute(byte input) {
+      if (!bVisible) {
+        show();
+      } 
+      
+      draw();
+    }  
+};
+
+TileMenu MenuScreen;
 
 #endif

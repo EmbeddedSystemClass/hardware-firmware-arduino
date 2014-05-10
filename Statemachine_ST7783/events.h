@@ -34,6 +34,10 @@ class EventManager {
     unsigned bBtn1:1;
     unsigned bBtn2:1;
 
+    unsigned bOnTouch:1;
+    int touchX;
+    int touchY;
+
     unsigned bT50MS:1;
     unsigned bT500MS:1;
     unsigned bT1000MS:1;
@@ -97,9 +101,13 @@ class EventManager {
       // pressure of 0 means no pressing!
     
       if (p.z > MINPRESSURE && p.z < MAXPRESSURE) {
-        bBtn1 = true;
+        bOnTouch = true;
+        touchX = Display.width()-(map(p.x, TS_MINX, TS_MAXX, Display.width(), 0));
+        touchY = Display.height()-(map(p.y, TS_MINY, TS_MAXY, Display.height(), 0));
+        Serial.println(touchX);
+        Serial.println(touchY);
       } else {
-        bBtn1 = false;
+        bOnTouch = false;
       }  
     }
 };
