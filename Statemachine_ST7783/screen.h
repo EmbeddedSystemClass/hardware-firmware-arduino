@@ -112,6 +112,15 @@ class Button {
       return false;
     }
     
+    static bool hitTest(int x, int y, int width, int height) {
+      if(Events.touchX > x && Events.touchX < (x + width)) {
+        if(Events.touchY > y && Events.touchY < (y + height)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    
     void draw(int x, int y, int width, int height) {
       this->x = x;
       this->y = y;
@@ -535,9 +544,108 @@ class TileMenu : Screen {
       } 
       
       draw();
+      
+      if(Button::hitTest(0, 240, 240,  80)) {
+        hide();
+        return ST_MAIN;
+      }
     }  
 };
 
-TileMenu MenuScreen;
+TileMenu MenuScreen1;
 
+class Editor : Screen {
+  public:
+    unsigned bInvalidateValue:1;
+    unsigned bDot:1;
+    char str[12];
+    byte pos;
+    
+  public:
+    
+    void drawEditor() {
+      Display.drawFastHLine(0,   0, ST7735_TFTWIDTH, WHITE);
+      Display.drawFastHLine(0,  64, ST7735_TFTWIDTH, WHITE);
+      Display.drawFastHLine(0, 128, ST7735_TFTWIDTH, WHITE);
+      Display.drawFastHLine(0, 192, ST7735_TFTWIDTH, WHITE);
+      Display.drawFastHLine(0, 256, ST7735_TFTWIDTH - 62, WHITE);
+      Display.drawFastHLine(0, 319, ST7735_TFTWIDTH, WHITE);
+      
+      Display.drawFastVLine(  0,  0, ST7735_TFTHEIGHT, WHITE);
+      Display.drawFastVLine( 60, 64, ST7735_TFTHEIGHT, WHITE);
+      Display.drawFastVLine(120, 64, ST7735_TFTHEIGHT, WHITE);
+      Display.drawFastVLine(180, 64, ST7735_TFTHEIGHT, WHITE);
+      Display.drawFastVLine(239,  0, ST7735_TFTHEIGHT, WHITE);
+      
+      Display.displayText_f(22,  85, 3, WHITE, BLACK, PSTR("7"));
+      Display.displayText_f(22, 149, 3, WHITE, BLACK, PSTR("4"));
+      Display.displayText_f(22, 213, 3, WHITE, BLACK, PSTR("1"));
+      Display.displayText_f(22, 277, 3, WHITE, BLACK, PSTR("0"));
+      
+      Display.displayText_f(82,  85, 3, WHITE, BLACK, PSTR("8"));
+      Display.displayText_f(82, 149, 3, WHITE, BLACK, PSTR("5"));
+      Display.displayText_f(82, 213, 3, WHITE, BLACK, PSTR("2"));
+      Display.displayText_f(82, 277, 3, WHITE, BLACK, PSTR("."));
+      
+      Display.displayText_f(142,  85, 3, WHITE, BLACK, PSTR("9"));
+      Display.displayText_f(142, 149, 3, WHITE, BLACK, PSTR("6"));
+      Display.displayText_f(142, 213, 3, WHITE, BLACK, PSTR("3"));
+      Display.displayText_f(142, 277, 3, WHITE, BLACK, PSTR("<"));
+      
+      Display.displayText_f(204,  85, 3, WHITE, BLACK, PSTR("-"));
+      Display.displayText_f(204, 149, 3, WHITE, BLACK, PSTR("+"));
+      Display.displayText_f(206, 211, 2, WHITE, BLACK, PSTR("E"));
+      Display.displayText_f(206, 229, 2, WHITE, BLACK, PSTR("N"));
+      Display.displayText_f(206, 247, 2, WHITE, BLACK, PSTR("T"));
+      Display.displayText_f(206, 265, 2, WHITE, BLACK, PSTR("E"));
+      Display.displayText_f(206, 283, 2, WHITE, BLACK, PSTR("R"));      
+    }
+    
+    byte execute(byte input) {
+      if (!bVisible) {
+        for(byte i = 0; i < 12; i++)
+          str[i] = 0;
+        pos = 0;
+        bDot = false;
+        show();
+      } 
+      
+      if (bInvalidate) {
+        drawEditor();
+        bInvalidate = false;
+      }
+      
+      if(Events.bOnTouch) {
+        int x = Events.touchX / 60;
+        int y = Events.touchY / 64 - 1;
+        
+        int v = x + 7 - y * 3;
+
+        if(v > 0 && v <= 9) {
+          str[pos++] = '0' + v;
+        } else if(v == -2) {
+          str[pos++] = '0';
+        } else if(!bDot && v == -1) {
+          str[pos++] = '.';
+          bDot = true;
+        } else if(v == 0) {
+          if(pos > 0) pos--;
+          if(str[pos] == '.') bDot = false;
+          str[pos] = 0;
+        }
+        
+        pos = pos % 11;
+        
+        Display.displayText_f(18, 21, 3, WHITE, BLACK, PSTR("            "));
+        Display.displayText(18, 21, 3, str, WHITE, BLACK);
+      }
+      
+      if(Button::hitTest(180, 192, 60,  128)) {
+        hide();
+        return ST_MAIN;
+      }
+    }
+};
+
+Editor MenuScreen;
 #endif

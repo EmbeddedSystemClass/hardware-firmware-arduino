@@ -14,8 +14,8 @@
 #define YELLOW  0xFFE0
 #define WHITE   0xFFFF
 
-#define ST7735_TFTWIDTH  320
-#define ST7735_TFTHEIGHT 240
+#define ST7735_TFTWIDTH  240
+#define ST7735_TFTHEIGHT 320
 
 
 class DisplayManager : public SWTFT {  
@@ -35,6 +35,8 @@ class DisplayManager : public SWTFT {
       reset();
       uint16_t identifier = readID();
       begin(identifier);
+      setRotation(0);
+      clearDisplay();
     }
     
     void clearDisplay() {
@@ -52,9 +54,9 @@ class DisplayManager : public SWTFT {
       setTextWrap(false);
       setTextColor(textColor, backColor);
       setTextSize(fontSize);
-      
+      setCursor(x, y);
       for (byte i = 0; (const char)(pgm_read_byte(&pFlashStr[i])) && i < 40; i++) {
-        setCursor(x + i * 6 * fontSize, y);
+        //setCursor(x + i * 6 * fontSize, y);
         char c = pgm_read_byte(&pFlashStr[i]);
         if (c == '\0') break;
         write(pgm_read_byte(&pFlashStr[i]));
@@ -65,13 +67,21 @@ class DisplayManager : public SWTFT {
     {
       displayText(x, y, fontSize, str, BLACK, WHITE);
     }
-    
+  
     void displayText(int x, int y, int fontSize, char str[], uint16_t textColor, uint16_t backColor)
     {
       setTextColor(textColor, backColor);
       setTextSize(fontSize);
       setCursor(x, y);
       println(str);	
+    }
+    
+    void displayText(int x, int y, int fontSize, char c, uint16_t textColor, uint16_t backColor)
+    {
+      setTextColor(textColor, backColor);
+      setTextSize(fontSize);
+      setCursor(x, y);
+      write(c);	
     }
 };
 

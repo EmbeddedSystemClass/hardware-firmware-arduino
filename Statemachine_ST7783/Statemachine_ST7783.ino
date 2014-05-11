@@ -39,7 +39,7 @@ void setup()
   pinMode(13, OUTPUT);
 
   Display.beginDisplay();
-  Display.clearDisplay();
+ 
   rtc.stopRTC(); //stop the RTC
   rtc.setTime(20, 42, 0); //set the time here
   rtc.setDate(1, 1, 2000); //set the date here
