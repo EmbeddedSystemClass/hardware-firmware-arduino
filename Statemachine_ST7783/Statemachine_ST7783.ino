@@ -26,7 +26,6 @@
 #include "menu.h"
 #include "statemanager.h"
 #include "clock.h"
-#include "edit.h"
 #include "charts.h"
 #include "screen.h"
 
