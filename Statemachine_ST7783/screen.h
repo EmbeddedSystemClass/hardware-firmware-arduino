@@ -365,21 +365,20 @@ class NumberEditor : Screen {
     }
     
     virtual void intialize() {
-      for(byte i = 0; i < 12; i++)
-          str[i] = 0;
+      strcpy_P(str, PSTR("           "));
       pos = 0;
-      maxPos = 11;
+      maxPos = 10;
       bDot = false;
     }
     
     virtual byte onNumberButton(byte number) {
+      if(pos > maxPos) return false;
       str[pos++] = '0' + number;
       return true;
     }
     
     virtual byte onDotButton() {
-      if(bDot)
-        return;
+      if(bDot || pos > maxPos) return false;
       str[pos++] = '.';
       bDot = true;
       return true;
@@ -388,15 +387,12 @@ class NumberEditor : Screen {
     virtual byte onBackSpaceButton() {
       if(pos > 0) pos--;
       if(str[pos] == '.') bDot = false;
-      str[pos] = 0;
+      str[pos] = ' ';
       return true;      
     }
     
     byte execute(byte input) {      
-      if(Button::hitTest(180, 192, 60,  128)) {   // Exit pressed?
-        hide();
-        return ST_MAIN;
-      }
+
       
       if (!bVisible) {
         intialize();
@@ -419,8 +415,6 @@ class NumberEditor : Screen {
         } else if(n == 0) {
           bInvalidateValue = onBackSpaceButton();
         }
-        
-        pos = pos % maxPos;        
       }
       
       if (bInvalidate) {
@@ -430,34 +424,47 @@ class NumberEditor : Screen {
       }
       
       if(bInvalidateValue) {
-        Display.displayText_f(18, 21, 3, WHITE, BLACK, PSTR("            "));
         Display.displayText(18, 21, 3, str, WHITE, BLACK);
         bInvalidateValue = false;
-      }      
+      }
+      
+      if(Button::hitTest(180, 192, 60,  128)) {   // Exit pressed?
+        hide();
+        return ST_MAIN;
+      }
     }
 };
 
 NumberEditor MenuScreen;
 
-class DateEditor : NumberEditor {
+class DateEditor : public NumberEditor {
   public:
     void intialize() {
-      str = { "__.__.____" };
+      strcpy_P(str, PSTR("__.__.____"));
       pos = 0;
-      maxPos = 10;
+      maxPos = 9;
       bDot = false;
     }
     
+    virtual byte onNumberButton(byte number) {
+      if(pos > maxPos) return false;
+      str[pos++] = '0' + number;      
+      if(str[pos] == '.') pos++;      
+      return true;
+    }
+    
     byte onDotButton() {
-      pos++;
+      return false;
     }
     
     byte onBackSpaceButton() {
       if(pos > 0) pos--;
-      if(str[pos] == '.') bDot = false;
+      if(str[pos] == '.' && pos > 1) pos--;
       str[pos] = '_';
       return true;      
     }
 };
+
+//DateEditor MenuScreen;
 
 #endif
