@@ -247,244 +247,6 @@ class MainScreen : public Screen {
 
 MainScreen MainScreen;
 
-
-class MenuScreen : public Screen {
-  private:
-    byte selected;  // selected menu item
-    byte count;     // number of menu items
-    
-  public: 
-    unsigned bInvalidateText:1;  
-    Frame selectedFrame;
-    
-  public:   
-    void draw() {
-      if (!bInvalidate) {
-        return;
-      }
-      if (bInvalidateText) { 
-        drawMenu();
-        bInvalidateText = false;
-        selectedFrame.bInvalidate = true;
-      }
-      
-      selectedFrame.setRect(0, 4 + selected * TEXTHEIGHT * 2 + selected * 4, ST7735_TFTHEIGHT, TEXTHEIGHT * 2 + 4);
-      selectedFrame.draw();
-    }
-    
-    void drawMenu() {        
-      byte y = 2;
-      byte group;
-      byte state;
-      
-      PGM_P menuText;
-      
-      count = 0;
-      
-      for (byte i=0; (group = pgm_read_byte(&menu_state[i].group)); i++) {
-        if (group == StateMachine.stateGroup) {
-          state = pgm_read_byte(&menu_state[i].state);
-          menuText = (PGM_P)pgm_read_word(&menu_state[i].pText);
-          if (menuText != NULL) {
-            if (state == group) {
-              Display.fillRect(0, 0, ST7735_TFTHEIGHT, TEXTHEIGHT + 10, WHITE);  // draw menu title
-              Display.displayText_f(4, y, 2, BACKCOLOR, WHITE, menuText);              
-              y += 4;
-            } else {
-              Display.displayText_f(4, y, 2, menuText);  // draw menu item
-              count++;
-            }
-            y += TEXTHEIGHT * 2 + 4;
-          }
-        }
-      }
-      
-      selected = 1;
-    }
-    
-    byte getSelectedState() {
-      byte group;
-            
-      for (byte i = 0; (group = pgm_read_byte(&menu_state[i].group)); i++) {
-        if (group == StateMachine.stateGroup) {
-          return pgm_read_byte(&menu_state[i + selected].state);
-        }
-      }
-      
-      return 0;
-    }
-    
-    void show() {
-      if (!bVisible) {
-        bInvalidate = true;
-        bInvalidateText = true;
-      }
-      bVisible = true;
-    }
-    
-    byte execute(byte input) {
-      if (!bVisible) {
-        show();
-      }
-  
-      if (input == KEY_PLUS) {
-        selected %= count;
-        selected++;
-        bInvalidate = true;
-      } else if (input == KEY_ENTER) {
-        StateMachine.stateGroup = getSelectedState();
-        hide();
-        return StateMachine.stateGroup;
-      } 
-      
-      draw();
-      
-      return StateMachine.state;
-    }
-    
-    static byte xy(byte intput) {
-    }
-};
-
-//MenuScreen MenuScreen;
-
-class EditTimeScreen : public Screen {
-  public:
-    EditTime edTime;
-
-  public:
-    byte editTime(byte input) {      
-      if (!edTime.editTime(input)) {
-        hide();
-        return ST_DATE_TIME_MENU;
-      }
-      
-      return StateMachine.state;
-    } 
-    
-    void show() {
-      if (!bVisible) {
-        bInvalidate = true;        
-        edTime.bInvalidateText = true;
-        edTime.bInvalidatePos = true;
-      }
-      bVisible = true;
-    }
-    
-    void draw() {
-      if (!bInvalidate) {
-        return;
-      }
-      
-      Display.fillRect(0, 0, ST7735_TFTHEIGHT, TEXTHEIGHT + 10, WHITE);  // draw menu title
-      Display.displayText_f(4, 2, 2, BACKCOLOR, WHITE, PSTR("SET TIME"));
-      
-      bInvalidate = false;    
-    }
-    
-    byte execute(byte input) {
-      if (!bVisible) {
-        show();
-      }     
-      
-      draw();
-      
-      return editTime(input);      
-    }
-};
-
-EditTimeScreen EditTimeScreen;
-
-class EditDateScreen : public Screen {
-  public:
-    EditDate edDate;
-
-  public:
-    byte editDate(byte input) {      
-      if (!edDate.editDate(input)) {
-        hide();
-        return ST_DATE_TIME_MENU;
-      }
-      
-      return StateMachine.state;
-    } 
-    
-    void show() {
-      if (!bVisible) {
-        bInvalidate = true;        
-        edDate.bInvalidateText = true;
-        edDate.bInvalidatePos = true;
-      }
-      bVisible = true;
-    }
-    
-    void draw() {
-      if (!bInvalidate) {
-        return;
-      }
-      
-      Display.fillRect(0, 0, ST7735_TFTHEIGHT, TEXTHEIGHT + 10, WHITE);  // draw menu title
-      Display.displayText_f(4, 2, 2, BACKCOLOR, WHITE, PSTR("SET Date"));
-      
-      bInvalidate = false;    
-    }
-    
-    byte execute(byte input) {
-      if (!bVisible) {
-        show();
-      }     
-      
-      draw();
-      
-      return editDate(input);      
-    }
-};
-
-EditDateScreen EditDateScreen;
-
-class LogSettingsScreen : public Screen {
-  public:
-    EditYesNoOption logOption;
-  
-  public:    
-    void show() {
-      if (!bVisible) {
-        bInvalidate = true;        
-        logOption.bInvalidateText = true;
-        logOption.bInvalidateSelection = true;
-      }
-      bVisible = true;
-    }
-    
-    void draw() {
-      if (!bInvalidate) {
-        return;
-      }
-      
-      Display.fillRect(0, 0, ST7735_TFTHEIGHT, TEXTHEIGHT + 10, WHITE);  // draw menu title
-      Display.displayText_f(4, 2, 2, BACKCOLOR, WHITE, PSTR("Set Logging"));
-      
-      bInvalidate = false;    
-    }
-    
-    byte execute(byte input) {
-      if (!bVisible) {
-        show();
-      }     
-      
-      draw();
-      
-      logOption.getOption(input);
-      
-      if (input == KEY_ENTER) {
-        hide();
-        return ST_MAIN_MENU;
-      }
-    }
-};
-
-LogSettingsScreen LogSettingsScreen;
-
 class TempChartScreen : public Screen {
   public:
     byte selected;
@@ -554,12 +316,13 @@ class TileMenu : Screen {
 
 TileMenu MenuScreen1;
 
-class Editor : Screen {
+class NumberEditor : Screen {
   public:
     unsigned bInvalidateValue:1;
     unsigned bDot:1;
     char str[12];
     byte pos;
+    byte maxPos;
     
   public:
     
@@ -601,51 +364,100 @@ class Editor : Screen {
       Display.displayText_f(206, 283, 2, WHITE, BLACK, PSTR("R"));      
     }
     
-    byte execute(byte input) {
-      if (!bVisible) {
-        for(byte i = 0; i < 12; i++)
+    virtual void intialize() {
+      for(byte i = 0; i < 12; i++)
           str[i] = 0;
-        pos = 0;
-        bDot = false;
+      pos = 0;
+      maxPos = 11;
+      bDot = false;
+    }
+    
+    virtual byte onNumberButton(byte number) {
+      str[pos++] = '0' + number;
+      return true;
+    }
+    
+    virtual byte onDotButton() {
+      if(bDot)
+        return;
+      str[pos++] = '.';
+      bDot = true;
+      return true;
+    }
+    
+    virtual byte onBackSpaceButton() {
+      if(pos > 0) pos--;
+      if(str[pos] == '.') bDot = false;
+      str[pos] = 0;
+      return true;      
+    }
+    
+    byte execute(byte input) {      
+      if(Button::hitTest(180, 192, 60,  128)) {   // Exit pressed?
+        hide();
+        return ST_MAIN;
+      }
+      
+      if (!bVisible) {
+        intialize();
         show();
-      } 
+      }       
+      
+      if(Events.bOnTouch) {
+        // Number Matrix test
+        int x = Events.touchX / 60;
+        int y = Events.touchY / 64 - 1;
+        
+        int n = x + 7 - y * 3;
+
+        if(n > 0 && n <= 9) {
+          bInvalidateValue = onNumberButton(n);
+        } else if(n == -2) {
+          bInvalidateValue = onNumberButton(0);
+        } else if(n == -1) {
+          bInvalidateValue = onDotButton();
+        } else if(n == 0) {
+          bInvalidateValue = onBackSpaceButton();
+        }
+        
+        pos = pos % maxPos;        
+      }
       
       if (bInvalidate) {
         drawEditor();
         bInvalidate = false;
+        bInvalidateValue = true;
       }
       
-      if(Events.bOnTouch) {
-        int x = Events.touchX / 60;
-        int y = Events.touchY / 64 - 1;
-        
-        int v = x + 7 - y * 3;
-
-        if(v > 0 && v <= 9) {
-          str[pos++] = '0' + v;
-        } else if(v == -2) {
-          str[pos++] = '0';
-        } else if(!bDot && v == -1) {
-          str[pos++] = '.';
-          bDot = true;
-        } else if(v == 0) {
-          if(pos > 0) pos--;
-          if(str[pos] == '.') bDot = false;
-          str[pos] = 0;
-        }
-        
-        pos = pos % 11;
-        
+      if(bInvalidateValue) {
         Display.displayText_f(18, 21, 3, WHITE, BLACK, PSTR("            "));
         Display.displayText(18, 21, 3, str, WHITE, BLACK);
-      }
-      
-      if(Button::hitTest(180, 192, 60,  128)) {
-        hide();
-        return ST_MAIN;
-      }
+        bInvalidateValue = false;
+      }      
     }
 };
 
-Editor MenuScreen;
+NumberEditor MenuScreen;
+
+class DateEditor : NumberEditor {
+  public:
+    void intialize() {
+      str = { "__.__.____" };
+      pos = 0;
+      maxPos = 10;
+      bDot = false;
+    }
+    
+    byte onDotButton() {
+      pos++;
+    }
+    
+    byte onBackSpaceButton() {
+      if(pos > 0) pos--;
+      if(str[pos] == '.') bDot = false;
+      str[pos] = '_';
+      return true;      
+    }
+};
+
 #endif

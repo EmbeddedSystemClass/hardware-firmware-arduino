@@ -78,15 +78,18 @@ byte mainScreen(byte input) {
 }
 
 byte setLogging(byte input) {
-  return LogSettingsScreen.execute(input);
+  return ST_MAIN_MENU;
+  //return LogSettingsScreen.execute(input);
 }
 
 byte setRtcTime(byte input) {
-  return EditTimeScreen.execute(input);
+  return ST_MAIN_MENU;
+  //return EditTimeScreen.execute(input);
 }
 
 byte setRtcDate(byte input) {
-  return EditDateScreen.execute(input);  
+  return ST_MAIN_MENU;
+  //return EditDateScreen.execute(input);  
 }
 
 byte temperatureChart(byte input) {
