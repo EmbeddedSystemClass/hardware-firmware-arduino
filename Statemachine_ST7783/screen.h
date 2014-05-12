@@ -27,75 +27,6 @@ class Screen {
     }
 };
 
-class Component {
-  public:
-    unsigned bVisible:1;
-    unsigned bInvalidate:1;
-   
-  public:
-    Component() {
-      bVisible = true;
-      bInvalidate = true;
-    }
-    
-    virtual void draw() {
-    } 
-    
-    void setVisible(byte state) {
-      if (bVisible == state)
-        return;
-        
-      //Serial.println(state);
-      bInvalidate = true;
-      bVisible = state;
-    }
-};
-
-class Frame : public Component {
-  private:
-    byte oldX;
-    byte oldY;
-    byte oldW;
-    byte oldH;
-  public:
-    byte x;
-    byte y;
-    byte w;
-    byte h;
-    
-  public:
-    Frame() : Component() {
-      
-    }
-   
-   void setRect(byte px, byte py, byte pw, byte ph) {
-     x = px;
-     y = py;
-     w = pw;
-     h = ph;
-     if (x != oldX || y != oldY || w != oldW || h != oldH) {
-       bInvalidate = true;
-     }
-   }
-   
-   void draw() {
-     if (!bInvalidate)
-       return;
-       
-     Display.drawRect(oldX, oldY, oldW, oldH, BACKCOLOR);
-     
-     if (bVisible)  
-       Display.drawRect(x, y, w, h, YELLOW);
-     
-     oldX = x;
-     oldY = y;
-     oldW = w;     
-     oldH = h;
-     
-     bInvalidate = false;
-   }
-};
-
 class Button {
   public: 
     Button() {
@@ -291,10 +222,10 @@ class TileMenu : Screen {
         return;
       }
       
-      Button::drawButton(  0,   0, 118, 118, PSTR("Date"), PSTR("Time"));
-      Button::drawButton(120,   0, 118, 118, PSTR("Log"),  NULL);
-      Button::drawButton(  0, 120, 118, 118, PSTR("Temp"), NULL);
-      Button::drawButton(120, 120, 118, 118, PSTR("Humi"), NULL);
+      Button::drawButton(  0,   0, 118, 118, PSTR("Date"), NULL);
+      Button::drawButton(120,   0, 118, 118, PSTR("Time"),  NULL);
+      Button::drawButton(  0, 120, 118, 118, PSTR("Log"), NULL);
+      Button::drawButton(120, 120, 118, 118, PSTR("Temp"), NULL);
       Button::drawButton(  0, 240, 240,  80, PSTR("Exit"), NULL);
       
       bInvalidate = false;
@@ -310,11 +241,20 @@ class TileMenu : Screen {
       if(Button::hitTest(0, 240, 240,  80)) {
         hide();
         return ST_MAIN;
+      } else if(Button::hitTest(0, 0, 118, 118)) {
+        hide();
+        return ST_DATE;
+      } else if(Button::hitTest(120, 0, 118, 118)) {
+        hide();
+        return ST_TIME;
+      } else if(Button::hitTest(120, 120, 118, 118)) {
+        hide();
+        return ST_TEMP_CHART;
       }
     }  
 };
 
-TileMenu MenuScreen1;
+TileMenu MenuScreen;
 
 class NumberEditor : Screen {
   public:
@@ -392,8 +332,6 @@ class NumberEditor : Screen {
     }
     
     byte execute(byte input) {      
-
-      
       if (!bVisible) {
         intialize();
         show();
@@ -435,12 +373,10 @@ class NumberEditor : Screen {
     }
 };
 
-NumberEditor MenuScreen;
-
-class DateEditor : public NumberEditor {
+class MaskEditor : public NumberEditor {
   public:
-    void intialize() {
-      strcpy_P(str, PSTR("__.__.____"));
+    virtual void intialize() {
+      strcpy_P(str, PSTR("_______.__"));
       pos = 0;
       maxPos = 9;
       bDot = false;
@@ -465,6 +401,28 @@ class DateEditor : public NumberEditor {
     }
 };
 
-//DateEditor MenuScreen;
+class DateEditor : public MaskEditor {
+  public:
+    virtual void intialize() {
+      strcpy_P(str, PSTR("__.__.____"));
+      pos = 0;
+      maxPos = 9;
+      bDot = false;
+    }
+};
+
+DateEditor DateEditor;
+
+class TimeEditor : public MaskEditor {
+  public:
+    virtual void intialize() {
+      strcpy_P(str, PSTR("__.__"));
+      pos = 0;
+      maxPos = 4;
+      bDot = false;
+    }
+};
+
+TimeEditor TimeEditor;
 
 #endif
