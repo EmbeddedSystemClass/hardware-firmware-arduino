@@ -16,8 +16,8 @@ class Clock {
       byte p = rtc.getSeconds();
       
 
-      drawPointer(last, ST7735_BLACK, size);      
-      drawPointer(p, ST7735_WHITE, size);
+      drawPointer(last, BLACK, size);      
+      drawPointer(p, WHITE, size);
       
       
     }
@@ -39,7 +39,7 @@ class Clock {
         int8_t x2 = cos(i * PI / 180) * (size + 10) + px;
         int8_t y2 = sin(i * PI / 180) * (size + 10) + py;
         
-        Display.drawLine(x1, y1, x2, y2, ST7735_WHITE);
+        Display.drawLine(x1, y1, x2, y2, WHITE);
       }
     }
 };

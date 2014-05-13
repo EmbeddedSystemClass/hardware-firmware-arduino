@@ -3,8 +3,8 @@
 
 // Charts ****************************************************************
 
-#define DISPLAYHEIGHT     ST7735_TFTWIDTH
-#define DISPLAYWIDTH      ST7735_TFTHEIGHT
+#define DISPLAYHEIGHT     TFTWIDTH
+#define DISPLAYWIDTH      TFTHEIGHT
 #define MARGIN		   8
 #define CHARTHEIGHT       112
 #define CHARTWIDTH        138

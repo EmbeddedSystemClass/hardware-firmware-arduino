@@ -23,8 +23,6 @@
 #include "events.h"
 #include "measure.h"
 #include "data.h"
-#include "menu.h"
-#include "statemanager.h"
 #include "clock.h"
 #include "charts.h"
 #include "screen.h"
@@ -53,45 +51,15 @@ void setup()
 void loop() {  
   Events.doHandleEvents();
   MeasureEvents.doHandleEvents();
+  ScreenExecute(0);
   //LogEvents.doHandleEvents();
-  StateMachine.doHandleStates();
+//  StateMachine.doHandleStates();
   //ShtMeasure.doMeasure();
   //DS1821.doMeasure();
   //LogData.process();  
 }
 
-byte showMenu(byte input) {
-  return MenuScreen.execute(input);
-}
 
-byte exitMainMenu(byte input) {
-  return ST_MAIN;
-}
-
-byte exitDateTimeMenu(byte input) {
-  return ST_MAIN_MENU;
-}
-
-byte mainScreen(byte input) {
-  return MainScreen.execute(input);
-}
-
-byte setLogging(byte input) {
-  return ST_MAIN_MENU;
-  //return LogSettingsScreen.execute(input);
-}
-
-byte setRtcTime(byte input) {
-  return TimeEditor.execute(input);
-}
-
-byte setRtcDate(byte input) {
-  return DateEditor.execute(input);
-}
-
-byte temperatureChart(byte input) {
-  return TempChartScreen.execute(input);
-}
 
 void logError(String s) {
   //displayText(0, 0, 1, s);

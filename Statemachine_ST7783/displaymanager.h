@@ -1,10 +1,14 @@
 #ifndef _DISPLAYMANAGERH_
 #define _DISPLAYMANAGERH_
 
-// Display Nokia 5110 ****************************************************
+// Display Driver ST7783 ****************************************************
+
+#define TFTWIDTH  240
+#define TFTHEIGHT 320
 
 #define TEXTHEIGHT 8
 #define TEXTWIDTH  6
+
 #define	BLACK   0x0000
 #define	BLUE    0x001F
 #define	RED     0xF800
@@ -14,19 +18,8 @@
 #define YELLOW  0xFFE0
 #define WHITE   0xFFFF
 
-#define ST7735_TFTWIDTH  240
-#define ST7735_TFTHEIGHT 320
-
-
 class DisplayManager : public SWTFT {  
-  public:    
-    // CS  PIN 10
-    // DC  PIN  9
-    // RST PIN  8
-    
-    // (for UNO thats sclk = 13 and sid = 11) and pin 10 must be
-    // an output. This is much faster - also required if you want
-    // to use the microSD card (see the image drawing example)
+  public:        
     DisplayManager() : SWTFT() {
     }
   

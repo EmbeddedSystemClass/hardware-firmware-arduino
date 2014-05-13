@@ -3,10 +3,18 @@
 
 #define BACKCOLOR BLACK
 
+static byte (*ScreenExecute)(byte input);
+static byte (*MainScreenFunc)(byte input);
+static byte (*TileMenuFunc)(byte input);
+static byte (*DateEditorFunc)(byte input);
+static byte (*TimeEditorFunc)(byte input);
+static byte (*TempChartFunc)(byte input);
+
 class Screen {
   public:
     unsigned bInvalidate:1;
-    unsigned bVisible:1;
+    unsigned bVisible:1; 
+  
   public:
     Screen() {
     }
@@ -164,15 +172,11 @@ class MainScreen : public Screen {
       draw();
   
       if(Events.bOnTouch && menuButton.hitTest(Events.touchX, Events.touchY)) {
-        hide();
-        return ST_MAIN_MENU;
+        hide();        
+        ScreenExecute = TileMenuFunc;        
       }
-  
-      if (input == KEY_ENTER) {
-        //hide();
-        //return ST_MAIN_MENU;
-      }  
-      return ST_MAIN;
+      
+      return true;
     }
 };
 
@@ -199,23 +203,23 @@ class TempChartScreen : public Screen {
         bInvalidate = false;
       }
       
-      if (input == KEY_ENTER) {
+      if (input == 1) {
         hide();
-        return ST_MAIN_MENU;
-      } else if (input == KEY_PLUS) {
+        //return ST_MAIN_MENU;
+      } else if (input == 1 /* KEY_PLUS */) {
         selected++;
         selected %= 2;
         Display.clearDisplay();
         bInvalidate = true;
       }
         
-      return StateMachine.state;
+      return 0;      
     }
 };
 
 TempChartScreen TempChartScreen;
 
-class TileMenu : Screen {
+class TileMenu : Screen {  
   public:
     void draw() {
       if (!bInvalidate) {
@@ -240,17 +244,19 @@ class TileMenu : Screen {
       
       if(Button::hitTest(0, 240, 240,  80)) {
         hide();
-        return ST_MAIN;
+        ScreenExecute = MainScreenFunc;
       } else if(Button::hitTest(0, 0, 118, 118)) {
         hide();
-        return ST_DATE;
+        ScreenExecute = DateEditorFunc;
       } else if(Button::hitTest(120, 0, 118, 118)) {
         hide();
-        return ST_TIME;
+        ScreenExecute = TimeEditorFunc;
       } else if(Button::hitTest(120, 120, 118, 118)) {
         hide();
-        return ST_TEMP_CHART;
+        ScreenExecute = TempChartFunc;
       }
+      
+      return true;
     }  
 };
 
@@ -267,18 +273,18 @@ class NumberEditor : Screen {
   public:
     
     void drawEditor() {
-      Display.drawFastHLine(0,   0, ST7735_TFTWIDTH, WHITE);
-      Display.drawFastHLine(0,  64, ST7735_TFTWIDTH, WHITE);
-      Display.drawFastHLine(0, 128, ST7735_TFTWIDTH, WHITE);
-      Display.drawFastHLine(0, 192, ST7735_TFTWIDTH, WHITE);
-      Display.drawFastHLine(0, 256, ST7735_TFTWIDTH - 62, WHITE);
-      Display.drawFastHLine(0, 319, ST7735_TFTWIDTH, WHITE);
+      Display.drawFastHLine(0,   0, TFTWIDTH, WHITE);
+      Display.drawFastHLine(0,  64, TFTWIDTH, WHITE);
+      Display.drawFastHLine(0, 128, TFTWIDTH, WHITE);
+      Display.drawFastHLine(0, 192, TFTWIDTH, WHITE);
+      Display.drawFastHLine(0, 256, TFTWIDTH - 62, WHITE);
+      Display.drawFastHLine(0, 319, TFTWIDTH, WHITE);
       
-      Display.drawFastVLine(  0,  0, ST7735_TFTHEIGHT, WHITE);
-      Display.drawFastVLine( 60, 64, ST7735_TFTHEIGHT, WHITE);
-      Display.drawFastVLine(120, 64, ST7735_TFTHEIGHT, WHITE);
-      Display.drawFastVLine(180, 64, ST7735_TFTHEIGHT, WHITE);
-      Display.drawFastVLine(239,  0, ST7735_TFTHEIGHT, WHITE);
+      Display.drawFastVLine(  0,  0, TFTHEIGHT, WHITE);
+      Display.drawFastVLine( 60, 64, TFTHEIGHT, WHITE);
+      Display.drawFastVLine(120, 64, TFTHEIGHT, WHITE);
+      Display.drawFastVLine(180, 64, TFTHEIGHT, WHITE);
+      Display.drawFastVLine(239,  0, TFTHEIGHT, WHITE);
       
       Display.displayText_f(22,  85, 3, WHITE, BLACK, PSTR("7"));
       Display.displayText_f(22, 149, 3, WHITE, BLACK, PSTR("4"));
@@ -368,7 +374,7 @@ class NumberEditor : Screen {
       
       if(Button::hitTest(180, 192, 60,  128)) {   // Exit pressed?
         hide();
-        return ST_MAIN;
+        ScreenExecute = TileMenuFunc;
       }
     }
 };
