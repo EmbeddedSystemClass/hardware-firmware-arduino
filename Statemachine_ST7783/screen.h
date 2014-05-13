@@ -3,18 +3,21 @@
 
 #define BACKCOLOR BLACK
 
-static byte (*ScreenExecute)(byte input);
-static byte (*MainScreenFunc)(byte input);
-static byte (*TileMenuFunc)(byte input);
-static byte (*DateEditorFunc)(byte input);
-static byte (*TimeEditorFunc)(byte input);
-static byte (*TempChartFunc)(byte input);
+typedef byte (*ScreenExecute3)(byte input);
+typedef void (*FreeFn)();
+
+class DateTimeEditor;
+
 
 class Screen {
   public:
     unsigned bInvalidate:1;
-    unsigned bVisible:1; 
-  
+    unsigned bVisible:1;   
+
+    Screen* current;
+
+    byte (*ScreenExecute1)(byte input);
+   
   public:
     Screen() {
     }
@@ -33,7 +36,16 @@ class Screen {
     
     virtual byte execute(byte input) {
     }
+    
+    void setFunc(ScreenExecute3 s) {
+      //ScreenExecute1 = ScreenExecute2;
+    }  
+    void set(void* screen) {
+      //current = screen;
+    }
 };
+
+Screen ScreenHandler;
 
 class Button {
   public: 
@@ -173,7 +185,7 @@ class MainScreen : public Screen {
   
       if(Events.bOnTouch && menuButton.hitTest(Events.touchX, Events.touchY)) {
         hide();        
-        ScreenExecute = TileMenuFunc;        
+//        ScreenExecute = TileMenuFunc;        
       }
       
       return true;
@@ -244,16 +256,19 @@ class TileMenu : Screen {
       
       if(Button::hitTest(0, 240, 240,  80)) {
         hide();
-        ScreenExecute = MainScreenFunc;
+//        ScreenExecute = MainScreenFunc;
       } else if(Button::hitTest(0, 0, 118, 118)) {
         hide();
-        ScreenExecute = DateEditorFunc;
+//        ScreenExecute = DateEditorFunc;
+        //Screen::ScreenExecute1 = &DateEditor::execute;
+        //ScreenExecute = DateEditorFunc;
+        //ScreenHandler.Set(&DateEditor);
       } else if(Button::hitTest(120, 0, 118, 118)) {
         hide();
-        ScreenExecute = TimeEditorFunc;
+//        ScreenExecute = TimeEditorFunc;
       } else if(Button::hitTest(120, 120, 118, 118)) {
         hide();
-        ScreenExecute = TempChartFunc;
+//        ScreenExecute = TempChartFunc;
       }
       
       return true;
@@ -374,7 +389,7 @@ class NumberEditor : Screen {
       
       if(Button::hitTest(180, 192, 60,  128)) {   // Exit pressed?
         hide();
-        ScreenExecute = TileMenuFunc;
+//        ScreenExecute = TileMenuFunc;
       }
     }
 };
@@ -409,9 +424,11 @@ class MaskEditor : public NumberEditor {
 
 class DateEditor : public MaskEditor {
   public:
-    //DateEditor() : MaskEditor() {
-      //DateEditorFunc = &this.execute;
-    //}
+    DateEditor() : MaskEditor() {
+      exe = &DateEditor::execute;
+    }
+    
+    ScreenExecute3 exe;
     
     virtual void intialize() {
       strcpy_P(str, PSTR("__.__.____"));
@@ -421,7 +438,8 @@ class DateEditor : public MaskEditor {
     }
 };
 
-DateEditor DateEditor;
+static DateEditor DateEditor;
+
 
 class TimeEditor : public MaskEditor {
   public:
@@ -435,8 +453,9 @@ class TimeEditor : public MaskEditor {
 
 TimeEditor TimeEditor;
 
-void intScreens() {
-  DateEditorFunc = &DateEditor::execute;
+void Init() {
+  //ScreenHandler.set(&DateEditor);
+  ScreenHandler.setFunc(DateEditor.exe);
 }
 
 #endif

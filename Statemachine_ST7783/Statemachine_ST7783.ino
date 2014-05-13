@@ -51,7 +51,7 @@ void setup()
 void loop() {  
   Events.doHandleEvents();
   MeasureEvents.doHandleEvents();
-  ScreenExecute(0);
+  //Screen::ScreenExecute(0);
   //LogEvents.doHandleEvents();
 //  StateMachine.doHandleStates();
   //ShtMeasure.doMeasure();
