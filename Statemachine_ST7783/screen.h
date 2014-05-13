@@ -3,21 +3,15 @@
 
 #define BACKCOLOR BLACK
 
-typedef byte (*ScreenExecute3)(byte input);
-typedef void (*FreeFn)();
-
-class DateTimeEditor;
-
 
 class Screen {
   public:
     unsigned bInvalidate:1;
     unsigned bVisible:1;   
 
-    Screen* current;
+    //static Screen* pCurrent;
+    //static Screen* pDateEditor;
 
-    byte (*ScreenExecute1)(byte input);
-   
   public:
     Screen() {
     }
@@ -36,35 +30,19 @@ class Screen {
     
     virtual byte execute(byte input) {
     }
-    
-    void setFunc(ScreenExecute3 s) {
-      //ScreenExecute1 = ScreenExecute2;
-    }  
-    void set(void* screen) {
-      //current = screen;
-    }
 };
 
-Screen ScreenHandler;
+static Screen* pScreen;
+static Screen* pMainScreen;
+static Screen* pDateEditScreen;
+static Screen* pTimeEditScreen;
+static Screen* pMenuScreen;
+
 
 class Button {
-  public: 
-    Button() {
-    }
-    
-    int x, y, width, height;
-    
-    bool hitTest(int tx, int ty) {
-      if(tx > x && tx < (x + width)) {
-        if(ty > y && ty < (y + height)) {
-          return true;
-        }
-      }
-      return false;
-    }
-    
+  public:    
     static bool hitTest(int x, int y, int width, int height) {
-      if(Events.touchX > x && Events.touchX < (x + width)) {
+      if(Events.bOnTouch && Events.touchX > x && Events.touchX < (x + width)) {
         if(Events.touchY > y && Events.touchY < (y + height)) {
           return true;
         }
@@ -72,21 +50,13 @@ class Button {
       return false;
     }
     
-    void draw(int x, int y, int width, int height) {
-      this->x = x;
-      this->y = y;
-      this->height = height;
-      this->width = width;
-      Button::drawButton(x, y, width, height);
-    }
-    
     static void drawButton(int x, int y, int width, int height) {
       int r = min(width, height) >> 3;
     
-      Display.fillRoundRect(x, y, width, height, r, Display.color565(80, 160, 240));
-      for(byte i=0; i < 3; i++) {
-        Display.drawRoundRect(x + i, y + i, width - i - i, height - i - i, r, Display.color565(80, 160 - i*8, 240));
-      }
+      Display.drawRoundRect(x, y, width, height, r, WHITE);
+      //for(byte i=0; i < 3; i++) {
+      //  Display.drawRoundRect(x + i, y + i, width - i - i, height - i - i, r, Display.color565(80, 160 - i*8, 240));
+      //}
     }
     
     static void drawButton(int x, int y, int width, int height, const char *pFlashStr1, const char *pFlashStr2) {
@@ -97,12 +67,12 @@ class Button {
       int tx = x + (width / 2) - (strlen_P(pFlashStr1) * TEXTWIDTH * 3 / 2);
       int ty = y + (height / yd) - (TEXTHEIGHT * 3 / 2); 
       
-      Display.displayText_f(tx, ty, 3, WHITE, Display.color565(80, 160, 240), pFlashStr1);
+      Display.displayText_f(tx, ty, 3, WHITE, BLACK, pFlashStr1);
       
       if(pFlashStr2) {
         tx = x + (width / 2) - (strlen_P(pFlashStr2) * TEXTWIDTH * 3 / 2);
         ty = y + 2 * (height / yd) - (TEXTHEIGHT * 3 / 2); 
-        Display.displayText_f(tx, ty, 3, WHITE, Display.color565(80, 160, 240), pFlashStr2);
+        Display.displayText_f(tx, ty, 3, WHITE, BLACK, pFlashStr2);
       }
     }
 };
@@ -132,7 +102,6 @@ class MainScreen : public Screen {
   public:
     TempGauge tempGauge;
     TempGauge outTempGauge;
-    Button    menuButton;
   public:
     MainScreen() {      
     }
@@ -141,7 +110,7 @@ class MainScreen : public Screen {
 
       if (bInvalidate) {
         Display.displayText_f(0, 0, 2, YELLOW, BACKCOLOR, PSTR("App Test"));
-        menuButton.draw(5, 170, 60, 60);
+        Button::drawButton(0, 240, 240,  80, PSTR("Exit"), NULL);
       }
       
       char buffer[9]= { "00:00:00" };  
@@ -183,9 +152,9 @@ class MainScreen : public Screen {
       
       draw();
   
-      if(Events.bOnTouch && menuButton.hitTest(Events.touchX, Events.touchY)) {
+      if(Button::hitTest(0, 240, 240,  80)) {
         hide();        
-//        ScreenExecute = TileMenuFunc;        
+        pScreen = pMenuScreen;
       }
       
       return true;
@@ -231,7 +200,7 @@ class TempChartScreen : public Screen {
 
 TempChartScreen TempChartScreen;
 
-class TileMenu : Screen {  
+class TileMenu : public Screen {  
   public:
     void draw() {
       if (!bInvalidate) {
@@ -256,18 +225,15 @@ class TileMenu : Screen {
       
       if(Button::hitTest(0, 240, 240,  80)) {
         hide();
-//        ScreenExecute = MainScreenFunc;
+        pScreen = pMainScreen;
       } else if(Button::hitTest(0, 0, 118, 118)) {
         hide();
-//        ScreenExecute = DateEditorFunc;
-        //Screen::ScreenExecute1 = &DateEditor::execute;
-        //ScreenExecute = DateEditorFunc;
-        //ScreenHandler.Set(&DateEditor);
+        pScreen = pDateEditScreen;        
       } else if(Button::hitTest(120, 0, 118, 118)) {
         hide();
-//        ScreenExecute = TimeEditorFunc;
+        pScreen = pTimeEditScreen;
       } else if(Button::hitTest(120, 120, 118, 118)) {
-        hide();
+//        hide();
 //        ScreenExecute = TempChartFunc;
       }
       
@@ -277,7 +243,7 @@ class TileMenu : Screen {
 
 TileMenu MenuScreen;
 
-class NumberEditor : Screen {
+class NumberEditor : public Screen {
   public:
     unsigned bInvalidateValue:1;
     unsigned bDot:1;
@@ -389,7 +355,7 @@ class NumberEditor : Screen {
       
       if(Button::hitTest(180, 192, 60,  128)) {   // Exit pressed?
         hide();
-//        ScreenExecute = TileMenuFunc;
+        pScreen = pMenuScreen;
       }
     }
 };
@@ -424,11 +390,6 @@ class MaskEditor : public NumberEditor {
 
 class DateEditor : public MaskEditor {
   public:
-    DateEditor() : MaskEditor() {
-      exe = &DateEditor::execute;
-    }
-    
-    ScreenExecute3 exe;
     
     virtual void intialize() {
       strcpy_P(str, PSTR("__.__.____"));
@@ -453,9 +414,12 @@ class TimeEditor : public MaskEditor {
 
 TimeEditor TimeEditor;
 
-void Init() {
-  //ScreenHandler.set(&DateEditor);
-  ScreenHandler.setFunc(DateEditor.exe);
+void initScreens() {
+  pScreen = &MainScreen;
+  pMainScreen = &MainScreen;
+  pDateEditScreen = &DateEditor;
+  pTimeEditScreen = &TimeEditor;
+  pMenuScreen = &MenuScreen;
 }
 
 #endif

@@ -45,12 +45,15 @@ void setup()
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
   
+  initScreens();
+  
   LogEvents.start();
 }
 
 void loop() {  
   Events.doHandleEvents();
   MeasureEvents.doHandleEvents();
+  pScreen->execute(0);
   //Screen::ScreenExecute(0);
   //LogEvents.doHandleEvents();
 //  StateMachine.doHandleStates();
