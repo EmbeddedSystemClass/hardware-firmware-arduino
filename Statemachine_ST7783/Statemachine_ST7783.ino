@@ -58,7 +58,7 @@ void loop() {
   //LogEvents.doHandleEvents();
 //  StateMachine.doHandleStates();
   //ShtMeasure.doMeasure();
-  //DS1821.doMeasure();
+  DS1821.doMeasure();
   //LogData.process();  
 }
 

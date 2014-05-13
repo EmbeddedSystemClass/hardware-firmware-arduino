@@ -110,7 +110,7 @@ class MainScreen : public Screen {
 
       if (bInvalidate) {
         Display.displayText_f(0, 0, 2, YELLOW, BACKCOLOR, PSTR("App Test"));
-        Button::drawButton(0, 240, 240,  80, PSTR("Exit"), NULL);
+        Button::drawButton(0, 270, 240,  50, PSTR("Menu"), NULL);
       }
       
       char buffer[9]= { "00:00:00" };  
