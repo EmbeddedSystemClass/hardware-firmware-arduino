@@ -409,6 +409,10 @@ class MaskEditor : public NumberEditor {
 
 class DateEditor : public MaskEditor {
   public:
+    //DateEditor() : MaskEditor() {
+      //DateEditorFunc = &this.execute;
+    //}
+    
     virtual void intialize() {
       strcpy_P(str, PSTR("__.__.____"));
       pos = 0;
@@ -430,5 +434,9 @@ class TimeEditor : public MaskEditor {
 };
 
 TimeEditor TimeEditor;
+
+void intScreens() {
+  DateEditorFunc = &DateEditor::execute;
+}
 
 #endif

@@ -1,6 +1,7 @@
 #ifndef _EVENTSH_
 #define _EVENTSH_
 
+// Touche Screen
 #define YP A2  // must be an analog pin, use "An" notation!
 #define XM A1  // must be an analog pin, use "An" notation!
 #define YM 6   // can be a digital pin
@@ -21,9 +22,6 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 
 // Events ****************************************************************
 
-#define BTN1 0
-#define BTN2 1
-
 class EventManager {
   private:
     byte lastButtonState;
@@ -31,9 +29,6 @@ class EventManager {
     unsigned long lastTimerUpdate;
   
   public:
-    unsigned bBtn1:1;
-    unsigned bBtn2:1;
-
     unsigned bOnTouch:1;
     int touchX;
     int touchY;
@@ -47,26 +42,11 @@ class EventManager {
     unsigned bMeasure:1;
 
     void doHandleEvents() {
-      updateTimerEvents();
-      updateButtonFlags();
+      updateTimerEvents();      
       updateTouchEvents();
     }
 
-  private:
-    void updateButtonFlags() {
-      // read the state of the pushbuttons
-      byte buttonState = ~PINC & 3;
-
-      if(bT50MS && lastButtonState != buttonState) {    
-        lastButtonState = buttonState;    
-        bBtn1 = bitRead(lastButtonState, BTN1);
-        bBtn2 = bitRead(lastButtonState, BTN2);    
-      } else {
-        bBtn1 = false;
-        bBtn2 = false;   
-      }  
-    }
-    
+  private:    
     void updateTimerEvents() {
       bT50MS = false;
       bT500MS = false;
