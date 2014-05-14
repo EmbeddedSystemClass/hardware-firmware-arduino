@@ -87,13 +87,13 @@ class InTemperatureChartDiagram : public Chart {
     }
 };
 
-//class OutTemperatureChartDiagram : public Chart {
-//  
-//  public:
-//    void drawTempChart(byte input) {
-//      Display.displayText_f(45, 5, 1, PSTR("Out Temperature"));
-//      drawChart(LogData.logOutTemperature, LOG_DATA_SIZE, -120, 120);
-//    }
-//};
+class OutTemperatureChartDiagram : public Chart {
+  
+  public:
+    void drawTempChart(byte input) {
+      Display.displayText_f(45, 5, 1, PSTR("Out Temperature"));
+      drawChart(LogData.logOutTemperature, LOG_DATA_SIZE, -120, 120);
+    }
+};
 
 #endif

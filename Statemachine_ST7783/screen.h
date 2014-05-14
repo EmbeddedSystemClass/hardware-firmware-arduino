@@ -86,22 +86,22 @@ class TempGauge {
     }
     
     void draw(byte x, byte y, byte value) {
-      Display.fillCircle(x + 3, y, 3, WHITE);
-      Display.fillRect(x, y , 7, 40, WHITE);
-      Display.fillCircle(x + 3, y + 46, 8, WHITE);
+      Display.fillCircle(x + 5, y, 5, WHITE);
+      Display.fillRect(x, y , 12, 100, WHITE);
+      Display.fillCircle(x + 6, y + 106, 11, WHITE);
       
       uint16_t color = value > 20 ? RED : BLUE;
       
-      Display.fillRect(x + 2, y + 2, 3, 40, color);
-      Display.fillCircle(x + 3, y + 46, 6, color);
+      Display.fillRect(x + 2, y + 2, 8, 100, color);
+      Display.fillCircle(x + 6, y + 106, 9, color);
       
-      Display.fillRect(x + 2, y, 3, map(value, -20, 40, 0, 40), BLACK);
+      Display.fillRect(x + 2, y, 8, map(value, -20, 100, 0, 100), BLACK);
     }
 };
 
 class MainScreen : public Screen {
   public:
-    TempGauge tempGauge;
+    //TempGauge tempGauge;
     TempGauge outTempGauge;
   public:
     MainScreen() {      
@@ -110,8 +110,9 @@ class MainScreen : public Screen {
     void draw() {
 
       if (bInvalidate) {
-        Display.displayText_f(0, 0, 2, YELLOW, BACKCOLOR, PSTR("App Test"));
-        Button::drawButton(0, 270, 240,  50, PSTR("Menu"), NULL);
+        //Display.displayText_f(0, 0, 2, YELLOW, BACKCOLOR, PSTR("App Test"));
+        Button::drawButton(0,   0, 240, 50, PSTR("Logger"), NULL);
+        Button::drawButton(0, 270, 240, 50, PSTR("Menu"), NULL);
       }
       
       char buffer[9]= { "00:00:00" };  
@@ -120,27 +121,29 @@ class MainScreen : public Screen {
         itochars(rtc.getMinutes(), &buffer[3], 2);
         itochars(rtc.getSeconds(), &buffer[6], 2);  
         
-        Display.displayText(5, 30, 2, buffer, GREEN, BACKCOLOR);
+        Display.displayText(70, 70, 2, buffer, GREEN, BACKCOLOR);
       }
       
-      if (bInvalidate || ShtMeasure.bReady) {        
-        itochars(ShtMeasure.temperature, buffer, 2);
-        strcpy(&buffer[2], " C");
-        Display.displayText(25, 60, 2, buffer, RED, BACKCOLOR);
-        
-        itochars(ShtMeasure.humidity, buffer, 2);
-        strcpy(&buffer[2], " %");
-        Display.displayText(25, 80, 2, buffer, RED, BACKCOLOR);
-        
-        tempGauge.draw(10, 60, ShtMeasure.temperature);
-      }
+//      if (bInvalidate || ShtMeasure.bReady) {        
+//        itochars(ShtMeasure.temperature, buffer, 2);
+//        strcpy(&buffer[2], " C");
+//        Display.displayText(25, 60, 2, buffer, RED, BACKCOLOR);
+//        
+//        itochars(ShtMeasure.humidity, buffer, 2);
+//        strcpy(&buffer[2], " %");
+//        Display.displayText(25, 80, 2, buffer, RED, BACKCOLOR);
+//        
+//        tempGauge.draw(10, 60, ShtMeasure.temperature);
+//      }
       
       if (bInvalidate || DS1821.bReady) {        
         itochars(DS1821.temperature, buffer, 2);
         strcpy(&buffer[2], " C");
-        Display.displayText(105, 60, 2, buffer, RED, BACKCOLOR);
+        //Display.displayText(105, 60, 2, buffer, RED, BACKCOLOR);
+        Display.displayText(35, 110, 2, buffer, RED, BACKCOLOR);
         
-        outTempGauge.draw(90, 60, DS1821.temperature);
+        //outTempGauge.draw(90, 60, DS1821.temperature);
+        outTempGauge.draw(15, 110, DS1821.temperature);
       }
       
       bInvalidate = false;
@@ -166,7 +169,7 @@ MainScreen MainScreen;
 
 class TempChartScreen : public Screen {
   public:    
-    InTemperatureChartDiagram inChart;  	// in temperature    
+    OutTemperatureChartDiagram outChart;  	// temperature    
 
   public:
     byte execute(byte input) {
@@ -176,7 +179,7 @@ class TempChartScreen : public Screen {
       
       if (bInvalidate) {
         Button::drawButton(0, 270, 240,  50, PSTR("Exit"), NULL);                     
-        inChart.drawTempChart(input);        
+        outChart.drawTempChart(input);        
         bInvalidate = false;
       }
       
