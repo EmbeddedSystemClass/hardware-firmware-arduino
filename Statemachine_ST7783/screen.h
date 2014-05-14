@@ -164,10 +164,8 @@ class MainScreen : public Screen {
 MainScreen MainScreen;
 
 class TempChartScreen : public Screen {
-  public:
-    byte selected;
-    InTemperatureChartDiagram inChart;  	// in temperature
-    OutTemperatureChartDiagram outChart;   // out temperature
+  public:    
+    InTemperatureChartDiagram inChart;  	// in temperature    
 
   public:
     byte execute(byte input) {
@@ -176,22 +174,14 @@ class TempChartScreen : public Screen {
       }  
       
       if (bInvalidate) {
-        if (selected == 0) {                
-          inChart.drawTempChart(input);
-        } else if (selected == 1) {
-          outChart.drawTempChart(input);
-        }        
+        Button::drawButton(0, 270, 240,  50, PSTR("Exit"), NULL);                     
+        inChart.drawTempChart(input);        
         bInvalidate = false;
       }
       
-      if (input == 1) {
-        hide();
-        //return ST_MAIN_MENU;
-      } else if (input == 1 /* KEY_PLUS */) {
-        selected++;
-        selected %= 2;
-        Display.clearDisplay();
-        bInvalidate = true;
+      if(Button::hitTest(0, 240, 240,  80)) {
+        hide();        
+        pScreen = pMenuScreen;
       }
         
       return 0;      

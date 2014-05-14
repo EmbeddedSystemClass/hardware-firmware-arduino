@@ -12,7 +12,7 @@
 #include <SWTFT.h> // Hardware-specific library
 #include <TouchScreen.h>
 #include <SPI.h>
-//#include <SD.h>
+#include <SD.h>
 #include <Sensirion.h>
 #include <avr/pgmspace.h>
 #include <swRTC.h>
@@ -54,12 +54,12 @@ void loop() {
   Events.doHandleEvents();
   MeasureEvents.doHandleEvents();
   pScreen->execute(0);
-  //Screen::ScreenExecute(0);
-  //LogEvents.doHandleEvents();
-//  StateMachine.doHandleStates();
+  
+  LogEvents.doHandleEvents();
+
   //ShtMeasure.doMeasure();
   DS1821.doMeasure();
-  //LogData.process();  
+  LogData.process();  
 }
 
 

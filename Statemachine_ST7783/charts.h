@@ -6,8 +6,8 @@
 #define DISPLAYHEIGHT     TFTWIDTH
 #define DISPLAYWIDTH      TFTHEIGHT
 #define MARGIN		   8
-#define CHARTHEIGHT       112
-#define CHARTWIDTH        138
+#define CHARTHEIGHT       140
+#define CHARTWIDTH        224
 #define CHART_X            22
 #define CHART_Y            12
 
@@ -17,7 +17,7 @@ class Chart {
       int8_t min = rangeMax;
       int8_t max = rangeMin;
 			
-			// find min and max values *********************
+      // find min and max values *********************
       for (byte i = 0; i < count; i++) {
         min = min(values[i], min);
         max = max(values[i], max);
@@ -87,13 +87,13 @@ class InTemperatureChartDiagram : public Chart {
     }
 };
 
-class OutTemperatureChartDiagram : public Chart {
-  
-  public:
-    void drawTempChart(byte input) {
-      Display.displayText_f(45, 5, 1, PSTR("Out Temperature"));
-      drawChart(LogData.logOutTemperature, LOG_DATA_SIZE, -120, 120);
-    }
-};
+//class OutTemperatureChartDiagram : public Chart {
+//  
+//  public:
+//    void drawTempChart(byte input) {
+//      Display.displayText_f(45, 5, 1, PSTR("Out Temperature"));
+//      drawChart(LogData.logOutTemperature, LOG_DATA_SIZE, -120, 120);
+//    }
+//};
 
 #endif
