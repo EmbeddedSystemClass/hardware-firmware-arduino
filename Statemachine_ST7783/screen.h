@@ -36,6 +36,7 @@ static Screen* pScreen;
 static Screen* pMainScreen;
 static Screen* pDateEditScreen;
 static Screen* pTimeEditScreen;
+static Screen* pTempChartScreen;
 static Screen* pMenuScreen;
 
 
@@ -223,8 +224,8 @@ class TileMenu : public Screen {
         hide();
         pScreen = pTimeEditScreen;
       } else if(Button::hitTest(120, 120, 118, 118)) {
-//        hide();
-//        ScreenExecute = TempChartFunc;
+        hide();
+        pScreen = pTempChartScreen;
       }
       
       return true;
@@ -409,6 +410,7 @@ void initScreens() {
   pMainScreen = &MainScreen;
   pDateEditScreen = &DateEditor;
   pTimeEditScreen = &TimeEditor;
+  pTempChartScreen = &TempChartScreen;
   pMenuScreen = &MenuScreen;
 }
 

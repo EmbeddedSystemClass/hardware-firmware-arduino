@@ -51,7 +51,7 @@ class ShtMeasureManager {
 ShtMeasureManager ShtMeasure;
 
 
-OneWire ds(6);
+OneWire ds(A5);
 
 class DS1821 {
   public:
