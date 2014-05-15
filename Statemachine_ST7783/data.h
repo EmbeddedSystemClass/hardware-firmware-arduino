@@ -4,7 +4,7 @@
 class LogData {
   public:
     int8_t logOutTemperature[LOG_DATA_SIZE];
-    int8_t logInTemperature[LOG_DATA_SIZE];
+    //int8_t logInTemperature[LOG_DATA_SIZE];
     int8_t count;
   public:
   
@@ -15,7 +15,7 @@ class LogData {
         }
           
         assignValues(logOutTemperature, DS1821.temperature, count);
-        assignValues(logInTemperature, ShtMeasure.temperature, count);
+        //assignValues(logInTemperature, ShtMeasure.temperature, count);
       }
     }
   

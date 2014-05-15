@@ -17,6 +17,7 @@
 #define MAGENTA 0xF81F
 #define YELLOW  0xFFE0
 #define WHITE   0xFFFF
+#define LIGHTGRAY 0xCDB6
 
 class DisplayManager : public SWTFT {  
   public:        
