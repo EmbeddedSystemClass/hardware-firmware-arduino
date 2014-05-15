@@ -3,13 +3,13 @@
 
 // Charts ****************************************************************
 
-#define DISPLAYHEIGHT     TFTWIDTH
-#define DISPLAYWIDTH      TFTHEIGHT
-#define MARGIN		   8
-#define CHARTHEIGHT       140
-#define CHARTWIDTH        224
-#define CHART_X            22
-#define CHART_Y            12
+#define DISPLAYHEIGHT TFTWIDTH
+#define DISPLAYWIDTH  TFTHEIGHT
+#define MARGIN		    8
+#define CHARTHEIGHT   216
+#define CHARTWIDTH    240
+#define CHART_X       0
+#define CHART_Y       52
 
 class Chart {    
   public:
@@ -53,18 +53,19 @@ class Chart {
       }
       
       // y-axis
-      Display.drawLine(CHART_X, CHART_Y - 3, CHART_X, CHARTHEIGHT + 3, WHITE);
-      //Display.fillTriangle(CHART_X, CHART_Y - 10, CHART_X - 3, CHART_Y - 3, CHART_X + 3, CHART_Y - 3, WHITE);
+      //Display.drawLine(CHART_X, CHART_Y - 3, CHART_X, CHARTHEIGHT + 3, WHITE);
+      
       for (int8_t i = min; i <= max; i+=5) {
         byte y = map(i, min, max, CHARTHEIGHT, CHART_Y);
-        Display.drawLine(CHART_X - 2, y, CHART_X, y, BLACK);
+        Display.drawFastHLine(CHART_X , y, CHARTWIDTH, BLACK);
         if ( i % 10 == 0 ) {
           char buffer[4] = { "000" };
-          itochars(abs(i), buffer, 3);
-          Display.displayText(CHART_X - 3 * TEXTWIDTH - 2, y - TEXTHEIGHT / 2, 1, buffer, WHITE, BLACK);
+          itochars(abs(i), buffer, 3);          
+          Display.displayText(CHART_X + CHARTWIDTH - 3 * TEXTWIDTH - 2 , y - TEXTHEIGHT / 2, 1, buffer, WHITE, BLACK);
         }
       }
       
+      /*
       // x-axis (zero line)
       Display.drawLine(CHART_X, zero, CHARTWIDTH, zero, WHITE);
       
@@ -75,6 +76,7 @@ class Chart {
       Display.displayText_f(CHARTWIDTH , zero - TEXTHEIGHT / 2, 1, PSTR("t"));
     }
 
+      */
 		
 };
 
@@ -82,7 +84,7 @@ class InTemperatureChartDiagram : public Chart {
   
   public:
     void drawTempChart(byte input) {
-      Display.displayText_f(45, 5, 1, PSTR("In Temperature"));
+      //Display.displayText_f(45, 5, 1, PSTR("In Temperature"));
       drawChart(LogData.logInTemperature, LOG_DATA_SIZE, -120, 120);
     }
 };

@@ -178,6 +178,7 @@ class TempChartScreen : public Screen {
       }  
       
       if (bInvalidate) {
+        Button::drawButton(0,   0, 240, 50, PSTR("Temprature"), NULL);      
         Button::drawButton(0, 270, 240,  50, PSTR("Exit"), NULL);                     
         outChart.drawTempChart(input);        
         bInvalidate = false;
