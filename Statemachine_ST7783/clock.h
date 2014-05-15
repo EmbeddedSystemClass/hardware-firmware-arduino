@@ -45,5 +45,4 @@ class Clock {
 };
 
 Clock Clock;
-
 */

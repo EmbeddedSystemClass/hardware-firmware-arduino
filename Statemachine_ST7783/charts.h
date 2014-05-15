@@ -50,7 +50,7 @@ class Chart {
       byte range = max - min;
       byte zero = map(0, min, max, CHARTHEIGHT, CHART_Y);   
       
-      // draw y-Grid lines
+      // draw y-Grid lines ***************************
       for (int8_t i = min; i <= max; i+=5) {
         byte y = map(i, min, max, CHARTHEIGHT, CHART_Y);
         Display.drawFastHLine(CHART_X , y, CHARTWIDTH, LIGHTGRAY);

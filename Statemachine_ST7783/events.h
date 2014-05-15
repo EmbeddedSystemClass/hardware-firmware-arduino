@@ -30,6 +30,7 @@ class EventManager {
   
   public:
     unsigned bOnTouch:1;
+    unsigned bLock:1;
     int touchX;
     int touchY;
 
@@ -69,9 +70,9 @@ class EventManager {
     }
     
     void updateTouchEvents() {
-      digitalWrite(13, HIGH);
+      //digitalWrite(13, HIGH);
       TSPoint p = ts.getPoint();
-      digitalWrite(13, LOW);
+      //digitalWrite(13, LOW);
     
       // if sharing pins, you'll need to fix the directions of the touchscreen pins
       pinMode(XM, OUTPUT);
@@ -80,15 +81,19 @@ class EventManager {
       // we have some minimum pressure we consider 'valid'
       // pressure of 0 means no pressing!
     
-      if (p.z > MINPRESSURE && p.z < MAXPRESSURE) {
+      bOnTouch = false;
+      
+      if (!bLock && p.z > MINPRESSURE && p.z < MAXPRESSURE) {
         bOnTouch = true;
+        bLock = true;
         touchX = Display.width()-(map(p.x, TS_MINX, TS_MAXX, Display.width(), 0));
         touchY = Display.height()-(map(p.y, TS_MINY, TS_MAXY, Display.height(), 0));
-        Serial.println(touchX);
-        Serial.println(touchY);
-      } else {
-        bOnTouch = false;
-      }  
+        //Serial.println(touchX);
+        //Serial.println(touchY);
+      }
+      
+      if(bT500MS)
+        bLock = false;
     }
 };
 

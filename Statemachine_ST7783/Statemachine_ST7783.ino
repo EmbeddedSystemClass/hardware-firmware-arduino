@@ -29,12 +29,6 @@
 
 void setup()
 {  
-  // initialize the pushbutton pin as an input:
-  //pinMode(btn1Pin, INPUT);
-  //pinMode(btn2Pin, INPUT);
-  
-  pinMode(13, OUTPUT);
-
   Display.beginDisplay();
  
   rtc.stopRTC(); //stop the RTC

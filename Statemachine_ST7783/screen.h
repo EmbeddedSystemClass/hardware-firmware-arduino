@@ -3,7 +3,6 @@
 
 #define BACKCOLOR BLACK
 
-
 class Screen {
   public:
     unsigned bInvalidate:1;
@@ -86,16 +85,16 @@ class TempGauge {
     }
     
     void draw(byte x, byte y, byte value) {
-      Display.fillCircle(x + 5, y, 5, WHITE);
-      Display.fillRect(x, y , 12, 100, WHITE);
-      Display.fillCircle(x + 6, y + 106, 11, WHITE);
+      Display.fillCircle(x + 6, y + 2, 6, WHITE);
+      Display.fillRect(x, y , 13, 100, WHITE);
+      Display.fillCircle(x + 6, y + 106, 12, WHITE);
       
       uint16_t color = value > 20 ? RED : BLUE;
       
-      Display.fillRect(x + 2, y + 2, 8, 100, color);
-      Display.fillCircle(x + 6, y + 106, 9, color);
+      Display.fillRect(x + 2, y + 2, 9, 100, color);
+      Display.fillCircle(x + 6, y + 106, 10, color);
       
-      Display.fillRect(x + 2, y, 8, map(value, -20, 100, 0, 100), BLACK);
+      Display.fillRect(x + 2, y, 9, map(value, -20, 100, 0, 100), BLACK);
     }
 };
 
@@ -103,6 +102,7 @@ class MainScreen : public Screen {
   public:
     //TempGauge tempGauge;
     TempGauge outTempGauge;
+ 
   public:
     MainScreen() {      
     }
@@ -110,7 +110,6 @@ class MainScreen : public Screen {
     void draw() {
 
       if (bInvalidate) {
-        //Display.displayText_f(0, 0, 2, YELLOW, BACKCOLOR, PSTR("App Test"));
         Button::drawButton(0,   0, 240, 50, PSTR("Logger"), NULL);
         Button::drawButton(0, 270, 240, 50, PSTR("Menu"), NULL);
       }
@@ -139,11 +138,8 @@ class MainScreen : public Screen {
       if (bInvalidate || DS1821.bReady) {        
         itochars(DS1821.temperature, buffer, 2);
         strcpy(&buffer[2], " C");
-        //Display.displayText(105, 60, 2, buffer, RED, BACKCOLOR);
-        Display.displayText(35, 110, 2, buffer, RED, BACKCOLOR);
-        
-        //outTempGauge.draw(90, 60, DS1821.temperature);
-        outTempGauge.draw(15, 110, DS1821.temperature);
+        Display.displayText(48, 110, 4, buffer, RED, BACKCOLOR);
+        outTempGauge.draw(25, 110, DS1821.temperature);
       }
       
       bInvalidate = false;
@@ -313,11 +309,20 @@ class NumberEditor : public Screen {
       return true;      
     }
     
+    virtual void onExit() { }
+    
     byte execute(byte input) {      
       if (!bVisible) {
         intialize();
         show();
       }       
+      
+      if(Button::hitTest(180, 192, 60,  128)) {   // Exit pressed?
+        onExit();
+        hide();
+        pScreen = pMenuScreen;
+        return 0;
+      }
       
       if(Events.bOnTouch) {
         // Number Matrix test
@@ -348,10 +353,7 @@ class NumberEditor : public Screen {
         bInvalidateValue = false;
       }
       
-      if(Button::hitTest(180, 192, 60,  128)) {   // Exit pressed?
-        hide();
-        pScreen = pMenuScreen;
-      }
+      
     }
 };
 
@@ -392,6 +394,13 @@ class DateEditor : public MaskEditor {
       maxPos = 9;
       bDot = false;
     }
+    
+    void onExit() {
+      int y = CHARTONUM(str[0], 1000) + CHARTONUM(str[1], 100) + CHARTONUM(str[2], 10) + CHARTONUM(str[3], 1);
+      byte m = CHARTONUM(str[5], 10) + CHARTONUM(str[6], 1);
+      byte d = CHARTONUM(str[8], 10) + CHARTONUM(str[9], 1);
+      rtc.setDate(d, m, y);
+    }
 };
 
 static DateEditor DateEditor;
@@ -404,6 +413,12 @@ class TimeEditor : public MaskEditor {
       pos = 0;
       maxPos = 4;
       bDot = false;
+    }
+    
+    void onExit() {
+      byte h = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
+      byte m = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
+      rtc.setTime(h, m, 0);
     }
 };
 
