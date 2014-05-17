@@ -37,6 +37,7 @@ static Screen* pMainScreen;
 static Screen* pDateEditScreen;
 static Screen* pTimeEditScreen;
 static Screen* pTempChartScreen;
+static Screen* pLogSettingsScreen;
 static Screen* pMenuScreen;
 
 
@@ -239,6 +240,9 @@ class TileMenu : public Screen {
       } else if(Button::hitTest(120, 120, 118, 118)) {
         hide();
         pScreen = pTempChartScreen;
+      } else if(Button::hitTest(0, 120, 118, 118)) {
+        hide();
+        pScreen = pLogSettingsScreen;
       }
       
       return true;
@@ -437,12 +441,46 @@ class TimeEditor : public MaskEditor {
 
 TimeEditor TimeEditor;
 
+class LogSettingsScreen : public Screen {
+  
+  public:
+    byte execute(byte input) {
+      if (!bVisible) {
+        show();
+      }  
+      
+      if (bInvalidate) {
+        Button::drawButton(0,   0, 240, 50, PSTR("Logging"), NULL);
+        Button::drawButton(0,  52, 240, 50, PSTR("Reset"), NULL);
+        Button::drawButton(0, 270, 240,  50, PSTR("Exit"), NULL);                     
+        bInvalidate = false;
+      }
+      
+      if(Button::hitTest(0, 240, 240,  80)) {  // Exit
+        hide();        
+        pScreen = pMenuScreen;
+      } else if(Button::hitTest(0,  52, 240, 50)) {  // Reset
+        hide();
+        pScreen = pMenuScreen;
+        
+        LogData.reset(LogData.logOutTemperature);
+        LogEvents.reset();
+      }
+        
+      return 0;      
+    }
+};
+
+LogSettingsScreen LogSettingsScreen;
+
+
 void initScreens() {
   pScreen = &MainScreen;
   pMainScreen = &MainScreen;
   pDateEditScreen = &DateEditor;
   pTimeEditScreen = &TimeEditor;
   pTempChartScreen = &TempChartScreen;
+  pLogSettingsScreen = &LogSettingsScreen;
   pMenuScreen = &MenuScreen;
 }
 

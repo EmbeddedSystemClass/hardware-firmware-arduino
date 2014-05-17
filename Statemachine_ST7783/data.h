@@ -41,6 +41,13 @@ class LogData {
       }
       *avg = avgSum / count;      
     }
+    
+    void reset(int8_t values[]) {
+      for (byte i = 0; i < LOG_DATA_SIZE; i++) {
+        values[i] = 0;
+      }
+      count = 0;
+    }
 };
 
 

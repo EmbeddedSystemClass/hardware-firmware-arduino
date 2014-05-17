@@ -153,6 +153,11 @@ class LogEventManager {
         bEnabled = true;
         lastUpdate = rtc.getTimestamp() - interval + 10;
       }
+      
+      void reset() {
+        lastUpdate = 0;
+        bLog = false;
+      }
 };
 
 LogEventManager LogEvents;
