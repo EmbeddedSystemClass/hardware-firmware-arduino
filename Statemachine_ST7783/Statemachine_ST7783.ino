@@ -20,11 +20,10 @@
 
 #include "main.h"
 #include "display.h"
-#include "events.h"
+#include "event.h"
 #include "measure.h"
 #include "data.h"
-#include "clock.h"
-#include "charts.h"
+#include "chart.h"
 #include "screen.h"
 
 void setup()

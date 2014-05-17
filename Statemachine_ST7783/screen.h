@@ -2,6 +2,7 @@
 #define _SCREENH_
 
 #define BACKCOLOR BLACK
+#define DEGREE_CHAR 127
 
 class Screen {
   public:
@@ -100,7 +101,6 @@ class TempGauge {
 
 class MainScreen : public Screen {
   public:
-    //TempGauge tempGauge;
     TempGauge outTempGauge;
  
   public:
@@ -123,23 +123,36 @@ class MainScreen : public Screen {
         Display.displayText(70, 70, 2, buffer, GREEN, BACKCOLOR);
       }
       
-//      if (bInvalidate || ShtMeasure.bReady) {        
-//        itochars(ShtMeasure.temperature, buffer, 2);
-//        strcpy(&buffer[2], " C");
-//        Display.displayText(25, 60, 2, buffer, RED, BACKCOLOR);
-//        
-//        itochars(ShtMeasure.humidity, buffer, 2);
-//        strcpy(&buffer[2], " %");
-//        Display.displayText(25, 80, 2, buffer, RED, BACKCOLOR);
-//        
-//        tempGauge.draw(10, 60, ShtMeasure.temperature);
-//      }
-      
       if (bInvalidate || DS1821.bReady) {        
         itochars(DS1821.temperature, buffer, 2);
-        strcpy(&buffer[2], " C");
-        Display.displayText(48, 110, 4, buffer, RED, BACKCOLOR);
-        outTempGauge.draw(25, 110, DS1821.temperature);
+        buffer[2] = DEGREE_CHAR;
+        buffer[3] = 0;
+        Display.displayText(98, 120, 4, buffer, RED, BACKCOLOR);
+        outTempGauge.draw(65, 120, DS1821.temperature);
+        
+        if(LogData.count > 0) {
+          int8_t min = 120;
+          int8_t max = -120;
+          int8_t avg = 0;
+          LogData.getStat(LogData.logOutTemperature, LogData.count, &min, &max, &avg);
+          strcpy_P(buffer, PSTR("Min:"));
+          itochars(min, &buffer[4], 2);
+          buffer[6] = DEGREE_CHAR;
+          buffer[7] = 0;          
+          Display.displayText(98, 160, 2, buffer, LIGHTGRAY, BACKCOLOR);
+          
+          strcpy_P(buffer, PSTR("Max:"));
+          itochars(max, &buffer[4], 2);
+          buffer[6] = DEGREE_CHAR;
+          buffer[7] = 0;
+          Display.displayText(98, 180, 2, buffer, LIGHTGRAY, BACKCOLOR);
+          
+          strcpy_P(buffer, PSTR("Avg:"));
+          itochars(avg, &buffer[4], 2);
+          buffer[6] = DEGREE_CHAR;
+          buffer[7] = 0;
+          Display.displayText(98, 200, 2, buffer, LIGHTGRAY, BACKCOLOR);
+        }
       }
       
       bInvalidate = false;

@@ -16,12 +16,9 @@ class Chart {
     void drawChart(int8_t values[], byte count, int rangeMin, int rangeMax) {
       int8_t min = rangeMax;
       int8_t max = rangeMin;
+      int8_t avg = 0;
 			
-      // find min and max values *********************
-      for (byte i = 0; i < count; i++) {
-        min = min(values[i], min);
-        max = max(values[i], max);
-      }
+      LogData.getStat(values, count, &min, &max, &avg);
       
       // fit min, max in range of 10th steps *********
       if(min >= 0) { 
@@ -86,15 +83,6 @@ class Chart {
       
 		
 };
-
-//class InTemperatureChartDiagram : public Chart {
-//  
-//  public:
-//    void drawTempChart(byte input) {
-//      //Display.displayText_f(45, 5, 1, PSTR("In Temperature"));
-//      drawChart(LogData.logInTemperature, LOG_DATA_SIZE, -120, 120);
-//    }
-//};
 
 class OutTemperatureChartDiagram : public Chart {
   
