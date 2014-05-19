@@ -19,7 +19,7 @@
 #include <OneWire.h>
 
 #include "main.h"
-#include "communication.h"
+#include "com.h"
 #include "display.h"
 #include "event.h"
 #include "measure.h"
