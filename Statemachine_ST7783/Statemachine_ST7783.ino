@@ -19,6 +19,7 @@
 #include <OneWire.h>
 
 #include "main.h"
+#include "communication.h"
 #include "display.h"
 #include "event.h"
 #include "measure.h"
@@ -41,6 +42,8 @@ void setup()
   initScreens();
   
   LogEvents.start();
+  
+  Serial.println("Logger\r\n");
 }
 
 void loop() {  
@@ -52,10 +55,17 @@ void loop() {
 
   //ShtMeasure.doMeasure();
   DS1821.doMeasure();
-  LogData.process();  
+  LogData.process();
+  //Com.receive(0);
 }
 
-
+void serialEvent() {
+  while (Serial.available()) {
+    // get the new byte:
+    char inChar = (char)Serial.read(); 
+    Com.receive(inChar); 
+  }
+}
 
 void logError(String s) {
   //displayText(0, 0, 1, s);
