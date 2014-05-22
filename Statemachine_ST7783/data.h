@@ -1,3 +1,4 @@
+#include <SD.h>
 
 #define LOG_DATA_SIZE    24
 
@@ -7,9 +8,10 @@ class LogData {
     int8_t count;
   public:
   
-    void process() {
+    void dispatch() {
       if (LogEvents.bLog) {
         assignValues(logOutTemperature, DS1821.temperature, count);
+//        log2File(DS1821.temperature);
         
 	if (count < LOG_DATA_SIZE) {
           count++;
@@ -47,6 +49,23 @@ class LogData {
         values[i] = 0;
       }
       count = 0;
+    }
+    
+    void log2File(byte value) {
+      /*
+      String dataString = String(value);
+      File dataFile = SD.open("datalog.txt", FILE_WRITE);
+      if (dataFile) {
+        dataFile.println(dataString);
+        dataFile.close();
+        // print to the serial port too:
+        //Serial.println(dataString);
+      }
+      // if the file isn't open, pop up an error:
+      else {
+        //Serial.println("error opening datalog.txt");
+      }
+      */
     }
 };
 

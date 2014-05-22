@@ -53,7 +53,7 @@ class Chart {
         Display.drawFastHLine(CHART_X , y, CHARTWIDTH, LIGHTGRAY);
        
         char buffer[4] = { "000" };
-        itochars(abs(i), buffer, 3);          
+        bin2asc(abs(i), buffer, 3);          
         Display.displayText(CHART_X + CHARTWIDTH - 3 * TEXTWIDTH - 2 , y - TEXTHEIGHT - 2, 1, buffer, LIGHTGRAY, BLACK);
       }
       

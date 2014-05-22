@@ -19,11 +19,12 @@
 #include <OneWire.h>
 
 #include "main.h"
-#include "com.h"
+//#include "com.h"
 #include "display.h"
 #include "event.h"
 #include "measure.h"
 #include "data.h"
+#include "com.h"
 #include "chart.h"
 #include "screen.h"
 
@@ -31,10 +32,10 @@ void setup()
 {  
   Display.beginDisplay();
  
-  rtc.stopRTC(); //stop the RTC
-  rtc.setTime(20, 42, 0); //set the time here
+  rtc.stopRTC(); 	   //stop the RTC
+  rtc.setTime(20, 42, 0);  //set the time here
   rtc.setDate(1, 1, 2000); //set the date here
-  rtc.startRTC(); //start the RTC
+  rtc.startRTC(); 	   //start the RTC
 
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
@@ -43,20 +44,17 @@ void setup()
   
   LogEvents.start();
   
-  Serial.println("Logger\r\n");
+  Serial.println("Logger ready\r\n");
 }
 
 void loop() {  
-  Events.doHandleEvents();
-  MeasureEvents.doHandleEvents();
-  pScreen->execute(0);
-  
-  LogEvents.doHandleEvents();
-
-  //ShtMeasure.doMeasure();
-  DS1821.doMeasure();
-  LogData.process();
-  //Com.receive(0);
+  Events.dispatch();
+  MeasureEvents.dispatch();  
+  pScreen->dispatch(0);  
+  LogEvents.dispatch();  
+  DS1821.dispatch();
+  LogData.dispatch();
+  Com.dispatch();
 }
 
 void serialEvent() {
@@ -71,7 +69,7 @@ void logError(String s) {
   //displayText(0, 0, 1, s);
 }
 
-void itochars(unsigned int value, char buffer[], byte digits) {
+void bin2asc(unsigned int value, char buffer[], byte digits) {
   byte i = 0; 
   byte d;
   unsigned int k;
@@ -88,6 +86,4 @@ void itochars(unsigned int value, char buffer[], byte digits) {
     i++;
   }
 }
-
-
-    
+ 

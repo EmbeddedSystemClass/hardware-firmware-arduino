@@ -42,7 +42,7 @@ class EventManager {
   
     unsigned bMeasure:1;
 
-    void doHandleEvents() {
+    void dispatch() {
       updateTimerEvents();      
       updateTouchEvents();
     }
@@ -112,7 +112,7 @@ class MeasureEventManager {
         interval = 5; // seconds
       }
       
-      void doHandleEvents() {
+      void dispatch() {
         if (rtc.getTimestamp() - lastUpdate > interval) {
           lastUpdate = rtc.getTimestamp();
           bShtMeasure = true;
@@ -138,7 +138,7 @@ class LogEventManager {
         interval = 3600; // seconds
       }
       
-      void doHandleEvents() {
+      void dispatch() {
         if (!bEnabled)
           return;
         if (rtc.getTimestamp() - lastUpdate > interval) {

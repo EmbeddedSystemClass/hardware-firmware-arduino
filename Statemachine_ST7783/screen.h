@@ -28,7 +28,7 @@ class Screen {
       bVisible = true;
     }
     
-    virtual byte execute(byte input) {
+    virtual byte dispatch(byte input) {
     }
 };
 
@@ -117,15 +117,15 @@ class MainScreen : public Screen {
       
       char buffer[9]= { "00:00:00" };  
       if (bInvalidate || Events.bT1000MS) {
-        itochars(rtc.getHours(), &buffer[0], 2);
-        itochars(rtc.getMinutes(), &buffer[3], 2);
-        itochars(rtc.getSeconds(), &buffer[6], 2);  
+        bin2asc(rtc.getHours(), &buffer[0], 2);
+        bin2asc(rtc.getMinutes(), &buffer[3], 2);
+        bin2asc(rtc.getSeconds(), &buffer[6], 2);  
         
         Display.displayText(70, 70, 2, buffer, GREEN, BACKCOLOR);
       }
       
       if (bInvalidate || DS1821.bReady) {        
-        itochars(DS1821.temperature, buffer, 2);
+        bin2asc(DS1821.temperature, buffer, 2);
         buffer[2] = DEGREE_CHAR;
         buffer[3] = 0;
         Display.displayText(98, 120, 4, buffer, RED, BACKCOLOR);
@@ -137,19 +137,19 @@ class MainScreen : public Screen {
           int8_t avg = 0;
           LogData.getStat(LogData.logOutTemperature, LogData.count, &min, &max, &avg);
           strcpy_P(buffer, PSTR("Min:"));
-          itochars(min, &buffer[4], 2);
+          bin2asc(min, &buffer[4], 2);
           buffer[6] = DEGREE_CHAR;
           buffer[7] = 0;          
           Display.displayText(98, 160, 2, buffer, LIGHTGRAY, BACKCOLOR);
           
           strcpy_P(buffer, PSTR("Max:"));
-          itochars(max, &buffer[4], 2);
+          bin2asc(max, &buffer[4], 2);
           buffer[6] = DEGREE_CHAR;
           buffer[7] = 0;
           Display.displayText(98, 180, 2, buffer, LIGHTGRAY, BACKCOLOR);
           
           strcpy_P(buffer, PSTR("Avg:"));
-          itochars(avg, &buffer[4], 2);
+          bin2asc(avg, &buffer[4], 2);
           buffer[6] = DEGREE_CHAR;
           buffer[7] = 0;
           Display.displayText(98, 200, 2, buffer, LIGHTGRAY, BACKCOLOR);
@@ -159,7 +159,7 @@ class MainScreen : public Screen {
       bInvalidate = false;
     }
     
-    byte execute(byte input) {
+    byte dispatch(byte input) {
       if (!bVisible) {
         show();
       }
@@ -182,7 +182,7 @@ class TempChartScreen : public Screen {
     OutTemperatureChartDiagram outChart;  	// temperature    
 
   public:
-    byte execute(byte input) {
+    byte dispatch(byte input) {
       if (!bVisible) {
         show();
       }  
@@ -221,7 +221,7 @@ class TileMenu : public Screen {
       bInvalidate = false;
     }
     
-    byte execute(byte input) {
+    byte dispatch(byte input) {
       if (!bVisible) {
         show();
       } 
@@ -328,7 +328,7 @@ class NumberEditor : public Screen {
     
     virtual void onExit() { }
     
-    byte execute(byte input) {      
+    byte dispatch(byte input) {      
       if (!bVisible) {
         intialize();
         show();
@@ -444,7 +444,7 @@ TimeEditor TimeEditor;
 class LogSettingsScreen : public Screen {
   
   public:
-    byte execute(byte input) {
+    byte dispatch(byte input) {
       if (!bVisible) {
         show();
       }  
