@@ -12,7 +12,8 @@
 #include <SWTFT.h> // Hardware-specific library
 #include <TouchScreen.h>
 #include <SPI.h>
-#include <SD.h>
+#include <Fat16.h>
+#include <Fat16util.h> // use functions to print strings from flash memory
 #include <Sensirion.h>
 #include <avr/pgmspace.h>
 #include <swRTC.h>
@@ -43,6 +44,7 @@ void setup()
   initScreens();
   
   LogEvents.start();
+  LogData.initialize();
   
   Serial.println("Logger ready\r\n");
 }

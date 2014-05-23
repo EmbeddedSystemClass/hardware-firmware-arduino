@@ -1,6 +1,9 @@
-#include <SD.h>
-
 #define LOG_DATA_SIZE    24
+
+SdCard card;
+Fat16 file;
+
+char name[] = "LOG00.TXT";
 
 class LogData {
   public:
@@ -11,7 +14,7 @@ class LogData {
     void dispatch() {
       if (LogEvents.bLog) {
         assignValues(logOutTemperature, DS1821.temperature, count);
-//        log2File(DS1821.temperature);
+        log2File(DS1821.temperature);
         
 	if (count < LOG_DATA_SIZE) {
           count++;
@@ -51,21 +54,51 @@ class LogData {
       count = 0;
     }
     
+    /*
+     * Write an unsigned number to file
+     */
+    void writeNumber(uint32_t n) {
+      uint8_t buf[10];
+      uint8_t i = 0;
+      do {
+        i++;
+        buf[sizeof(buf) - i] = n%10 + '0';
+        n /= 10;
+      } while (n);
+      file.write(&buf[sizeof(buf) - i], i); // write the part of buf with the number
+    }
+    
     void log2File(byte value) {
-      /*
-      String dataString = String(value);
-      File dataFile = SD.open("datalog.txt", FILE_WRITE);
-      if (dataFile) {
-        dataFile.println(dataString);
-        dataFile.close();
-        // print to the serial port too:
-        //Serial.println(dataString);
+      if (file.open(name, O_APPEND | O_EXCL | O_WRITE)) {
+        //file.write("line "); // write string from RAM
+        writeNumber(value);
+        //file.write_P(PSTR(" millis = ")); // write string from flash
+        //writeNumber(millis());
+        file.write("\r\n"); // file.println() would work also
+        file.close();
+        Serial.println("Write to log");
       }
-      // if the file isn't open, pop up an error:
-      else {
-        //Serial.println("error opening datalog.txt");
+    }
+    
+    void initialize() {
+      // initialize the SD card
+      if (!card.init()) Serial.println("Error: int SD card");
+      // initialize a FAT16 volume
+      if (!Fat16::init(&card)) Serial.println("Fat16::init");
+      
+      // create a new file
+      
+      for (uint8_t i = 0; i < 100; i++) {
+        name[3] = i/10 + '0';
+        name[4] = i%10 + '0';
+        // O_CREAT - create the file if it does not exist
+        // O_EXCL - fail if the file exists
+        // O_WRITE - open for write
+        if (file.open(name, O_CREAT | O_EXCL | O_WRITE)) break;
       }
-      */
+      if (!file.isOpen()) Serial.println("file.open");
+      file.write("Logger\r\n");
+      file.close();
     }
 };
 
