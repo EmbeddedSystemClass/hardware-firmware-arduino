@@ -168,7 +168,7 @@ namespace Logger {
 			getTemperatureLogButton.Enabled = enabled;
 			getTemperatureButton.Enabled = enabled;
 			setDateTimeButton.Enabled = enabled;
-			resetButton.Enabled = false;
+			resetButton.Enabled = enabled;
 		}
 	}
 
