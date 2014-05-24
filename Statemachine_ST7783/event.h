@@ -135,7 +135,7 @@ class LogEventManager {
          
     public:
       LogEventManager() {
-        interval = 3600; // seconds
+        interval = 5; // seconds
       }
       
       void dispatch() {

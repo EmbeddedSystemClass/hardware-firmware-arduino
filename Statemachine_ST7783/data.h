@@ -3,18 +3,29 @@
 SdCard card;
 Fat16 file;
 
-char name[] = "LOG00.TXT";
+char name[] = "yymmddnn.TXT";
 
 class LogData {
   public:
+    byte day;
+    unsigned bLog2File;
     int8_t logOutTemperature[LOG_DATA_SIZE];
     int8_t count;
   public:
   
     void dispatch() {
-      if (LogEvents.bLog) {
+      if (LogEvents.bLog) {                
         assignValues(logOutTemperature, DS1821.temperature, count);
-        log2File(DS1821.temperature);
+        
+        // create new file every day
+        if(rtc.getDay() != day) {
+          day = rtc.getDay();
+          createNewLogFile();
+        }
+        
+        if(bLog2File) {
+          log2File(DS1821.temperature);
+        }
         
 	if (count < LOG_DATA_SIZE) {
           count++;
@@ -70,35 +81,49 @@ class LogData {
     
     void log2File(byte value) {
       if (file.open(name, O_APPEND | O_EXCL | O_WRITE)) {
-        //file.write("line "); // write string from RAM
-        writeNumber(value);
-        //file.write_P(PSTR(" millis = ")); // write string from flash
-        //writeNumber(millis());
-        file.write("\r\n"); // file.println() would work also
+                      // 0123456789012
+        char buffer[] = "hh:mm:ss;    \r\n";
+        bin2asc(rtc.getHours(), buffer, 2);
+        bin2asc(rtc.getMinutes(), &buffer[3], 2);
+        bin2asc(rtc.getSeconds(), &buffer[6], 2);
+        bin2asc(value, &buffer[10], 3);
+        file.write(buffer, sizeof(buffer));      
         file.close();
-        Serial.println("Write to log");
+        Serial.println(F("Write to log"));
+        Serial.println(buffer);
       }
     }
     
-    void initialize() {
+    void createNewLogFile() {
       // initialize the SD card
-      if (!card.init()) Serial.println("Error: int SD card");
+      if (!card.init()) Serial.println(F("Error: int SD card"));
       // initialize a FAT16 volume
-      if (!Fat16::init(&card)) Serial.println("Fat16::init");
+      if (!Fat16::init(&card)) Serial.println(F("Fat16::init"));
       
       // create a new file
+      //                012345678901
+      // char name[] = "yymmddnn.TXT";
       
       for (uint8_t i = 0; i < 100; i++) {
-        name[3] = i/10 + '0';
-        name[4] = i%10 + '0';
+        bin2asc(rtc.getYear() % 100, name, 2);
+        bin2asc(rtc.getMonth(), &name[2], 2);
+        bin2asc(rtc.getDay(), &name[4], 2);
+        name[6] = i/10 + '0';
+        name[7] = i%10 + '0';
+        Serial.println(name);
         // O_CREAT - create the file if it does not exist
         // O_EXCL - fail if the file exists
         // O_WRITE - open for write
         if (file.open(name, O_CREAT | O_EXCL | O_WRITE)) break;
       }
-      if (!file.isOpen()) Serial.println("file.open");
-      file.write("Logger\r\n");
-      file.close();
+      if (file.isOpen()) {
+        file.write_P(PSTR("Logger\r\n"));
+        file.close();
+        bLog2File = true;
+      } else {
+        bLog2File = false;
+        Serial.println(F("Error: file.open"));
+      }
     }
 };
 

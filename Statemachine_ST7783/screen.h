@@ -413,9 +413,10 @@ class DateEditor : public MaskEditor {
     }
     
     void onExit() {
-      int y = CHARTONUM(str[0], 1000) + CHARTONUM(str[1], 100) + CHARTONUM(str[2], 10) + CHARTONUM(str[3], 1);
-      byte m = CHARTONUM(str[5], 10) + CHARTONUM(str[6], 1);
-      byte d = CHARTONUM(str[8], 10) + CHARTONUM(str[9], 1);
+      // "dd.mm.yyyy"
+      int y = CHARTONUM(str[6], 1000) + CHARTONUM(str[7], 100) + CHARTONUM(str[8], 10) + CHARTONUM(str[9], 1);
+      byte m = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
+      byte d = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
       rtc.setDate(d, m, y);
     }
 };

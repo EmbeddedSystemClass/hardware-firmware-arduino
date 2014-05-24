@@ -20,7 +20,6 @@
 #include <OneWire.h>
 
 #include "main.h"
-//#include "com.h"
 #include "display.h"
 #include "event.h"
 #include "measure.h"
@@ -30,23 +29,23 @@
 #include "screen.h"
 
 void setup()
-{  
+{
+  // Open serial communications
+  Serial.begin(9600);
+  Serial.println(F("Logger\r\n"));
+  
+  // Initialize Display
   Display.beginDisplay();
- 
+  
+  // Initialize RTC
   rtc.stopRTC(); 	   //stop the RTC
   rtc.setTime(20, 42, 0);  //set the time here
   rtc.setDate(1, 1, 2000); //set the date here
   rtc.startRTC(); 	   //start the RTC
-
-  // Open serial communications and wait for port to open:
-  Serial.begin(9600);
   
-  initScreens();
-  
+  initScreens();  
   LogEvents.start();
-  LogData.initialize();
-  
-  Serial.println("Logger ready\r\n");
+//  LogData.initialize();
 }
 
 void loop() {  
@@ -65,10 +64,6 @@ void serialEvent() {
     char inChar = (char)Serial.read(); 
     Com.receive(inChar); 
   }
-}
-
-void logError(String s) {
-  //displayText(0, 0, 1, s);
 }
 
 void bin2asc(unsigned int value, char buffer[], byte digits) {
