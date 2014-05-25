@@ -80,14 +80,27 @@ class LogData {
     }
     
     void log2File(byte value) {
+      // initialize the SD card
+      if (!card.init()) {
+        Serial.println(F("Error: int SD card"));
+        file.close();
+        return;
+      }
+      // initialize a FAT16 volume
+      if (!Fat16::init(&card)) {
+        file.close();
+        Serial.println(F("Fat16::init"));
+        return;
+      }
+      
       if (file.open(name, O_APPEND | O_EXCL | O_WRITE)) {
                       // 0123456789012
-        char buffer[] = "hh:mm:ss;    \r\n";
+        char buffer[] = "hh:mm:ss;    ";
         bin2asc(rtc.getHours(), buffer, 2);
         bin2asc(rtc.getMinutes(), &buffer[3], 2);
         bin2asc(rtc.getSeconds(), &buffer[6], 2);
         bin2asc(value, &buffer[10], 3);
-        file.write(buffer, sizeof(buffer));      
+        file.println(buffer);      
         file.close();
         Serial.println(F("Write to log"));
         Serial.println(buffer);
