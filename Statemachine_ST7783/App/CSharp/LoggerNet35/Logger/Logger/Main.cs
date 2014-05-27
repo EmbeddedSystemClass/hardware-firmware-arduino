@@ -20,16 +20,19 @@ namespace Logger
 		// frame signature
 		private byte[] signature = { 0xCC, 0x33, 0x55, 0xAA };
 
+		private string portName;
+
         public Main()
         {
             InitializeComponent();
 
-            portComboBox.Items.AddRange(SerialPort.GetPortNames());
-
             updateUi();
 
-			resetTemperatureChart();            
-            
+			resetTemperatureChart();
+
+			mainTab.SelectedIndex = 0;
+			mainTab.ItemSize = new Size(0, 1);
+			mainTab.SizeMode = TabSizeMode.Fixed;			
         }		
 
         private byte getCheckSum(byte[] buffer, int offset, int count)
@@ -88,22 +91,22 @@ namespace Logger
 			}
 		}
 
-		private bool tryGetPortName(out string portName) {
-			portName = portComboBox.Text;
-
-			if (portName.Length == 0) {
+		private bool tryGetPortName(out string name) {
+			name = "";
+			if (string.IsNullOrEmpty(portName)) {
 				MessageBox.Show("No port selected", "Serial Port");
 				return false;
 			}
+
+			name = portName;
 
 			return true;
 		}
 
 		private bool tryGetPort(out SerialPort port) {
 			port = null;
-			string portName = portComboBox.Text;
 
-			if (portName.Length > 0) {
+			if (!string.IsNullOrEmpty(portName)) {
 				port = new SerialPort(portName, 9600);
 				port.DtrEnable = false;
 				port.Open();
@@ -114,17 +117,12 @@ namespace Logger
 		}
 
 		private void updateUi() {
-			bool enabled = portComboBox.SelectedIndex >= 0;
-			setDateTimeButton.Enabled = enabled;
+			bool enabled = !string.IsNullOrEmpty(portName);
 			getTemperatureLogButton.Enabled = enabled;
-			getTemperatureButton.Enabled = enabled;
-			setDateTimeButton.Enabled = enabled;
-			resetButton.Enabled = enabled;
 			getDirectoryButton.Enabled = enabled;
 		}
 
-        private void setDateTimeButton_Click(object sender, EventArgs e)
-        {
+        private void setSystemDateTime() {
 			SerialPort port;
 			            
             if (tryGetPort(out port))
@@ -155,8 +153,7 @@ namespace Logger
             }
         }
 
-        private void resetButton_Click(object sender, EventArgs e)
-        {
+        private void resetLooger() {
             string portName;
             if (tryGetPortName(out portName))
             {
@@ -187,12 +184,12 @@ namespace Logger
                 {
                     if (port.BytesToRead > 0)
                     {
-                        tempLabel.Text = port.ReadChar().ToString();
+                        temperatureLabel.Text = port.ReadChar().ToString();
                         break;
                     }
                     else
                     {
-                        tempLabel.Text = "failed";
+						temperatureLabel.Text = "failed";
                     }
                 }
 
@@ -237,7 +234,7 @@ namespace Logger
                     }
                     else
                     {
-                        tempLabel.Text = "failed";
+                        //tempLabel.Text = "failed";
                     }
                 }
 
@@ -301,6 +298,61 @@ namespace Logger
 				string s = logFilesListView.SelectedItems[0].Text;
 				getFile(s);
 			}
+		}
+
+		private void mainListView_DoubleClick(object sender, EventArgs e) {
+			switchTab();
+		}
+
+		private void switchTab() {
+			switch (mainListView.SelectedItems[0].Index) {
+				case 0:
+					connectMenuStrip.Items.Clear();
+					foreach (string item in SerialPort.GetPortNames()) {
+						connectMenuStrip.Items.Add(item);
+					}
+					mainListView.ContextMenuStrip = connectMenuStrip;
+					Point p = mainListView.Items[0].Position;
+					p.Offset(32, 32);
+					connectMenuStrip.Show(mainListView, p);
+					break;
+
+				case 1:
+					setSystemDateTime();
+					break;
+
+				case 2:
+					mainTab.SelectedIndex = 3;
+					break;
+
+				case 3:
+					mainTab.SelectedIndex = 2;
+					break;
+
+				case 4:
+					resetLooger();
+					break;
+
+				case 5:
+					mainTab.SelectedIndex = 1;
+					break;
+
+				default:
+				break;
+			}
+		}
+
+		private void homeButton_Click(object sender, EventArgs e) {
+			mainTab.SelectedIndex = 0;
+		}
+
+		private void mainListView_Click(object sender, EventArgs e) {
+			switchTab();
+		}
+
+		private void connectMenuStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e) {
+			portName = e.ClickedItem.Text;
+			updateUi();
 		}
     }
 
