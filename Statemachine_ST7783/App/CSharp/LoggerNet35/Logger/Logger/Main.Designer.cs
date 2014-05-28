@@ -32,13 +32,6 @@
 			System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
 			System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
 			System.Windows.Forms.DataVisualization.Charting.Title title1 = new System.Windows.Forms.DataVisualization.Charting.Title();
-			System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
-            "Connection"}, 12, System.Drawing.SystemColors.WindowText, System.Drawing.Color.Empty, null);
-			System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("Set System Time", 6);
-			System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("Log files", 8);
-			System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem("Chart", 1);
-			System.Windows.Forms.ListViewItem listViewItem5 = new System.Windows.Forms.ListViewItem("Reset", 9);
-			System.Windows.Forms.ListViewItem listViewItem6 = new System.Windows.Forms.ListViewItem("Temperature", 0);
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
 			this.getTemperatureLogButton = new System.Windows.Forms.Button();
 			this.temperatureChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
@@ -47,8 +40,14 @@
 			this.getDirectoryButton = new System.Windows.Forms.Button();
 			this.mainTab = new System.Windows.Forms.TabControl();
 			this.mainTabPage = new System.Windows.Forms.TabPage();
-			this.mainListView = new System.Windows.Forms.ListView();
+			this.mainTabFlowLayoutPanel = new System.Windows.Forms.FlowLayoutPanel();
+			this.connectButton = new System.Windows.Forms.Button();
 			this.imageList1 = new System.Windows.Forms.ImageList(this.components);
+			this.dateTimeButton = new System.Windows.Forms.Button();
+			this.logFilesButton = new System.Windows.Forms.Button();
+			this.chartButton = new System.Windows.Forms.Button();
+			this.resetButton = new System.Windows.Forms.Button();
+			this.temperatureButton = new System.Windows.Forms.Button();
 			this.temperatureTabPage = new System.Windows.Forms.TabPage();
 			this.button2 = new System.Windows.Forms.Button();
 			this.getTemperatureButton = new System.Windows.Forms.Button();
@@ -67,6 +66,7 @@
 			this.chartMenuStrip.SuspendLayout();
 			this.mainTab.SuspendLayout();
 			this.mainTabPage.SuspendLayout();
+			this.mainTabFlowLayoutPanel.SuspendLayout();
 			this.temperatureTabPage.SuspendLayout();
 			this.logChartTabPage.SuspendLayout();
 			this.logFilesTabPage.SuspendLayout();
@@ -155,7 +155,7 @@
 			// mainTabPage
 			// 
 			this.mainTabPage.BackColor = System.Drawing.Color.White;
-			this.mainTabPage.Controls.Add(this.mainListView);
+			this.mainTabPage.Controls.Add(this.mainTabFlowLayoutPanel);
 			this.mainTabPage.Location = new System.Drawing.Point(4, 25);
 			this.mainTabPage.Name = "mainTabPage";
 			this.mainTabPage.Padding = new System.Windows.Forms.Padding(3);
@@ -164,33 +164,37 @@
 			this.mainTabPage.Text = "mainTabPage";
 			this.mainTabPage.UseVisualStyleBackColor = true;
 			// 
-			// mainListView
+			// mainTabFlowLayoutPanel
 			// 
-			this.mainListView.Alignment = System.Windows.Forms.ListViewAlignment.SnapToGrid;
-			this.mainListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-						| System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
-			this.mainListView.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.mainListView.ContextMenuStrip = this.chartMenuStrip;
-			this.mainListView.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem1,
-            listViewItem2,
-            listViewItem3,
-            listViewItem4,
-            listViewItem5,
-            listViewItem6});
-			this.mainListView.LargeImageList = this.imageList1;
-			this.mainListView.Location = new System.Drawing.Point(8, 17);
-			this.mainListView.MultiSelect = false;
-			this.mainListView.Name = "mainListView";
-			this.mainListView.Scrollable = false;
-			this.mainListView.ShowGroups = false;
-			this.mainListView.Size = new System.Drawing.Size(540, 357);
-			this.mainListView.TabIndex = 0;
-			this.mainListView.TileSize = new System.Drawing.Size(200, 100);
-			this.mainListView.UseCompatibleStateImageBehavior = false;
-			this.mainListView.DoubleClick += new System.EventHandler(this.mainListView_DoubleClick);
-			this.mainListView.Click += new System.EventHandler(this.mainListView_Click);
+			this.mainTabFlowLayoutPanel.Controls.Add(this.connectButton);
+			this.mainTabFlowLayoutPanel.Controls.Add(this.dateTimeButton);
+			this.mainTabFlowLayoutPanel.Controls.Add(this.logFilesButton);
+			this.mainTabFlowLayoutPanel.Controls.Add(this.chartButton);
+			this.mainTabFlowLayoutPanel.Controls.Add(this.resetButton);
+			this.mainTabFlowLayoutPanel.Controls.Add(this.temperatureButton);
+			this.mainTabFlowLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.mainTabFlowLayoutPanel.Location = new System.Drawing.Point(3, 3);
+			this.mainTabFlowLayoutPanel.Name = "mainTabFlowLayoutPanel";
+			this.mainTabFlowLayoutPanel.Size = new System.Drawing.Size(550, 374);
+			this.mainTabFlowLayoutPanel.TabIndex = 2;
+			// 
+			// connectButton
+			// 
+			this.connectButton.BackColor = System.Drawing.Color.Transparent;
+			this.connectButton.Enabled = false;
+			this.connectButton.FlatAppearance.BorderSize = 0;
+			this.connectButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+			this.connectButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.connectButton.ImageIndex = 2;
+			this.connectButton.ImageList = this.imageList1;
+			this.connectButton.Location = new System.Drawing.Point(3, 3);
+			this.connectButton.Name = "connectButton";
+			this.connectButton.Size = new System.Drawing.Size(109, 81);
+			this.connectButton.TabIndex = 1;
+			this.connectButton.Text = "Connection";
+			this.connectButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+			this.connectButton.UseVisualStyleBackColor = false;
+			this.connectButton.Click += new System.EventHandler(this.tabSelectButton_Click);
 			// 
 			// imageList1
 			// 
@@ -209,6 +213,100 @@
 			this.imageList1.Images.SetKeyName(10, "kcsUpdateData.png");
 			this.imageList1.Images.SetKeyName(11, "QueryDelete.png");
 			this.imageList1.Images.SetKeyName(12, "USB_Silver 32x32.ico");
+			// 
+			// dateTimeButton
+			// 
+			this.dateTimeButton.BackColor = System.Drawing.Color.Transparent;
+			this.dateTimeButton.Enabled = false;
+			this.dateTimeButton.FlatAppearance.BorderSize = 0;
+			this.dateTimeButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+			this.dateTimeButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.dateTimeButton.ImageIndex = 6;
+			this.dateTimeButton.ImageList = this.imageList1;
+			this.dateTimeButton.Location = new System.Drawing.Point(118, 3);
+			this.dateTimeButton.Name = "dateTimeButton";
+			this.dateTimeButton.Size = new System.Drawing.Size(109, 81);
+			this.dateTimeButton.TabIndex = 2;
+			this.dateTimeButton.Text = "Date Time";
+			this.dateTimeButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+			this.dateTimeButton.UseVisualStyleBackColor = false;
+			this.dateTimeButton.Click += new System.EventHandler(this.tabSelectButton_Click);
+			// 
+			// logFilesButton
+			// 
+			this.logFilesButton.BackColor = System.Drawing.Color.Transparent;
+			this.logFilesButton.Enabled = false;
+			this.logFilesButton.FlatAppearance.BorderSize = 0;
+			this.logFilesButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+			this.logFilesButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+			this.logFilesButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.logFilesButton.ImageKey = "ImportMoreMenu.png";
+			this.logFilesButton.ImageList = this.imageList1;
+			this.logFilesButton.Location = new System.Drawing.Point(233, 3);
+			this.logFilesButton.Name = "logFilesButton";
+			this.logFilesButton.Size = new System.Drawing.Size(109, 81);
+			this.logFilesButton.TabIndex = 3;
+			this.logFilesButton.Text = "Log files";
+			this.logFilesButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+			this.logFilesButton.UseVisualStyleBackColor = false;
+			this.logFilesButton.Click += new System.EventHandler(this.tabSelectButton_Click);
+			// 
+			// chartButton
+			// 
+			this.chartButton.BackColor = System.Drawing.Color.Transparent;
+			this.chartButton.Enabled = false;
+			this.chartButton.FlatAppearance.BorderSize = 0;
+			this.chartButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+			this.chartButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+			this.chartButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.chartButton.ImageKey = "ChartTypeAreaInsertGallery32x32.png";
+			this.chartButton.ImageList = this.imageList1;
+			this.chartButton.Location = new System.Drawing.Point(348, 3);
+			this.chartButton.Name = "chartButton";
+			this.chartButton.Size = new System.Drawing.Size(109, 81);
+			this.chartButton.TabIndex = 4;
+			this.chartButton.Text = "Chart";
+			this.chartButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+			this.chartButton.UseVisualStyleBackColor = false;
+			this.chartButton.Click += new System.EventHandler(this.tabSelectButton_Click);
+			// 
+			// resetButton
+			// 
+			this.resetButton.BackColor = System.Drawing.Color.Transparent;
+			this.resetButton.Enabled = false;
+			this.resetButton.FlatAppearance.BorderSize = 0;
+			this.resetButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+			this.resetButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+			this.resetButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.resetButton.ImageKey = "kcsRemove32.png";
+			this.resetButton.ImageList = this.imageList1;
+			this.resetButton.Location = new System.Drawing.Point(3, 90);
+			this.resetButton.Name = "resetButton";
+			this.resetButton.Size = new System.Drawing.Size(109, 81);
+			this.resetButton.TabIndex = 5;
+			this.resetButton.Text = "Reset";
+			this.resetButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+			this.resetButton.UseVisualStyleBackColor = false;
+			this.resetButton.Click += new System.EventHandler(this.tabSelectButton_Click);
+			// 
+			// temperatureButton
+			// 
+			this.temperatureButton.BackColor = System.Drawing.Color.Transparent;
+			this.temperatureButton.Enabled = false;
+			this.temperatureButton.FlatAppearance.BorderSize = 0;
+			this.temperatureButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+			this.temperatureButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+			this.temperatureButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.temperatureButton.ImageKey = "Cab32x32.png";
+			this.temperatureButton.ImageList = this.imageList1;
+			this.temperatureButton.Location = new System.Drawing.Point(118, 90);
+			this.temperatureButton.Name = "temperatureButton";
+			this.temperatureButton.Size = new System.Drawing.Size(109, 81);
+			this.temperatureButton.TabIndex = 6;
+			this.temperatureButton.Text = "Temperature";
+			this.temperatureButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+			this.temperatureButton.UseVisualStyleBackColor = false;
+			this.temperatureButton.Click += new System.EventHandler(this.tabSelectButton_Click);
 			// 
 			// temperatureTabPage
 			// 
@@ -367,6 +465,7 @@
 			this.chartMenuStrip.ResumeLayout(false);
 			this.mainTab.ResumeLayout(false);
 			this.mainTabPage.ResumeLayout(false);
+			this.mainTabFlowLayoutPanel.ResumeLayout(false);
 			this.temperatureTabPage.ResumeLayout(false);
 			this.logChartTabPage.ResumeLayout(false);
 			this.logFilesTabPage.ResumeLayout(false);
@@ -391,7 +490,6 @@
 		private System.Windows.Forms.ColumnHeader File;
 		private System.Windows.Forms.ColumnHeader Values;
 		private System.Windows.Forms.TabPage mainTabPage;
-		private System.Windows.Forms.ListView mainListView;
 		private System.Windows.Forms.ImageList imageList1;
 		private System.Windows.Forms.Button homeButton;
 		private System.Windows.Forms.Button button1;
@@ -400,6 +498,13 @@
 		private System.Windows.Forms.Button getTemperatureButton;
 		private System.Windows.Forms.Label temperatureLabel;
 		private System.Windows.Forms.Button button2;
+		private System.Windows.Forms.Button connectButton;
+		private System.Windows.Forms.FlowLayoutPanel mainTabFlowLayoutPanel;
+		private System.Windows.Forms.Button dateTimeButton;
+		private System.Windows.Forms.Button logFilesButton;
+		private System.Windows.Forms.Button chartButton;
+		private System.Windows.Forms.Button resetButton;
+		private System.Windows.Forms.Button temperatureButton;
     }
 }
 

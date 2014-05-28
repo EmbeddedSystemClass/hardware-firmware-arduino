@@ -22,9 +22,15 @@ namespace Logger
 
 		private string portName;
 
+		private Button[] buttons;
+
         public Main()
         {
             InitializeComponent();
+			buttons = new Button[] { 
+				connectButton, dateTimeButton, logFilesButton, 
+				chartButton,  temperatureButton, resetButton 
+			};
 
             updateUi();
 
@@ -32,7 +38,7 @@ namespace Logger
 
 			mainTab.SelectedIndex = 0;
 			mainTab.ItemSize = new Size(0, 1);
-			mainTab.SizeMode = TabSizeMode.Fixed;			
+			mainTab.SizeMode = TabSizeMode.Fixed;
         }		
 
         private byte getCheckSum(byte[] buffer, int offset, int count)
@@ -120,6 +126,12 @@ namespace Logger
 			bool enabled = !string.IsNullOrEmpty(portName);
 			getTemperatureLogButton.Enabled = enabled;
 			getDirectoryButton.Enabled = enabled;
+
+			foreach (Button item in buttons) {
+				item.Enabled = enabled;
+			}
+
+			connectButton.Enabled = true;
 		}
 
         private void setSystemDateTime() {
@@ -298,23 +310,19 @@ namespace Logger
 				string s = logFilesListView.SelectedItems[0].Text;
 				getFile(s);
 			}
-		}
+		}		
 
-		private void mainListView_DoubleClick(object sender, EventArgs e) {
-			switchTab();
-		}
-
-		private void switchTab() {
-			switch (mainListView.SelectedItems[0].Index) {
+		private void switchTab(int tabIndex) {
+			switch (tabIndex) {
 				case 0:
 					connectMenuStrip.Items.Clear();
 					foreach (string item in SerialPort.GetPortNames()) {
 						connectMenuStrip.Items.Add(item);
 					}
-					mainListView.ContextMenuStrip = connectMenuStrip;
-					Point p = mainListView.Items[0].Position;
-					p.Offset(32, 32);
-					connectMenuStrip.Show(mainListView, p);
+					connectButton.ContextMenuStrip = connectMenuStrip;
+					Point p = connectButton.Location;
+					p.Offset(connectButton.Size.Width / 2, connectButton.Size.Height / 2);
+					connectMenuStrip.Show(connectButton, p);
 					break;
 
 				case 1:
@@ -344,15 +352,15 @@ namespace Logger
 
 		private void homeButton_Click(object sender, EventArgs e) {
 			mainTab.SelectedIndex = 0;
-		}
-
-		private void mainListView_Click(object sender, EventArgs e) {
-			switchTab();
-		}
+		}		
 
 		private void connectMenuStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e) {
 			portName = e.ClickedItem.Text;
 			updateUi();
+		}
+
+		private void tabSelectButton_Click(object sender, EventArgs e) {			
+			switchTab(Array.IndexOf(buttons, sender));
 		}
     }
 
