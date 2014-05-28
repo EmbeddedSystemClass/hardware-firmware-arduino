@@ -59,12 +59,5 @@ namespace WindowsFormsApplication1.Properties {
                 resourceCulture = value;
             }
         }
-        
-        internal static System.Drawing.Bitmap HeaderFooterCurrentTimeInsert32x32 {
-            get {
-                object obj = ResourceManager.GetObject("HeaderFooterCurrentTimeInsert32x32", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
     }
 }
