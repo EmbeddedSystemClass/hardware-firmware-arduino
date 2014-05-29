@@ -41,10 +41,10 @@ void setup()
 
   Wire.begin();
 
+  DS1621.begin();
+
   initScreens();  
   LogEvents.start();
-
-  Serial.println("setup exit");
 }
 
 void loop() {  
@@ -52,8 +52,8 @@ void loop() {
   MeasureEvents.dispatch();  
   pScreen->dispatch(0);  
   LogEvents.dispatch();  
-  //DS1821.dispatch();
-  LogData.dispatch();
+  DS1621.dispatch();
+  //LogData.dispatch();
   Com.dispatch();
 }
 

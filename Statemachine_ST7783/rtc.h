@@ -24,11 +24,6 @@ class DateTime {
       minute = mn;
       second = s;
     }
-
-    uint32_t unixtime(void) const {
-      
-      return 0;
-    }
 };
 
 ////////////////////////////////////////////////////////////////////////////////

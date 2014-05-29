@@ -125,12 +125,12 @@ class MainScreen : public Screen {
         Display.displayText(70, 70, 2, buffer, GREEN, BACKCOLOR);
       }
       
-      if (bInvalidate || DS1821.bReady) {        
-        bin2asc(DS1821.temperature, buffer, 2);
+      if (bInvalidate || DS1621.bReady) {        
+        bin2asc(DS1621.temperature, buffer, 2);
         buffer[2] = DEGREE_CHAR;
         buffer[3] = 0;
         Display.displayText(98, 120, 4, buffer, RED, BACKCOLOR);
-        outTempGauge.draw(65, 120, DS1821.temperature);
+        outTempGauge.draw(65, 120, DS1621.temperature);
         
         if(LogData.count > 0) {
           int8_t min = 120;

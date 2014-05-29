@@ -15,7 +15,7 @@ class LogData {
   
     void dispatch() {
       if (LogEvents.bLog) {                
-        assignValues(logOutTemperature, DS1821.temperature, count);
+        assignValues(logOutTemperature, DS1621.temperature, count);
         DateTime dt;// = rtc.now();
         // create new file every day
         if(dt.day != day) {
@@ -24,7 +24,7 @@ class LogData {
         }
         
         if(bLog2File) {
-          log2File(DS1821.temperature);
+          log2File(DS1621.temperature);
         }
         
 	if (count < LOG_DATA_SIZE) {

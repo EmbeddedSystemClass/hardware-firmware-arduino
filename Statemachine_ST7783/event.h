@@ -109,13 +109,13 @@ class MeasureEventManager {
     
     public:
       MeasureEventManager() {
-        interval = 5; // seconds
+        interval = 5000; // seconds
       }
       
       void dispatch() {
         DateTime dt; //= rtc.now();
-        if (dt.unixtime() - lastUpdate > interval) {
-          lastUpdate = dt.unixtime();
+        if (millis() - lastUpdate > interval) {
+          lastUpdate = millis();
           bShtMeasure = true;
         } else {
           bShtMeasure = false;
@@ -136,15 +136,14 @@ class LogEventManager {
          
     public:
       LogEventManager() {
-        interval = 3599; // seconds
+        interval = 3599000; //(ms) every hour
       }
       
       void dispatch() {
         if (!bEnabled)
           return;
-        DateTime dt;// = rtc.now();
-        if (dt.unixtime() - lastUpdate > interval) {
-          lastUpdate = dt.unixtime();
+        if (millis() - lastUpdate > interval) {
+          lastUpdate = millis();
           bLog = true;
         } else {
           bLog = false;
@@ -153,8 +152,7 @@ class LogEventManager {
       
       void start() {
         bEnabled = true;
-        DateTime dt;// = rtc.now();
-        lastUpdate = dt.unixtime() - interval + 10;
+        lastUpdate = millis() - interval + 10;
       }
       
       void reset() {

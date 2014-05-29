@@ -50,7 +50,7 @@ class Comunication {
           //rtc.setDate(data[4], data[3], data[2] * 1000 + data[1]);
           break;
         case CMD_CURRENT_TEMP:
-          Serial.write(DS1821.temperature);
+          Serial.write(DS1621.temperature);
           Serial.flush();
           break;
         case CMD_TEMP_LOG:
