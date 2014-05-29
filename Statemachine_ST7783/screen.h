@@ -117,9 +117,10 @@ class MainScreen : public Screen {
       
       char buffer[9]= { "00:00:00" };  
       if (bInvalidate || Events.bT1000MS) {
-        bin2asc(rtc.getHours(), &buffer[0], 2);
-        bin2asc(rtc.getMinutes(), &buffer[3], 2);
-        bin2asc(rtc.getSeconds(), &buffer[6], 2);  
+        DateTime dt = rtc.now();
+        bin2asc(dt.hour, &buffer[0], 2);
+        bin2asc(dt.minute, &buffer[3], 2);
+        bin2asc(dt.second, &buffer[6], 2);  
         
         Display.displayText(70, 70, 2, buffer, GREEN, BACKCOLOR);
       }
@@ -417,7 +418,7 @@ class DateEditor : public MaskEditor {
       int y = CHARTONUM(str[6], 1000) + CHARTONUM(str[7], 100) + CHARTONUM(str[8], 10) + CHARTONUM(str[9], 1);
       byte m = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
       byte d = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
-      rtc.setDate(d, m, y);
+      //rtc.setDate(d, m, y);
     }
 };
 
@@ -434,9 +435,10 @@ class TimeEditor : public MaskEditor {
     }
     
     void onExit() {
-      byte h = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
-      byte m = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
-      rtc.setTime(h, m, 0);
+      DateTime dt = rtc.now();
+      dt.hour = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
+      dt.minute = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
+      rtc.adjust(dt);
     }
 };
 

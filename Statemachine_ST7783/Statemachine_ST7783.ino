@@ -16,10 +16,12 @@
 #include <Fat16util.h> // use functions to print strings from flash memory
 #include <Sensirion.h>
 #include <avr/pgmspace.h>
-#include <swRTC.h>
-#include <OneWire.h>
+#include <Wire.h>
+//#include "RTClib.h"
+//#include <OneWire.h>
 
 #include "main.h"
+#include "rtc.h"
 #include "display.h"
 #include "event.h"
 #include "measure.h"
@@ -32,20 +34,17 @@ void setup()
 {
   // Open serial communications
   Serial.begin(9600);
-  Serial.println(F("Logger\r\n"));
+  Serial.println(F("\r\nLogger\r\n"));
   
   // Initialize Display
   Display.beginDisplay();
-  
-  // Initialize RTC
-  rtc.stopRTC(); 	   //stop the RTC
-  rtc.setTime(20, 42, 0);  //set the time here
-  rtc.setDate(1, 1, 2000); //set the date here
-  rtc.startRTC(); 	   //start the RTC
-  
+
+  Wire.begin();
+
   initScreens();  
   LogEvents.start();
-//  LogData.initialize();
+
+  Serial.println("setup exit");
 }
 
 void loop() {  
@@ -53,7 +52,7 @@ void loop() {
   MeasureEvents.dispatch();  
   pScreen->dispatch(0);  
   LogEvents.dispatch();  
-  DS1821.dispatch();
+  //DS1821.dispatch();
   LogData.dispatch();
   Com.dispatch();
 }

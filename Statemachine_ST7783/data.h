@@ -16,10 +16,10 @@ class LogData {
     void dispatch() {
       if (LogEvents.bLog) {                
         assignValues(logOutTemperature, DS1821.temperature, count);
-        
+        DateTime dt;// = rtc.now();
         // create new file every day
-        if(rtc.getDay() != day) {
-          day = rtc.getDay();
+        if(dt.day != day) {
+          day = dt.day;
           createNewLogFile();
         }
         
@@ -94,11 +94,12 @@ class LogData {
       }
       
       if (file.open(name, O_APPEND | O_EXCL | O_WRITE)) {
+        DateTime dt;// = rtc.now();
                       // 0123456789012
         char buffer[] = "hh:mm:ss;    ";
-        bin2asc(rtc.getHours(), buffer, 2);
-        bin2asc(rtc.getMinutes(), &buffer[3], 2);
-        bin2asc(rtc.getSeconds(), &buffer[6], 2);
+        bin2asc(dt.hour, buffer, 2);
+        bin2asc(dt.minute, &buffer[3], 2);
+        bin2asc(dt.second, &buffer[6], 2);
         bin2asc(value, &buffer[10], 3);
         file.println(buffer);      
         file.close();
@@ -116,11 +117,12 @@ class LogData {
       // create a new file
       //                012345678901
       // char name[] = "yymmddnn.TXT";
+      DateTime dt = rtc.now();
       
       for (uint8_t i = 0; i < 100; i++) {
-        bin2asc(rtc.getYear() % 100, name, 2);
-        bin2asc(rtc.getMonth(), &name[2], 2);
-        bin2asc(rtc.getDay(), &name[4], 2);
+        bin2asc(dt.year % 100, name, 2);
+        bin2asc(dt.month, &name[2], 2);
+        bin2asc(dt.day, &name[4], 2);
         name[6] = i/10 + '0';
         name[7] = i%10 + '0';
         Serial.println(name);

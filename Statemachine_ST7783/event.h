@@ -113,8 +113,9 @@ class MeasureEventManager {
       }
       
       void dispatch() {
-        if (rtc.getTimestamp() - lastUpdate > interval) {
-          lastUpdate = rtc.getTimestamp();
+        DateTime dt; //= rtc.now();
+        if (dt.unixtime() - lastUpdate > interval) {
+          lastUpdate = dt.unixtime();
           bShtMeasure = true;
         } else {
           bShtMeasure = false;
@@ -141,8 +142,9 @@ class LogEventManager {
       void dispatch() {
         if (!bEnabled)
           return;
-        if (rtc.getTimestamp() - lastUpdate > interval) {
-          lastUpdate = rtc.getTimestamp();
+        DateTime dt;// = rtc.now();
+        if (dt.unixtime() - lastUpdate > interval) {
+          lastUpdate = dt.unixtime();
           bLog = true;
         } else {
           bLog = false;
@@ -151,7 +153,8 @@ class LogEventManager {
       
       void start() {
         bEnabled = true;
-        lastUpdate = rtc.getTimestamp() - interval + 10;
+        DateTime dt;// = rtc.now();
+        lastUpdate = dt.unixtime() - interval + 10;
       }
       
       void reset() {

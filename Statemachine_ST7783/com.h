@@ -44,10 +44,10 @@ class Comunication {
         
       switch(data[0]) {
         case CMD_TIME:         
-          rtc.setTime(data[1], data[2], data[3]);
+          //rtc.setTime(data[1], data[2], data[3]);
           break;
         case CMD_DATE:
-          rtc.setDate(data[4], data[3], data[2] * 1000 + data[1]);
+          //rtc.setDate(data[4], data[3], data[2] * 1000 + data[1]);
           break;
         case CMD_CURRENT_TEMP:
           Serial.write(DS1821.temperature);
