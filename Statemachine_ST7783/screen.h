@@ -438,6 +438,7 @@ class TimeEditor : public MaskEditor {
       DateTime dt = rtc.now();
       dt.hour = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
       dt.minute = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
+      dt.second = 0;
       rtc.adjust(dt);
     }
 };
