@@ -102,7 +102,8 @@ class TempGauge {
 
 class MainScreen : public Screen {
   public:
-    TempGauge outTempGauge;
+    TempGauge tempGauge1;
+    TempGauge tempGauge2;
  
   public:
     MainScreen() {      
@@ -129,8 +130,14 @@ class MainScreen : public Screen {
         bin2asc(DS1621.temperature, buffer, 2);
         buffer[2] = DEGREE_CHAR;
         buffer[3] = 0;
-        Display.displayText(98, 120, 4, buffer, RED, BACKCOLOR);
-        outTempGauge.draw(65, 120, DS1621.temperature);
+        Display.displayText(58, 120, 4, buffer, RED, BACKCOLOR);
+        tempGauge1.draw(25, 120, DS1621.temperature);
+        
+        bin2asc(DS1621.temperature2, buffer, 2);
+        buffer[2] = DEGREE_CHAR;
+        buffer[3] = 0;
+        Display.displayText(165, 120, 4, buffer, RED, BACKCOLOR);
+        tempGauge2.draw(135, 120, DS1621.temperature2);
         
         if(LogData.count > 0) {
           int8_t min = 120;
@@ -141,19 +148,19 @@ class MainScreen : public Screen {
           bin2asc(min, &buffer[4], 2);
           buffer[6] = DEGREE_CHAR;
           buffer[7] = 0;          
-          Display.displayText(98, 160, 2, buffer, LIGHTGRAY, BACKCOLOR);
+          Display.displayText(58, 160, 2, buffer, LIGHTGRAY, BACKCOLOR);
           
           strcpy_P(buffer, PSTR("Max:"));
           bin2asc(max, &buffer[4], 2);
           buffer[6] = DEGREE_CHAR;
           buffer[7] = 0;
-          Display.displayText(98, 180, 2, buffer, LIGHTGRAY, BACKCOLOR);
+          Display.displayText(58, 180, 2, buffer, LIGHTGRAY, BACKCOLOR);
           
           strcpy_P(buffer, PSTR("Avg:"));
           bin2asc(avg, &buffer[4], 2);
           buffer[6] = DEGREE_CHAR;
           buffer[7] = 0;
-          Display.displayText(98, 200, 2, buffer, LIGHTGRAY, BACKCOLOR);
+          Display.displayText(58, 200, 2, buffer, LIGHTGRAY, BACKCOLOR);
         }
       }
       
