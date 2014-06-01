@@ -9,15 +9,18 @@ class LogData {
   public:
     byte day;
     unsigned bLog2File;
-    int8_t logOutTemperature[LOG_DATA_SIZE];
+    int8_t temperature1Log[LOG_DATA_SIZE];
+    int8_t temperature2Log[LOG_DATA_SIZE];
     int8_t count;
   public:
   
     void dispatch() {
       if (LogEvents.bLog) {                
-        assignValues(logOutTemperature, DS1621.temperature, count);
-        DateTime dt;// = rtc.now();
+        assignValues(temperature1Log, DS1621.temperature, count);
+        assignValues(temperature2Log, DS1621.temperature2*2, count);
+        
         // create new file every day
+        DateTime dt;
         if(dt.day != day) {
           day = dt.day;
           createNewLogFile();
@@ -42,10 +45,6 @@ class LogData {
 	n = LOG_DATA_SIZE - 1;
       }
       values[n] = value;
-      
-      //Serial.println(values[n]);
-      //Serial.println(n);
-      //Serial.println("---");
     }
     
     void getStat(int8_t values[], byte count, int8_t* min, int8_t* max, int8_t* avg) {
