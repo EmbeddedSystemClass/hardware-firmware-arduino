@@ -143,24 +143,24 @@ class MainScreen : public Screen {
           int8_t min = 120;
           int8_t max = -120;
           int8_t avg = 0;
-          LogData.getStat(LogData.logOutTemperature, LogData.count, &min, &max, &avg);
+          LogData.getStat(LogData.temperature1Log, LogData.count, &min, &max, &avg);
           strcpy_P(buffer, PSTR("Min:"));
           bin2asc(min, &buffer[4], 2);
           buffer[6] = DEGREE_CHAR;
           buffer[7] = 0;          
-          Display.displayText(58, 160, 2, buffer, LIGHTGRAY, BACKCOLOR);
+          Display.displayText(58, 160, 1, buffer, LIGHTGRAY, BACKCOLOR);
           
           strcpy_P(buffer, PSTR("Max:"));
           bin2asc(max, &buffer[4], 2);
           buffer[6] = DEGREE_CHAR;
           buffer[7] = 0;
-          Display.displayText(58, 180, 2, buffer, LIGHTGRAY, BACKCOLOR);
+          Display.displayText(58, 180, 1, buffer, LIGHTGRAY, BACKCOLOR);
           
           strcpy_P(buffer, PSTR("Avg:"));
           bin2asc(avg, &buffer[4], 2);
           buffer[6] = DEGREE_CHAR;
           buffer[7] = 0;
-          Display.displayText(58, 200, 2, buffer, LIGHTGRAY, BACKCOLOR);
+          Display.displayText(58, 200, 1, buffer, LIGHTGRAY, BACKCOLOR);
         }
       }
       
@@ -187,26 +187,36 @@ MainScreen MainScreen;
 
 class TempChartScreen : public Screen {
   public:    
-    OutTemperatureChartDiagram outChart;  	// temperature    
-
+    Temperature1ChartDiagram t1Chart;  	// temperature    
+    Temperature2ChartDiagram t2Chart;
+    byte chartIndex;
+    
   public:
     byte dispatch(byte input) {
       if (!bVisible) {
         show();
       }  
       
-      if (bInvalidate) {
-        Button::drawButton(0,   0, 240, 50, PSTR("Temprature"), NULL);      
-        Button::drawButton(0, 270, 240,  50, PSTR("Exit"), NULL);                     
-        outChart.drawTempChart(input);        
-        bInvalidate = false;
-      }
-      
       if(Button::hitTest(0, 240, 240,  80)) {
         hide();        
         pScreen = pMenuScreen;
+      } else if(Button::hitTest(0, 0, 240, 50)) {
+        chartIndex = (chartIndex + 1) % 2;
+        Display.clearDisplay();
+        bInvalidate = true;
       }
-        
+      
+      if (bInvalidate) {
+        Button::drawButton(0,   0, 240, 50, PSTR("Temperature"), NULL);      
+        Button::drawButton(0, 270, 240,  50, PSTR("Exit"), NULL);
+        if(chartIndex == 0)
+          t1Chart.drawTempChart(input);
+        else
+          t2Chart.drawTempChart(input);
+          
+        bInvalidate = false;
+      }
+              
       return 0;      
     }
 };
@@ -223,7 +233,7 @@ class TileMenu : public Screen {
       Button::drawButton(  0,   0, 118, 118, PSTR("Date"), NULL);
       Button::drawButton(120,   0, 118, 118, PSTR("Time"),  NULL);
       Button::drawButton(  0, 120, 118, 118, PSTR("Log"), NULL);
-      Button::drawButton(120, 120, 118, 118, PSTR("Temp"), NULL);
+      Button::drawButton(120, 120, 118, 118, PSTR("Chart"), NULL);
       Button::drawButton(  0, 240, 240,  80, PSTR("Exit"), NULL);
       
       bInvalidate = false;
@@ -474,7 +484,8 @@ class LogSettingsScreen : public Screen {
         hide();
         pScreen = pMenuScreen;
         
-        LogData.reset(LogData.logOutTemperature);
+        LogData.reset(LogData.temperature1Log);
+        LogData.reset(LogData.temperature2Log);
         LogEvents.reset();
       }
         

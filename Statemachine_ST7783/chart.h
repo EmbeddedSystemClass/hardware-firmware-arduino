@@ -84,12 +84,21 @@ class Chart {
 		
 };
 
-class OutTemperatureChartDiagram : public Chart {
+class Temperature1ChartDiagram : public Chart {
   
   public:
     void drawTempChart(byte input) {
       //Display.displayText_f(45, 5, 1, PSTR("Out Temperature"));
-      drawChart(LogData.logOutTemperature, LOG_DATA_SIZE, -120, 120);
+      drawChart(LogData.temperature1Log, LOG_DATA_SIZE, -120, 120);
+    }
+};
+
+class Temperature2ChartDiagram : public Chart {
+  
+  public:
+    void drawTempChart(byte input) {
+      //Display.displayText_f(45, 5, 1, PSTR("Out Temperature"));
+      drawChart(LogData.temperature2Log, LOG_DATA_SIZE, -120, 120);
     }
 };
 

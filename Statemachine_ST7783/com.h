@@ -55,7 +55,7 @@ class Comunication {
           break;
         case CMD_TEMP_LOG:
           for(byte i = 0; i < 24; i++) {
-            Serial.write(LogData.logOutTemperature[i]);
+            Serial.write(LogData.temperature1Log[i]);
           }
           Serial.flush();
           break;

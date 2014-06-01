@@ -109,7 +109,7 @@ class MeasureEventManager {
     
     public:
       MeasureEventManager() {
-        interval = 5000; // seconds
+        interval = 5000; // ms
       }
       
       void dispatch() {

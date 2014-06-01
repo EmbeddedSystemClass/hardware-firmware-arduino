@@ -34,7 +34,9 @@ static byte bin2bcd (byte val) { return val + 6 * (val / 10); }
 
 class RTCDS1307 {
   public:
+    unsigned long lastUpdate;
   
+  public:  
     byte isrunning(void) {
       WIRE.beginTransmission(DS1307_ADDRESS);
       WIRE.write(0);
@@ -74,7 +76,16 @@ class RTCDS1307 {
       uint16_t y = bcd2bin(WIRE.read()) + 2000;
       
       return DateTime (y, m, d, hh, mm, ss);
-    }  
+    }
+    
+    void dispatch() {
+      if (millis() - lastUpdate > 3599000) {
+          lastUpdate = millis();
+          DateTime dt = now();
+          dt.second-=2;
+          adjust(dt);
+        }
+    }
 };
 
 RTCDS1307 rtc;
