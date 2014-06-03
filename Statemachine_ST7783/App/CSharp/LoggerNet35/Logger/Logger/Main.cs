@@ -69,7 +69,7 @@ namespace Logger
 
 				// read file
 				List<string> items = new List<string>();
-				for (int i = 0; i < 1000; i++) {
+				for (long i = 0; i < 1000000; i++) {
 					if (port.BytesToRead > 0) {
 						string s = port.ReadLine();
 						if (s.Length > 0) {
