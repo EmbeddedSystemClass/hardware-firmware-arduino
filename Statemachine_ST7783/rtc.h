@@ -5,7 +5,7 @@
 class DateTime {
  
   public:
-    int year;
+    unsigned int year;
     byte month;
     byte day;
     byte hour;
@@ -15,8 +15,8 @@ class DateTime {
     DateTime() { }
    
     DateTime (uint16_t y, byte m, byte d, byte h, byte mn, byte s) {
-      if (y >= 2000)
-          y -= 2000;
+//      if (y >= 2000)
+//          y -= 2000;
       year = y;
       month = m;
       day = d;

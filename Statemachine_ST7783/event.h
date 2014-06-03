@@ -152,7 +152,7 @@ class LogEventManager {
       
       void start() {
         bEnabled = true;
-        lastUpdate = millis() - interval + 10;
+        lastUpdate = millis() - interval + 10000;
       }
       
       void reset() {

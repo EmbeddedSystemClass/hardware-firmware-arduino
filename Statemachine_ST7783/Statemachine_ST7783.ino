@@ -13,12 +13,10 @@
 #include <TouchScreen.h>
 #include <SPI.h>
 #include <Fat16.h>
-#include <Fat16util.h> // use functions to print strings from flash memory
+//#include <Fat16util.h> // use functions to print strings from flash memory
 #include <Sensirion.h>
 #include <avr/pgmspace.h>
 #include <Wire.h>
-//#include "RTClib.h"
-//#include <OneWire.h>
 
 #include "main.h"
 #include "rtc.h"
@@ -34,7 +32,10 @@ void setup()
 {
   // Open serial communications
   Serial.begin(9600);
-  Serial.println(F("\r\nLogger\r\n"));
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for Leonardo only
+  }
+  Serial.println(F("Logger\r\n"));
   
   // Initialize Display
   Display.beginDisplay();
@@ -55,7 +56,7 @@ void loop() {
   DS1621.dispatch();
   LogData.dispatch();
   Com.dispatch();
-  rtc.dispatch();
+  //rtc.dispatch();
 }
 
 void serialEvent() {

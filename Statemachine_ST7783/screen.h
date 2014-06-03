@@ -195,7 +195,12 @@ class TempChartScreen : public Screen {
     byte dispatch(byte input) {
       if (!bVisible) {
         show();
-      }  
+      }
+      
+      if(LogEvents.bLog) {
+        bInvalidate = LogEvents.bLog;
+        Display.clearDisplay();
+      }
       
       if(Button::hitTest(0, 240, 240,  80)) {
         hide();        
@@ -431,11 +436,12 @@ class DateEditor : public MaskEditor {
     }
     
     void onExit() {
-      // "dd.mm.yyyy"
-      int y = CHARTONUM(str[6], 1000) + CHARTONUM(str[7], 100) + CHARTONUM(str[8], 10) + CHARTONUM(str[9], 1);
-      byte m = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
-      byte d = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
-      //rtc.setDate(d, m, y);
+      DateTime dt = rtc.now();
+      dt.year = CHARTONUM(str[6], 1000) + CHARTONUM(str[7], 100) + CHARTONUM(str[8], 10) + CHARTONUM(str[9], 1);
+      dt.month = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
+      dt.day = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
+      //Serial.print(y);Serial.print(".");Serial.print(m);Serial.print(".");Serial.println(d);
+      rtc.adjust(dt);
     }
 };
 

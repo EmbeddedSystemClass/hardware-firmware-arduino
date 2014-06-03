@@ -3,11 +3,11 @@
 SdCard card;
 Fat16 file;
 
-char name[] = "yymmddnn.TXT";
+char name[] = "yyyymmnn.TXT";
 
 class LogData {
   public:
-    byte day;
+    byte month;
     unsigned bLog2File;
     int8_t temperature1Log[LOG_DATA_SIZE];
     int8_t temperature2Log[LOG_DATA_SIZE];
@@ -17,17 +17,17 @@ class LogData {
     void dispatch() {
       if (LogEvents.bLog) {                
         assignValues(temperature1Log, DS1621.temperature, count);
-        assignValues(temperature2Log, DS1621.temperature2*2, count);
+        assignValues(temperature2Log, DS1621.temperature2, count);
         
-        // create new file every day
-        DateTime dt;
-        if(dt.day != day) {
-          day = dt.day;
+        // create new file every month
+        DateTime dt = rtc.now();
+        if(dt.month != month) {
+          month = dt.month;
           createNewLogFile();
         }
         
         if(bLog2File) {
-          log2File(DS1621.temperature);
+          log2File(DS1621.temperature, DS1621.temperature2);
         }
         
 	if (count < LOG_DATA_SIZE) {
@@ -78,7 +78,7 @@ class LogData {
       file.write(&buf[sizeof(buf) - i], i); // write the part of buf with the number
     }
     
-    void log2File(byte value) {
+    void log2File(byte value1, byte value2) {
       // initialize the SD card
       if (!card.init()) {
         Serial.println(F("Error: int SD card"));
@@ -93,17 +93,21 @@ class LogData {
       }
       
       if (file.open(name, O_APPEND | O_EXCL | O_WRITE)) {
-        DateTime dt;// = rtc.now();
-                      // 0123456789012
-        char buffer[] = "hh:mm:ss;    ";
-        bin2asc(dt.hour, buffer, 2);
-        bin2asc(dt.minute, &buffer[3], 2);
-        bin2asc(dt.second, &buffer[6], 2);
-        bin2asc(value, &buffer[10], 3);
+        DateTime dt = rtc.now();
+                      // 01234567890123456789012345678
+        char buffer[] = "yyyy-mm-dd hh:mm:ss; 000; 000";
+        bin2asc(dt.year, buffer, 4);
+        bin2asc(dt.month, &buffer[5], 2);
+        bin2asc(dt.day, &buffer[8], 2);
+        bin2asc(dt.hour,&buffer[11], 2);
+        bin2asc(dt.minute, &buffer[14], 2);
+        bin2asc(dt.second, &buffer[17], 2);
+        bin2asc(value1, &buffer[21], 3);
+        bin2asc(value2, &buffer[26], 3);
         file.println(buffer);      
         file.close();
-        Serial.println(F("Write to log"));
-        Serial.println(buffer);
+        //Serial.println(F("Write to log"));
+        //Serial.println(buffer);
       }
     }
     
@@ -115,20 +119,20 @@ class LogData {
       
       // create a new file
       //                012345678901
-      // char name[] = "yymmddnn.TXT";
+      // char name[] = "yyyymmnn.TXT";
       DateTime dt = rtc.now();
-      
+      Serial.println(dt.year);
       for (uint8_t i = 0; i < 100; i++) {
-        bin2asc(dt.year % 100, name, 2);
-        bin2asc(dt.month, &name[2], 2);
-        bin2asc(dt.day, &name[4], 2);
+        bin2asc(dt.year, name, 4);
+        bin2asc(dt.month, &name[4], 2);
         name[6] = i/10 + '0';
         name[7] = i%10 + '0';
         Serial.println(name);
         // O_CREAT - create the file if it does not exist
         // O_EXCL - fail if the file exists
         // O_WRITE - open for write
-        if (file.open(name, O_CREAT | O_EXCL | O_WRITE)) break;
+        //if (file.open(name, O_CREAT | O_EXCL | O_WRITE)) break;
+        if (file.open(name, O_CREAT | O_WRITE)) break;
       }
       if (file.isOpen()) {
         file.write_P(PSTR("Logger\r\n"));
