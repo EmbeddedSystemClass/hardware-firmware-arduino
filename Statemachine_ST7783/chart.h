@@ -57,17 +57,6 @@ class Chart {
         Display.displayText(CHART_X + CHARTWIDTH - 3 * TEXTWIDTH - 2 , y - TEXTHEIGHT - 2, 1, buffer, LIGHTGRAY, BLACK);
       }
       
-      /*
-      // x-axis (zero line)
-      Display.drawLine(CHART_X, zero, CHARTWIDTH, zero, WHITE);
-      
-      for(byte i = 0; i < count; i++) {
-        Display.drawLine(CHART_X + i * w, zero + 2, CHART_X + i * w, zero, WHITE); 
-      }
-      
-      Display.displayText_f(CHARTWIDTH , zero - TEXTHEIGHT / 2, 1, PSTR("t"));
-      */
-      
       // draw values *********************************
       byte w = (CHARTWIDTH) / count - 1;
       for (byte i = 0; i < count; i++) {
@@ -82,24 +71,6 @@ class Chart {
 
       
 		
-};
-
-class Temperature1ChartDiagram : public Chart {
-  
-  public:
-    void drawTempChart(byte input) {
-      //Display.displayText_f(45, 5, 1, PSTR("Out Temperature"));
-      drawChart(LogData.temperature1Log, LOG_DATA_SIZE, -120, 120);
-    }
-};
-
-class Temperature2ChartDiagram : public Chart {
-  
-  public:
-    void drawTempChart(byte input) {
-      //Display.displayText_f(45, 5, 1, PSTR("Out Temperature"));
-      drawChart(LogData.temperature2Log, LOG_DATA_SIZE, -120, 120);
-    }
 };
 
 #endif

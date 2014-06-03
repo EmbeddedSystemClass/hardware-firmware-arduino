@@ -50,7 +50,7 @@ void setup()
 
 void loop() {  
   Events.dispatch();
-  MeasureEvents.dispatch();  
+  //MeasureEvents.dispatch();  
   pScreen->dispatch(0);  
   LogEvents.dispatch();  
   DS1621.dispatch();

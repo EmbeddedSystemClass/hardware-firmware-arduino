@@ -37,10 +37,7 @@ class EventManager {
     unsigned bT50MS:1;
     unsigned bT500MS:1;
     unsigned bT1000MS:1;
-    unsigned bTP500MS:1;
-    unsigned bTP1000MS:1;
-  
-    unsigned bMeasure:1;
+    unsigned bT5S:1;
 
     void dispatch() {
       updateTimerEvents();      
@@ -52,6 +49,7 @@ class EventManager {
       bT50MS = false;
       bT500MS = false;
       bT1000MS = false;
+      bT5S = false;
       
       // generate 50ms, 500ms timer events
       if (millis() - lastTimerUpdate > 50) {
@@ -60,11 +58,12 @@ class EventManager {
         bT50MS = true;
         if (counter % 10 == 0) {
           bT500MS = true;
-          bTP500MS = bTP500MS ? false : true;
         }
         if (counter % 20 == 0) {
           bT1000MS = true;
-          bTP1000MS = bTP1000MS ? false : true;
+        }
+        if (counter % 100 == 0) {
+          bT5S = true;
         }
       } 
     }
@@ -99,31 +98,30 @@ class EventManager {
 
 EventManager Events;
 
-class MeasureEventManager {
-    private:
-      unsigned long lastUpdate;
-    
-    public:
-      unsigned long interval;    
-      unsigned bShtMeasure:1;  
-    
-    public:
-      MeasureEventManager() {
-        interval = 5000; // ms
-      }
-      
-      void dispatch() {
-        DateTime dt; //= rtc.now();
-        if (millis() - lastUpdate > interval) {
-          lastUpdate = millis();
-          bShtMeasure = true;
-        } else {
-          bShtMeasure = false;
-        }
-      }      
-};
-
-MeasureEventManager MeasureEvents;
+//class MeasureEventManager {
+//    private:
+//      unsigned long lastUpdate;
+//    
+//    public:
+//      unsigned long interval;    
+//      unsigned bMeasure:1;  
+//    
+//    public:
+//      MeasureEventManager() {
+//        interval = 5000; // ms
+//      }
+//      
+//      void dispatch() {
+//        if (millis() - lastUpdate > interval) {
+//          lastUpdate = millis();
+//          bMeasure = true;
+//        } else {
+//          bMeasure = false;
+//        }
+//      }      
+//};
+//
+//MeasureEventManager MeasureEvents;
 
 class LogEventManager {
     private:

@@ -81,12 +81,16 @@ class Button {
 
 class TempGauge {
   public:
-    
+    byte lastValue;
   public:
     TempGauge() {
     }
     
     void draw(byte x, byte y, byte value) {
+      if (value == lastValue)
+        return;
+      lastValue = value;
+      
       Display.fillCircle(x + 6, y + 2, 6, WHITE);
       Display.fillRect(x, y , 13, 100, WHITE);
       Display.fillCircle(x + 6, y + 106, 12, WHITE);
@@ -187,8 +191,7 @@ MainScreen MainScreen;
 
 class TempChartScreen : public Screen {
   public:    
-    Temperature1ChartDiagram t1Chart;  	// temperature    
-    Temperature2ChartDiagram t2Chart;
+    Chart chart;
     byte chartIndex;
     
   public:
@@ -215,9 +218,11 @@ class TempChartScreen : public Screen {
         Button::drawButton(0,   0, 240, 50, PSTR("Temperature"), NULL);      
         Button::drawButton(0, 270, 240,  50, PSTR("Exit"), NULL);
         if(chartIndex == 0)
-          t1Chart.drawTempChart(input);
+          //t1Chart.drawTempChart(input);
+          chart.drawChart(LogData.temperature1Log, LOG_DATA_SIZE, -120, 120);
         else
-          t2Chart.drawTempChart(input);
+          //t2Chart.drawTempChart(input);
+          chart.drawChart(LogData.temperature2Log, LOG_DATA_SIZE, -120, 120);
           
         bInvalidate = false;
       }

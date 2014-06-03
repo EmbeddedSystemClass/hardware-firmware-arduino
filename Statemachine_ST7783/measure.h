@@ -34,7 +34,7 @@ class DS1621 {
     void dispatch() {
       bReady = false;
       
-      if (MeasureEvents.bShtMeasure) {                
+      if (Events.bT5S) {                
         Wire.beginTransmission(DEV_ID);
         Wire.write(0xAA); // read temperature command
         Wire.endTransmission();
