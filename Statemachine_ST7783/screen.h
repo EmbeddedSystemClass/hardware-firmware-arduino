@@ -130,7 +130,12 @@ class MainScreen : public Screen {
         Display.displayText(70, 70, 2, buffer, GREEN, BACKCOLOR);
       }
       
-      if (bInvalidate || DS1621.bReady) {        
+      if (bInvalidate || DS1621.bReady) {
+        if(bInvalidate) {
+          tempGauge1.lastValue = 255;
+          tempGauge2.lastValue = 255;
+        }
+        
         bin2asc(DS1621.temperature, buffer, 2);
         buffer[2] = DEGREE_CHAR;
         buffer[3] = 0;
