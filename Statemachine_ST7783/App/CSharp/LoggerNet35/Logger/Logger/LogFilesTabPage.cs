@@ -17,8 +17,13 @@ namespace Logger {
 
 			files = new List<string>();
 			//logFilesListView.Items.Add("Test1");
-			//logFilesListView.Items.Add("Test2");
-			//logFilesListView.Items.Add("Test3");
+			//logFilesListView.Items.Add("Test2.csv");
+			//logFilesListView.Items.Add("Test3.CSV");
+			//logFilesListView.Items.Add("Test3.Csv");
+			//files.Add("Test1");
+			//files.Add("Test2.csv");
+			//files.Add("Test3.CSV");
+			//files.Add("Test3.Csv");
 		}
 
 		private void refreshButton_Click(object sender, EventArgs e) {
@@ -44,48 +49,44 @@ namespace Logger {
 			}
 		}
 
-		private void saveButton_Click(object sender, EventArgs e) {
-			if (logFilesListView.SelectedIndices.Count == 1) {
-				SaveFileDialog sfd = new SaveFileDialog();
-				sfd.Filter.Insert(0, "*.csv|*.csv");
-				sfd.Filter = "csv files (*.csv)|*.txt|All files (*.*)|*.*";
-				sfd.FilterIndex = 1;
-				sfd.RestoreDirectory = true;
-				if (sfd.ShowDialog() == DialogResult.OK) {
-					foreach (int itemIndex in logFilesListView.SelectedIndices) {
-						List<string> fileLines = new List<string>();
-						string fileName = files[logFilesListView.SelectedIndices[0]];
-						if (DataLogger.Instance.TryGetFile(fileName, out fileLines)) {
-							StreamWriter file = System.IO.File.CreateText(
-								sfd.FileName + "\\" + fileName
-							);
-							foreach (string line in fileLines) {
-								file.Write(line);
-							}
-							file.Flush();
-							file.Close();
+		private void saveButton_Click(object sender, EventArgs e) {			
+			FolderBrowserDialog fbd = new FolderBrowserDialog();
+			if (fbd.ShowDialog() == DialogResult.OK) {
+				foreach (int itemIndex in logFilesListView.SelectedIndices) {
+					List<string> fileLines = new List<string>();
+					string fileName = removeExtension(files[itemIndex], ".csv");
+					if (DataLogger.Instance.TryGetFile(fileName, out fileLines)) {						
+						string destFileName = getFreeFileName(
+							fbd.SelectedPath + "\\" + fileName, ".csv"
+						);
+
+						StreamWriter file = System.IO.File.CreateText(destFileName);
+						foreach (string line in fileLines) {
+							file.WriteLine(line);
 						}
+						file.Flush();
+						file.Close();
 					}
 				}
-			} else {
-				FolderBrowserDialog fbd = new FolderBrowserDialog();
-				if (fbd.ShowDialog() == DialogResult.OK) {
-					foreach (int itemIndex in logFilesListView.SelectedIndices) {
-						List<string> fileLines = new List<string>();
-						string fileName = files[itemIndex];
-						if (DataLogger.Instance.TryGetFile(fileName, out fileLines)) {
-							StreamWriter file = System.IO.File.CreateText(
-								fbd.SelectedPath + "\\" + fileName
-							);
-							foreach (string line in fileLines) {
-								file.Write(line);
-							}
-							file.Flush();
-							file.Close();
-						}
-					}
-				}
+			}			
+		}
+
+		private static string getFreeFileName(string fileName, string extension) {
+			int n = 0;
+			string s = fileName + extension;
+			while (System.IO.File.Exists(s)) {
+				n++;
+				s = fileName + n.ToString() + extension;
 			}
+			return fileName + n.ToString() + extension;
+		}
+
+		private static string removeExtension(string fileName, string extension) {
+			int p = fileName.IndexOf(extension, StringComparison.OrdinalIgnoreCase);
+			if (p > 0) {
+				fileName = fileName.Remove(p, extension.Length);
+			}
+			return fileName;
 		}
 
 		private void logFilesListView_SelectedIndexChanged(object sender, EventArgs e) {
