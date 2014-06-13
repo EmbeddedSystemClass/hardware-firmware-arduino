@@ -8,7 +8,7 @@
     <ProjectGuid>{52EF6F31-3584-4ABF-81D9-550652C86425}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WindowsFormsApplication1</RootNamespace>
+    <RootNamespace>Logger</RootNamespace>
     <AssemblyName>Logger</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -64,21 +64,70 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DateTimeTabPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="DateTimeTabPage.Designer.cs">
+      <DependentUpon>DateTimeTabPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ImageResource.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ImageResource.resx</DependentUpon>
+    </Compile>
+    <Compile Include="LogFilesTabPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="LogFilesTabPage.Designer.cs">
+      <DependentUpon>LogFilesTabPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DataLogger.cs" />
+    <Compile Include="LoggerTabPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="LoggerTabPage.Designer.cs">
+      <DependentUpon>LoggerTabPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Main.Designer.cs">
       <DependentUpon>Main.cs</DependentUpon>
     </Compile>
+    <Compile Include="MainTabPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MainTabPage.Designer.cs">
+      <DependentUpon>MainTabPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="DateTimeTabPage.resx">
+      <DependentUpon>DateTimeTabPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ImageResource.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ImageResource.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LogFilesTabPage.resx">
+      <DependentUpon>LogFilesTabPage.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Main.resx">
       <DependentUpon>Main.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainTabPage.resx">
+      <DependentUpon>MainTabPage.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TemperatureChartTabPage.resx">
+      <DependentUpon>TemperatureChartTabPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TemperatureTabPage.resx">
+      <DependentUpon>TemperatureTabPage.cs</DependentUpon>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -93,6 +142,18 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="TemperatureChartTabPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="TemperatureChartTabPage.Designer.cs">
+      <DependentUpon>TemperatureChartTabPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TemperatureTabPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="TemperatureTabPage.Designer.cs">
+      <DependentUpon>TemperatureTabPage.cs</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -128,7 +189,43 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Resources\" />
+    <None Include="Resources\Cab32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Chart32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DataBase32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\RefreshAll32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\FileOpen32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Clock32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Remove32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Refresh32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\QueryDelete32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Connection32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Refresh16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Back16x16.png" />
+    <None Include="Resources\Save16x16.png" />
+    <Content Include="Resources\RefreshBlue16x16.png" />
+    <Content Include="Resources\RefreshBlue32x32.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

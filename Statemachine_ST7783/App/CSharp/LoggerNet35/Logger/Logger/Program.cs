@@ -14,6 +14,8 @@ namespace Logger
         [STAThread]
         static void Main()
         {
+			var logger = new DataLogger();
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Main());
