@@ -49,7 +49,7 @@ namespace Logger {
 						if (s.Length > 0) {
 							if (s.Contains("EOF"))
 								break;
-							files.Add(s);
+							files.Add(s.Substring(0, 11));
 						}
 
 					}
@@ -87,7 +87,7 @@ namespace Logger {
 						if (s.Length > 0) {
 							if (s.Contains("EOF"))
 								break;
-							lines.Add(s);
+							lines.Add(s.Substring(0, s.Length - 1));
 						}
 					}
 				}

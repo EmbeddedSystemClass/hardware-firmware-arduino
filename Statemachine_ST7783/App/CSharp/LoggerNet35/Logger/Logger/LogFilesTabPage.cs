@@ -27,22 +27,21 @@ namespace Logger {
 		}
 
 		private void refreshButton_Click(object sender, EventArgs e) {
-			logFilesListView.Clear();
-			List<string> files;
+			logFilesListView.Items.Clear();
 			if (DataLogger.Instance.TryGetDirectory(out files)) {
-				foreach (string fileName in files) {
-					logFilesListView.Items.Add(fileName);
+				foreach (string fileName in files) {                    
+                    logFilesListView.Items.Add(fileName);
 				}
 			}
 		}		
 
 		private void logFilesListView_DoubleClick(object sender, EventArgs e) {			
 			if (logFilesListView.SelectedItems.Count > 0) {
-				logFileValuesListView.Clear();
-				files.Clear();
+				logFileValuesListView.Items.Clear();
+                List<string> lines;
 				string s = logFilesListView.SelectedItems[0].Text;
-				if (DataLogger.Instance.TryGetFile(s, out files)) {
-					foreach (string line in files) {
+				if (DataLogger.Instance.TryGetFile(s, out lines)) {
+					foreach (string line in lines) {
 						logFileValuesListView.Items.Add(line);
 					}
 				}

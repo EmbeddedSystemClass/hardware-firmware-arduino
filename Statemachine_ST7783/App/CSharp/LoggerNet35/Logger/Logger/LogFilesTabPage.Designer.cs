@@ -23,67 +23,92 @@
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
-			this.logFileValuesListView = new System.Windows.Forms.ListView();
-			this.Values = new System.Windows.Forms.ColumnHeader();
-			this.logFilesListView = new System.Windows.Forms.ListView();
-			this.File = new System.Windows.Forms.ColumnHeader();
-			this.SuspendLayout();
-			// 
-			// logFileValuesListView
-			// 
-			this.logFileValuesListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-						| System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
-			this.logFileValuesListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.Values});
-			this.logFileValuesListView.Location = new System.Drawing.Point(3, 197);
-			this.logFileValuesListView.Name = "logFileValuesListView";
-			this.logFileValuesListView.Size = new System.Drawing.Size(603, 155);
-			this.logFileValuesListView.TabIndex = 16;
-			this.logFileValuesListView.UseCompatibleStateImageBehavior = false;
-			this.logFileValuesListView.View = System.Windows.Forms.View.Details;
-			// 
-			// Values
-			// 
-			this.Values.Text = "Values";
-			this.Values.Width = 594;
-			// 
-			// logFilesListView
-			// 
-			this.logFilesListView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
-			this.logFilesListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.logFilesListView = new System.Windows.Forms.ListView();
+            this.File = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.logFileValuesListView = new System.Windows.Forms.ListView();
+            this.Values = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+            this.splitContainer1.Panel1.SuspendLayout();
+            this.splitContainer1.Panel2.SuspendLayout();
+            this.splitContainer1.SuspendLayout();
+            this.SuspendLayout();
+            // 
+            // splitContainer1
+            // 
+            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer1.Name = "splitContainer1";
+            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer1.Panel1
+            // 
+            this.splitContainer1.Panel1.Controls.Add(this.logFilesListView);
+            // 
+            // splitContainer1.Panel2
+            // 
+            this.splitContainer1.Panel2.Controls.Add(this.logFileValuesListView);
+            this.splitContainer1.Size = new System.Drawing.Size(609, 425);
+            this.splitContainer1.SplitterDistance = 212;
+            this.splitContainer1.TabIndex = 19;
+            // 
+            // logFilesListView
+            // 
+            this.logFilesListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.File});
-			this.logFilesListView.Location = new System.Drawing.Point(3, 3);
-			this.logFilesListView.Name = "logFilesListView";
-			this.logFilesListView.Size = new System.Drawing.Size(603, 188);
-			this.logFilesListView.TabIndex = 15;
-			this.logFilesListView.UseCompatibleStateImageBehavior = false;
-			this.logFilesListView.View = System.Windows.Forms.View.Details;
-			this.logFilesListView.SelectedIndexChanged += new System.EventHandler(this.logFilesListView_SelectedIndexChanged);
-			this.logFilesListView.DoubleClick += new System.EventHandler(this.logFilesListView_DoubleClick);
-			// 
-			// File
-			// 
-			this.File.Text = "File";
-			this.File.Width = 441;
-			// 
-			// LogFilesTabPage
-			// 
-			this.BackColor = System.Drawing.Color.White;
-			this.Controls.Add(this.logFileValuesListView);
-			this.Controls.Add(this.logFilesListView);
-			this.Name = "LogFilesTabPage";
-			this.Size = new System.Drawing.Size(609, 425);
-			this.ResumeLayout(false);
+            this.logFilesListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.logFilesListView.Location = new System.Drawing.Point(0, 0);
+            this.logFilesListView.Name = "logFilesListView";
+            this.logFilesListView.Size = new System.Drawing.Size(609, 212);
+            this.logFilesListView.TabIndex = 16;
+            this.logFilesListView.UseCompatibleStateImageBehavior = false;
+            this.logFilesListView.View = System.Windows.Forms.View.Details;
+            this.logFilesListView.SelectedIndexChanged += new System.EventHandler(this.logFilesListView_SelectedIndexChanged);
+            this.logFilesListView.DoubleClick += new System.EventHandler(this.logFilesListView_DoubleClick);
+            // 
+            // File
+            // 
+            this.File.Text = "File";
+            this.File.Width = 441;
+            // 
+            // logFileValuesListView
+            // 
+            this.logFileValuesListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.Values});
+            this.logFileValuesListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.logFileValuesListView.Location = new System.Drawing.Point(0, 0);
+            this.logFileValuesListView.Name = "logFileValuesListView";
+            this.logFileValuesListView.Size = new System.Drawing.Size(609, 209);
+            this.logFileValuesListView.TabIndex = 19;
+            this.logFileValuesListView.UseCompatibleStateImageBehavior = false;
+            this.logFileValuesListView.View = System.Windows.Forms.View.Details;
+            // 
+            // Values
+            // 
+            this.Values.Text = "Values";
+            this.Values.Width = 594;
+            // 
+            // LogFilesTabPage
+            // 
+            this.BackColor = System.Drawing.Color.White;
+            this.Controls.Add(this.splitContainer1);
+            this.Name = "LogFilesTabPage";
+            this.Size = new System.Drawing.Size(609, 425);
+            this.splitContainer1.Panel1.ResumeLayout(false);
+            this.splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+            this.splitContainer1.ResumeLayout(false);
+            this.ResumeLayout(false);
 
 		}
 
 		#endregion
 
-		private System.Windows.Forms.ListView logFileValuesListView;
-		private System.Windows.Forms.ColumnHeader Values;
-		private System.Windows.Forms.ListView logFilesListView;
-		private System.Windows.Forms.ColumnHeader File;
-	}
+        private System.Windows.Forms.SplitContainer splitContainer1;
+        private System.Windows.Forms.ListView logFilesListView;
+        private System.Windows.Forms.ColumnHeader File;
+        private System.Windows.Forms.ListView logFileValuesListView;
+        private System.Windows.Forms.ColumnHeader Values;
+
+    }
 }
