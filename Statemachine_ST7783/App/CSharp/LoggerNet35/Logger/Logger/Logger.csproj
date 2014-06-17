@@ -123,11 +123,11 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="TemperatureChartTabPage.resx">
-      <DependentUpon>TemperatureChartTabPage.cs</DependentUpon>
+    <EmbeddedResource Include="ChartTabPage.resx">
+      <DependentUpon>ChartTabPage.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="TemperatureTabPage.resx">
-      <DependentUpon>TemperatureTabPage.cs</DependentUpon>
+    <EmbeddedResource Include="CurrentTabPage.resx">
+      <DependentUpon>CurrentTabPage.cs</DependentUpon>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -143,17 +143,17 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="TemperatureChartTabPage.cs">
+    <Compile Include="ChartTabPage.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="TemperatureChartTabPage.Designer.cs">
-      <DependentUpon>TemperatureChartTabPage.cs</DependentUpon>
+    <Compile Include="ChartTabPage.Designer.cs">
+      <DependentUpon>ChartTabPage.cs</DependentUpon>
     </Compile>
-    <Compile Include="TemperatureTabPage.cs">
+    <Compile Include="CurrentTabPage.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="TemperatureTabPage.Designer.cs">
-      <DependentUpon>TemperatureTabPage.cs</DependentUpon>
+    <Compile Include="CurrentTabPage.Designer.cs">
+      <DependentUpon>CurrentTabPage.cs</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -224,6 +224,9 @@
   <ItemGroup>
     <None Include="Resources\Back16x16.png" />
     <None Include="Resources\Save16x16.png" />
+    <Content Include="Resources\Clear16x16.png" />
+    <Content Include="Resources\Multiply16x16.png" />
+    <Content Include="Resources\Temperature16x16.png" />
     <Content Include="Resources\RefreshBlue16x16.png" />
     <Content Include="Resources\RefreshBlue32x32.png" />
   </ItemGroup>

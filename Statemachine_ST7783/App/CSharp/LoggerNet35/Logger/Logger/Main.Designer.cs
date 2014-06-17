@@ -32,20 +32,20 @@
 			this.toolStripSeparator = new System.Windows.Forms.ToolStripSeparator();
 			this.mainTab = new System.Windows.Forms.TabControl();
 			this.mainTabPage = new System.Windows.Forms.TabPage();
-			this.temperatureTabPage = new System.Windows.Forms.TabPage();
-			this.temperatureChartTabPage = new System.Windows.Forms.TabPage();
+			this.currentTabPage = new System.Windows.Forms.TabPage();
+			this.chartTabPage = new System.Windows.Forms.TabPage();
 			this.logFilesTabPage = new System.Windows.Forms.TabPage();
 			this.dateTimePage = new System.Windows.Forms.TabPage();
 			this.mainTabPageControl = new Logger.MainTabPage();
-			this.temperatureTabPageControl = new Logger.TemperatureTabPage();
-			this.temperatureChartTabPageControl = new Logger.TemperatureChartTabPage();
+			this.currentTabPageControl = new Logger.CurrentTabPage();
+			this.chartTabPageControl = new Logger.ChartTabPage();
 			this.logFilesTabPageControl = new Logger.LogFilesTabPage();
 			this.dateTimePageControl = new Logger.DateTimeTabPage();
 			this.mainToolStrip.SuspendLayout();
 			this.mainTab.SuspendLayout();
 			this.mainTabPage.SuspendLayout();
-			this.temperatureTabPage.SuspendLayout();
-			this.temperatureChartTabPage.SuspendLayout();
+			this.currentTabPage.SuspendLayout();
+			this.chartTabPage.SuspendLayout();
 			this.logFilesTabPage.SuspendLayout();
 			this.dateTimePage.SuspendLayout();
 			this.SuspendLayout();
@@ -70,8 +70,8 @@
 			// 
 			this.mainTab.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
 			this.mainTab.Controls.Add(this.mainTabPage);
-			this.mainTab.Controls.Add(this.temperatureTabPage);
-			this.mainTab.Controls.Add(this.temperatureChartTabPage);
+			this.mainTab.Controls.Add(this.currentTabPage);
+			this.mainTab.Controls.Add(this.chartTabPage);
 			this.mainTab.Controls.Add(this.logFilesTabPage);
 			this.mainTab.Controls.Add(this.dateTimePage);
 			this.mainTab.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -98,27 +98,27 @@
 			// 
 			// temperatureTabPage
 			// 
-			this.temperatureTabPage.BackColor = System.Drawing.Color.White;
-			this.temperatureTabPage.Controls.Add(this.temperatureTabPageControl);
-			this.temperatureTabPage.Location = new System.Drawing.Point(4, 25);
-			this.temperatureTabPage.Margin = new System.Windows.Forms.Padding(0);
-			this.temperatureTabPage.Name = "temperatureTabPage";
-			this.temperatureTabPage.Size = new System.Drawing.Size(365, 322);
-			this.temperatureTabPage.TabIndex = 1;
-			this.temperatureTabPage.Text = "Temperature";
-			this.temperatureTabPage.UseVisualStyleBackColor = true;
+			this.currentTabPage.BackColor = System.Drawing.Color.White;
+			this.currentTabPage.Controls.Add(this.currentTabPageControl);
+			this.currentTabPage.Location = new System.Drawing.Point(4, 25);
+			this.currentTabPage.Margin = new System.Windows.Forms.Padding(0);
+			this.currentTabPage.Name = "temperatureTabPage";
+			this.currentTabPage.Size = new System.Drawing.Size(365, 322);
+			this.currentTabPage.TabIndex = 1;
+			this.currentTabPage.Text = "Temperature";
+			this.currentTabPage.UseVisualStyleBackColor = true;
 			// 
 			// temperatureChartTabPage
 			// 
-			this.temperatureChartTabPage.BackColor = System.Drawing.Color.White;
-			this.temperatureChartTabPage.Controls.Add(this.temperatureChartTabPageControl);
-			this.temperatureChartTabPage.Location = new System.Drawing.Point(4, 25);
-			this.temperatureChartTabPage.Margin = new System.Windows.Forms.Padding(0);
-			this.temperatureChartTabPage.Name = "temperatureChartTabPage";
-			this.temperatureChartTabPage.Size = new System.Drawing.Size(365, 322);
-			this.temperatureChartTabPage.TabIndex = 0;
-			this.temperatureChartTabPage.Text = "Log Chart";
-			this.temperatureChartTabPage.UseVisualStyleBackColor = true;
+			this.chartTabPage.BackColor = System.Drawing.Color.White;
+			this.chartTabPage.Controls.Add(this.chartTabPageControl);
+			this.chartTabPage.Location = new System.Drawing.Point(4, 25);
+			this.chartTabPage.Margin = new System.Windows.Forms.Padding(0);
+			this.chartTabPage.Name = "temperatureChartTabPage";
+			this.chartTabPage.Size = new System.Drawing.Size(365, 322);
+			this.chartTabPage.TabIndex = 0;
+			this.chartTabPage.Text = "Log Chart";
+			this.chartTabPage.UseVisualStyleBackColor = true;
 			// 
 			// logFilesTabPage
 			// 
@@ -155,23 +155,23 @@
 			// 
 			// temperatureTabPageControl
 			// 
-			this.temperatureTabPageControl.AutoSize = true;
-			this.temperatureTabPageControl.BackColor = System.Drawing.Color.White;
-			this.temperatureTabPageControl.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.temperatureTabPageControl.Location = new System.Drawing.Point(0, 0);
-			this.temperatureTabPageControl.Name = "temperatureTabPageControl";
-			this.temperatureTabPageControl.Size = new System.Drawing.Size(365, 322);
-			this.temperatureTabPageControl.TabIndex = 0;
+			this.currentTabPageControl.AutoSize = true;
+			this.currentTabPageControl.BackColor = System.Drawing.Color.White;
+			this.currentTabPageControl.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.currentTabPageControl.Location = new System.Drawing.Point(0, 0);
+			this.currentTabPageControl.Name = "temperatureTabPageControl";
+			this.currentTabPageControl.Size = new System.Drawing.Size(365, 322);
+			this.currentTabPageControl.TabIndex = 0;
 			// 
 			// temperatureChartTabPageControl
 			// 
-			this.temperatureChartTabPageControl.AutoSize = true;
-			this.temperatureChartTabPageControl.BackColor = System.Drawing.Color.White;
-			this.temperatureChartTabPageControl.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.temperatureChartTabPageControl.Location = new System.Drawing.Point(0, 0);
-			this.temperatureChartTabPageControl.Name = "temperatureChartTabPageControl";
-			this.temperatureChartTabPageControl.Size = new System.Drawing.Size(365, 322);
-			this.temperatureChartTabPageControl.TabIndex = 0;
+			this.chartTabPageControl.AutoSize = true;
+			this.chartTabPageControl.BackColor = System.Drawing.Color.White;
+			this.chartTabPageControl.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.chartTabPageControl.Location = new System.Drawing.Point(0, 0);
+			this.chartTabPageControl.Name = "temperatureChartTabPageControl";
+			this.chartTabPageControl.Size = new System.Drawing.Size(365, 322);
+			this.chartTabPageControl.TabIndex = 0;
 			// 
 			// logFilesTabPageControl
 			// 
@@ -208,10 +208,10 @@
 			this.mainTab.ResumeLayout(false);
 			this.mainTabPage.ResumeLayout(false);
 			this.mainTabPage.PerformLayout();
-			this.temperatureTabPage.ResumeLayout(false);
-			this.temperatureTabPage.PerformLayout();
-			this.temperatureChartTabPage.ResumeLayout(false);
-			this.temperatureChartTabPage.PerformLayout();
+			this.currentTabPage.ResumeLayout(false);
+			this.currentTabPage.PerformLayout();
+			this.chartTabPage.ResumeLayout(false);
+			this.chartTabPage.PerformLayout();
 			this.logFilesTabPage.ResumeLayout(false);
 			this.logFilesTabPage.PerformLayout();
 			this.dateTimePage.ResumeLayout(false);
@@ -226,15 +226,15 @@
 		private System.Windows.Forms.ToolStrip mainToolStrip;
 		private System.Windows.Forms.TabControl mainTab;
 		private System.Windows.Forms.TabPage mainTabPage;
-		private System.Windows.Forms.TabPage temperatureTabPage;
-		private System.Windows.Forms.TabPage temperatureChartTabPage;
+		private System.Windows.Forms.TabPage currentTabPage;
+		private System.Windows.Forms.TabPage chartTabPage;
 		private System.Windows.Forms.TabPage logFilesTabPage;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator;
 		private System.Windows.Forms.TabPage dateTimePage;
 		private DateTimeTabPage dateTimePageControl;
 		private LogFilesTabPage logFilesTabPageControl;
-		private TemperatureChartTabPage temperatureChartTabPageControl;
-		private TemperatureTabPage temperatureTabPageControl;
+		private ChartTabPage chartTabPageControl;
+		private CurrentTabPage currentTabPageControl;
 		private MainTabPage mainTabPageControl;
     }
 }

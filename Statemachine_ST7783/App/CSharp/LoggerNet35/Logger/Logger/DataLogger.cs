@@ -9,6 +9,7 @@ namespace Logger {
 	public class DataLogger {
 
 		private string portName;
+		private static List<SensorItem> sensors;
 
 		// frame data size
 		public const int DATASIZE = 10;
@@ -18,6 +19,8 @@ namespace Logger {
 		public byte[] signature = { 0xCC, 0x33, 0x55, 0xAA };
 
 		public static DataLogger Instance { get; set; }
+
+		public static List<SensorItem> Sensors { get { return sensors; } }
 
 		public DataLogger() {
 			Instance = this;
@@ -97,9 +100,9 @@ namespace Logger {
 			return lines != null && lines.Count > 0;
 		}
 
-		public bool TryGetCurrentTemperature(out int temperature) {
+		public bool TryGetCurrentValue(int sensorId, out int temperature) {
 			temperature = -9999;
-
+			// TODO: implement ID query
 			SerialPort port;
 			
 			if (tryGetPort(out port)) {
@@ -126,13 +129,14 @@ namespace Logger {
 			return temperature > -129 && temperature < 129;
 		}
 
-		public bool TryGetDaylog(out List<TemperatureItem> logItems) {
+		public bool TryGetRAMlog(int sensorId, out List<TemperatureItem> logItems) {
 			logItems = null;
 
 			SerialPort port;
 			
 
 			if (tryGetPort(out port)) {
+				// TODO: implement ID query
 				// get temperature log command
 				byte[] getTemperature = { /*0:get log*/ 3, 0, 0, 0, 0, 0, 0, 0, 0, /*checksum*/ 3 };
 
@@ -166,6 +170,42 @@ namespace Logger {
 			}
 
 			return logItems != null && logItems.Count > 0;
+		}
+
+		public bool TryGetSensors(out List<SensorItem> sensors) {
+			sensors = new List<SensorItem>();
+			SerialPort port;
+			
+			// Demo
+			sensors.Add(new SensorItem() { Id = 0, Name = "T1" });
+			sensors.Add(new SensorItem() { Id = 1, Name = "T2" });
+
+			if (tryGetPort(out port)) {
+				byte[] sensorsCmd = { /*0:get sensors cmd*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, /*9:checksum*/ 0 };
+
+				
+				// serial communication
+				port.Write(signature, 0, SIGNATURESIZE);
+				port.Write(sensorsCmd, 0, DATASIZE);
+				System.Threading.Thread.Sleep(100);
+
+				// read sensor id's				
+				for (long i = 0; i < 100; i++) {
+					if (port.BytesToRead > 0) {
+						string s = port.ReadLine();
+						if (s.Length > 0) {
+							if (s.Contains("EOF"))
+								break;
+							sensors.Add(
+								new SensorItem() { Id = sensors.Count, Name = s.Substring(0, s.Length - 1) }
+							);
+						}
+					}
+				}
+
+				port.Close();
+			}
+			return sensors.Count > 0;
 		}
 
 		public void SetTime(DateTime dateTime) {
@@ -208,7 +248,7 @@ namespace Logger {
 
 		public void Connect(string portName) {
 			this.portName = portName;
-			IsConnected = true;
+			IsConnected = TryGetSensors(out sensors);
 			OnConnectionChanged(this, EventArgs.Empty);
 		}
 
@@ -268,6 +308,11 @@ namespace Logger {
         public int Id { get; set; }
         public byte Temperature { get; set; }
     }
+
+	public class SensorItem {
+		public int Id { get; set; }
+		public string Name { get; set; }
+	}
 
 	public enum Action {
 		ShowPorts,

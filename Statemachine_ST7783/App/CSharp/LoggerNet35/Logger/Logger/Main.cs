@@ -22,8 +22,8 @@ namespace Logger
 			mainTab.SizeMode = TabSizeMode.Fixed;
 
 			mainTabPageControl.RegisterPage(dateTimePageControl, "Date Time", ImageResource.Clock32x32, false);
-			mainTabPageControl.RegisterPage(temperatureTabPageControl, "Temperature", ImageResource.Cab32x32, false);
-			mainTabPageControl.RegisterPage(temperatureChartTabPageControl, "Temperature chart", ImageResource.Chart32x32, false);
+			mainTabPageControl.RegisterPage(currentTabPageControl, "Temperature", ImageResource.Cab32x32, false);
+			mainTabPageControl.RegisterPage(chartTabPageControl, "Temperature chart", ImageResource.Chart32x32, false);
 			mainTabPageControl.RegisterPage(logFilesTabPageControl, "Log files", ImageResource.DataBase32x32, false);
 
 			mainTabPageControl.SetEnabled(false);
@@ -40,6 +40,11 @@ namespace Logger
 		public ToolStrip ToolStrip { get { return mainToolStrip; } }
 
 		void Logger_OnConnectionChanged(object sender, EventArgs e) {
+			if (DataLogger.Instance.IsConnected) {
+				SensorButton.AddSensors(DataLogger.Sensors);
+			} else {
+				SensorButton.Clear();
+			}
 			updateUi();
 		}
 
