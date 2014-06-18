@@ -203,4 +203,52 @@ namespace Logger {
 
 		public int SensorId { get; set; }
 	}
+
+	public class ProgressBar : ToolStripProgressBar {
+		private ToolStripSeparator separatorButton;
+		private ToolStripButton cancelButton;
+
+		public static ProgressBar Instance = new ProgressBar();
+
+		public void AddTo(ToolStrip toolStrip, bool addSeparator) {
+			if (addSeparator) {
+				toolStrip.Items.Add(separatorButton);
+			}
+
+			toolStrip.Items.Add(this);
+			toolStrip.Items.Add(cancelButton);
+		}
+
+		public void AddTo(ToolStrip toolStrip) {
+			toolStrip.Items.Add(this);
+		}
+
+		public void RemoveFrom(ToolStrip toolStrip) {
+			toolStrip.Items.Remove(separatorButton);
+			toolStrip.Items.Remove(this);
+			toolStrip.Items.Remove(cancelButton);
+		}
+
+		public ProgressBar() {
+			separatorButton = new ToolStripSeparator();
+			
+			cancelButton = new ToolStripButton("Cancel");
+			cancelButton.Click += cancelButton_Click;
+
+			Style = ProgressBarStyle.Marquee;			
+		}
+
+		private void cancelButton_Click(object sender, EventArgs e) {
+			throw new NotImplementedException();
+		}				
+
+		public new bool Visible {
+			get { return base.Visible; }
+			set { 
+				base.Visible = value;
+				cancelButton.Visible = value;
+				separatorButton.Visible = value;
+			}
+		}
+	}
 }

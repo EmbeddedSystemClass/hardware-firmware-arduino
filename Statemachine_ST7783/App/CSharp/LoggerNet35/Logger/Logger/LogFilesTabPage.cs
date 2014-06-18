@@ -16,11 +16,11 @@ namespace Logger {
 			InitializeComponent();
 
 			files = new List<string>();
-			//logFilesListView.Items.Add("Test1");
+			logFilesListView.Items.Add("Test1");
 			//logFilesListView.Items.Add("Test2.csv");
 			//logFilesListView.Items.Add("Test3.CSV");
 			//logFilesListView.Items.Add("Test3.Csv");
-			//files.Add("Test1");
+			files.Add("Test1");
 			//files.Add("Test2.csv");
 			//files.Add("Test3.CSV");
 			//files.Add("Test3.Csv");
@@ -51,6 +51,7 @@ namespace Logger {
 		private void saveButton_Click(object sender, EventArgs e) {			
 			FolderBrowserDialog fbd = new FolderBrowserDialog();
 			if (fbd.ShowDialog() == DialogResult.OK) {
+				ProgressBar.Instance.Visible = true;
 				foreach (int itemIndex in logFilesListView.SelectedIndices) {
 					List<string> fileLines = new List<string>();
 					string fileName = removeExtension(files[itemIndex], ".csv");
@@ -67,6 +68,7 @@ namespace Logger {
 						file.Close();
 					}
 				}
+				ProgressBar.Instance.Visible = false;
 			}			
 		}
 
@@ -100,6 +102,9 @@ namespace Logger {
 			SaveFileButton.Instance.Click += saveButton_Click;
 
 			SaveFileButton.Instance.Enabled = logFilesListView.SelectedIndices.Count > 0;
+
+			ProgressBar.Instance.AddTo(Main.Instance.ToolStrip, true);
+			ProgressBar.Instance.Visible = false;
 			base.OnActivate();
 		}		
 
@@ -109,6 +114,8 @@ namespace Logger {
 
 			SaveFileButton.Instance.RemoveFrom(Main.Instance.ToolStrip);
 			SaveFileButton.Instance.Click -= saveButton_Click;
+
+			ProgressBar.Instance.RemoveFrom(Main.Instance.ToolStrip);
 			base.OnDeactivate();
 		}		
 	}
