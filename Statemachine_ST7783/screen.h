@@ -184,7 +184,9 @@ class MainScreen : public Screen {
       draw();
   
       if(Button::hitTest(0, 240, 240,  80)) {
-        hide();        
+        hide();
+				tempGauge1.lastValue = -127;
+				tempGauge2.lastValue = -127;
         pScreen = pMenuScreen;
       }
       
