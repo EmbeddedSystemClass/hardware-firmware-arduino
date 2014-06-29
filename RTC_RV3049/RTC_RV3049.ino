@@ -10,10 +10,10 @@
  
    Arduino      RV3049
  
-   13-SCK       4-SCL 
-   12-MISO      5-SDO
-   11-MOSI      9-SDI
-   07-CS        3-CS
+   13-SCK       4-SCL   (orange)
+   12-MISO      5-SDO   (yellow)
+   11-MOSI      9-SDI   (brown)
+   07-CS        3-CS    (violet)
  
    VCC          1-VDD
    GND          6-VSS
@@ -27,7 +27,7 @@
 #define RTC_SR		0x10
 #define RTC_PON		0x20
 
-const int chipSelectPin = 7;
+const int chipSelectPin = 6;
 
 typedef struct {
   uint8_t seconds;
@@ -174,4 +174,3 @@ void setDateTime(uint8_t h, uint8_t m, uint8_t s){
 //	}
 ////
 //}
-
