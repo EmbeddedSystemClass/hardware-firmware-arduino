@@ -13,7 +13,7 @@
    13-SCK       4-SCL   (orange)
    12-MISO      5-SDO   (yellow)
    11-MOSI      9-SDI   (brown)
-   07-CS        3-CS    (violet)
+   A5-CS        3-CS    (violet)
  
    VCC          1-VDD
    GND          6-VSS
@@ -27,7 +27,7 @@
 #define RTC_SR		0x10
 #define RTC_PON		0x20
 
-const int chipSelectPin = 6;
+const int chipSelectPin = A5;
 
 typedef struct {
   uint8_t seconds;
@@ -59,7 +59,8 @@ void setup() {
   
   pinMode(chipSelectPin, OUTPUT);
   
-  //setDateTime(21,15,30);
+  initRTC();
+  setDateTime(21,15,30);
 }
 
 void loop() {
@@ -128,49 +129,48 @@ void setDateTime(uint8_t h, uint8_t m, uint8_t s){
   digitalWrite(chipSelectPin, LOW);
 }
 
-//static void initRTC(void){
-//	
-//	bool bSetDefaultTime=false;
-//	
-//	uint8_t ctrl_Status = 0;
-//	uint8_t page = 0;
-//	uint8_t pageaddr =0x3;
-//	uint8_t addr = (page << 3 | pageaddr) | RTC_READ;
+static void initRTC(void){
+	
+	bool bSetDefaultTime=false;
+	
+	uint8_t ctrl_Status = 0;
+	uint8_t page = 0;
+	uint8_t pageaddr =0x3;
+	uint8_t addr = (page << 3 | pageaddr) | RTC_READ;
+
+	digitalWrite(chipSelectPin, HIGH);
+	ctrl_Status = SPI.transfer(addr);
+	digitalWrite(chipSelectPin, LOW);
+	
+	if(ctrl_Status & RTC_PON){
+		//POWER-ON Bit löschen
+		page = 0;
+		pageaddr =0x3;
+		addr = (page << 3 | pageaddr) | RTC_WRITE;
+		ctrl_Status &= ~RTC_PON;
+		
+		digitalWrite(chipSelectPin, HIGH);
+		SPI.transfer(addr);
+		SPI.transfer(ctrl_Status);
+		digitalWrite(chipSelectPin, LOW);		
+		bSetDefaultTime = true;
+	}
+	if(ctrl_Status & RTC_SR){
+		//SELF-RECOVERY Bit löschen
+		page = 0;
+		pageaddr =0x3;
+		addr = (page << 3 | pageaddr) | RTC_WRITE;
+		ctrl_Status &= ~RTC_SR;
+		
+		digitalWrite(chipSelectPin, HIGH);
+		SPI.transfer(addr);
+		SPI.transfer(ctrl_Status);
+		digitalWrite(chipSelectPin, LOW);
+		
+		bSetDefaultTime = true;
+	}
+	//if(bSetDefaultTime){
+	//	SetDateTime(m_DefaultDateTime);
+	//}
 //
-//	spi_select_device(SPI, &SpiDeviceConfig);
-//	spi_write_packet(SPI,&addr,1);
-//	spi_read_packet(SPI,&ctrl_Status,1);
-//	spi_deselect_device(SPI, &SpiDeviceConfig);
-//	
-//	if(ctrl_Status & RTC_PON){
-//		//POWER-ON Bit löschen
-//		page = 0;
-//		pageaddr =0x3;
-//		addr = (page << 3 | pageaddr) | RTC_WRITE;
-//		ctrl_Status &= ~RTC_PON;
-//		
-//		spi_select_device(SPI, &SpiDeviceConfig);
-//		spi_write_packet(SPI,&addr,1);
-//		spi_write_packet(SPI, &ctrl_Status ,1);
-//		spi_deselect_device(SPI, &SpiDeviceConfig);		
-//		bSetDefaultTime = true;
-//	}
-//	if(ctrl_Status & RTC_SR){
-//		//SELF-RECOVERY Bit löschen
-//		page = 0;
-//		pageaddr =0x3;
-//		addr = (page << 3 | pageaddr) | RTC_WRITE;
-//		ctrl_Status &= ~RTC_SR;
-//		
-//		spi_select_device(SPI, &SpiDeviceConfig);
-//		spi_write_packet(SPI,&addr,1);
-//		spi_write_packet(SPI, &ctrl_Status ,1);
-//		spi_deselect_device(SPI, &SpiDeviceConfig);
-//		
-//		bSetDefaultTime = true;
-//	}
-//	if(bSetDefaultTime){
-//		SetDateTime(m_DefaultDateTime);
-//	}
-////
-//}
+}

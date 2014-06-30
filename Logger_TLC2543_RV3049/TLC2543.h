@@ -26,7 +26,7 @@
  
 #include <SPI.h>
 
-#define chipSelectPin 7
+#define chipSelectPin A4
 
 uint16_t values[11] = { 0 };
 

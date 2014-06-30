@@ -27,7 +27,7 @@
 #define RTC_SR		0x10
 #define RTC_PON		0x20
 
-#define chipSelectPin 6
+#define chipSelectPin A5
 
 typedef struct {
   uint8_t seconds;
