@@ -81,7 +81,7 @@ class TLC2543 {
         readAdcAll();
         
         temperature = (int8_t)(values[0] * 0.036569 - 27.662130);        
-        temperature2 = (int8_t)(values[0] * 0.036569 - 27.662130);
+        temperature2 = (int8_t)(values[1] * 0.036569 - 27.662130);
         
 //        Serial.print("T1:"); Serial.println(values[0]);
 //        Serial.print("T2:"); Serial.println(values[1]);
