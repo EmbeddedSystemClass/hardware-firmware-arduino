@@ -80,14 +80,15 @@ class TLC2543 {
       if (Events.bT5S) {                
         readAdcAll();
         
-        temperature = (uint8_t)values[3] & 0x000F;	// get first byte
-
+        temperature = (int8_t)(values[0] * 0.036569 - 27.662130);        
+        temperature2 = (int8_t)(values[0] * 0.036569 - 27.662130);
         
-        temperature2 = (uint8_t)values[2] & 0x000F;	// get first byte
-        
-        //Serial.print("T1:"); Serial.println(values[0]);
-        //Serial.print("T2:"); Serial.println(values[1]);
-        //Serial.print("T3:"); Serial.println(values[2]);
+//        Serial.print("T1:"); Serial.println(values[0]);
+//        Serial.print("T2:"); Serial.println(values[1]);
+//        Serial.print("T3:"); Serial.println(values[2]);
+//        
+//        Serial.print("T1:"); Serial.println(temperature);
+//        Serial.print("T1:"); Serial.println(t);
         
         bReady = true;
       }

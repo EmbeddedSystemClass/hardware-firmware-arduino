@@ -57,7 +57,7 @@ void loop() {
   pScreen->dispatch(0);  
   LogEvents.dispatch();  
   DS1621.dispatch();
-  //LogData.dispatch();
+  LogData.dispatch();
   Com.dispatch();
   //rtc.dispatch();
 }

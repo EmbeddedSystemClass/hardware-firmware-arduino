@@ -121,13 +121,13 @@ class LogData {
       //                012345678901
       // char name[] = "yyyymmnn.TXT";
       DateTime dt = rtc.now();
-      Serial.println(dt.year);
+      
       for (uint8_t i = 0; i < 100; i++) {
         bin2asc(dt.year, name, 4);
         bin2asc(dt.month, &name[4], 2);
         name[6] = i/10 + '0';
         name[7] = i%10 + '0';
-        Serial.println(name);
+        //Serial.println(name);
         // O_CREAT - create the file if it does not exist
         // O_EXCL - fail if the file exists
         // O_WRITE - open for write

@@ -83,6 +83,8 @@ class RV3049 {
       uint8_t page = 1;
       uint8_t pageaddr =0x0;
       uint8_t addr = ((page << 3) | pageaddr) | RTC_READ;
+
+      SPI.setClockDivider(SPI_CLOCK_DIV4);
       
       digitalWrite(chipSelectPin, HIGH);
       
