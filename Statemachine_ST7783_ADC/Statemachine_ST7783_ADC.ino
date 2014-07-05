@@ -43,7 +43,7 @@ void setup()
   
   rtc.begin();
   rtc.initRTC();
-  rtc.setDateTime(21, 4, 0);
+  //rtc.setDateTime(21, 4, 0);
 
   DS1621.begin();
 

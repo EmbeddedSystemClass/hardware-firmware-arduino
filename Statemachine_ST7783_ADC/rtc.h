@@ -111,17 +111,13 @@ class RV3049 {
     }
   
     void adjust(const DateTime& dt) {
-      setDateTime(dt.hour, dt.minute, 0);
-    }
-  
-    void setDateTime(uint8_t h, uint8_t m, uint8_t s){
-      uint8_t seconds = decimalToBCD(s);
-      uint8_t minutes = decimalToBCD(m);
-      uint8_t hours = decimalToBCD(h);
+      uint8_t seconds = decimalToBCD(dt.second);
+      uint8_t minutes = decimalToBCD(dt.minute);
+      uint8_t hours = decimalToBCD(dt.hour);
       uint8_t weekdays = decimalToBCD(0);
-      uint8_t days = decimalToBCD(1);
-      uint8_t months = decimalToBCD(1);
-      uint8_t years = decimalToBCD(0);
+      uint8_t days = decimalToBCD(dt.day);
+      uint8_t months = decimalToBCD(dt.month);
+      uint8_t years = decimalToBCD(dt.year - 2000);
       
       uint8_t page = 1;
       uint8_t pageaddr =0x0;
