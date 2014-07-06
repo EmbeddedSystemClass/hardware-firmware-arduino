@@ -1,0 +1,8 @@
+5V oder 3,3V    VCC
+A4              CS  ADC
+A5              CS  RTC
+
+13              SCL ADC, RTC
+12              ADC-DO, RTC-MISO
+11              ADC-DI, RTC-MOSI
+              
