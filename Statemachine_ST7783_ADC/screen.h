@@ -135,7 +135,7 @@ class TempGauge {
         
         // draw temperature
         Display.fillRect(x + 2, y + h, 9, 100 - h, newColor);
-        if(color != newColor) {
+        if(bInvalidateAll || color != newColor) {
           color = newColor;
           Display.fillCircle(x + 6, y + 106, 10, newColor);
         }
