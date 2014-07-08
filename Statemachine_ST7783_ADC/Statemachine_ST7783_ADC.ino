@@ -41,11 +41,10 @@ void setup()
 
   SPI.begin();
   
-  rtc.begin();
-  rtc.initRTC();
-  //rtc.setDateTime(21, 4, 0);
+  RTC.begin();
+  RTC.initRTC();
 
-  DS1621.begin();
+  Measure.begin();
 
   initScreens();  
   LogEvents.start();
@@ -56,10 +55,10 @@ void loop() {
   //MeasureEvents.dispatch();  
   pScreen->dispatch(0);  
   LogEvents.dispatch();  
-  DS1621.dispatch();
+  Measure.dispatch();
   LogData.dispatch();
   Com.dispatch();
-  //rtc.dispatch();
+  //RTC.dispatch();
 }
 
 void serialEvent() {

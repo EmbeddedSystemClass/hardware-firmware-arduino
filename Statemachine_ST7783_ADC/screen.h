@@ -100,8 +100,8 @@ class TempGauge {
       if(value < -30) {
         value = -30;
         bOutOfRange = true;
-      } else if(value > 50) {
-        value = 50;
+      } else if(value > 110) {
+        value = 110;
         bOutOfRange = true;
       }
       
@@ -129,8 +129,9 @@ class TempGauge {
           Display.fillCircle(x + 6, y + 106, 12, WHITE);
         }      
         
-        // map range : -30°C - 50°C to pixel height 100 - 0px
-        uint8_t h = map(value, -30, 50, 100, 0); 
+        // map range : -30°C - 60°C to pixel height 100 - 0px
+        if(value > 60) value = 60;
+        uint8_t h = map(value, -30, 60, 100, 0); 
         
         // draw temperature
         Display.fillRect(x + 2, y + h, 9, 100 - h, newColor);
@@ -173,7 +174,7 @@ class MainScreen : public Screen {
       
       char buffer[9]= { "00:00:00" };  
       if (bInvalidate || Events.bT1000MS) {
-        DateTime dt = rtc.now();
+        DateTime dt = RTC.now();
         bin2asc(dt.hour, &buffer[0], 2);
         bin2asc(dt.minute, &buffer[3], 2);
         bin2asc(dt.second, &buffer[6], 2);  
@@ -181,14 +182,14 @@ class MainScreen : public Screen {
         Display.displayText(70, 70, 2, buffer, GREEN, BACKCOLOR);
       }
       
-      if (bInvalidate || DS1621.bReady) {
+      if (bInvalidate || Measure.bReady) {
         if(bInvalidate) {
           tempGauge1.reset();
           tempGauge2.reset();
         }        
-        
-        tempGauge1.draw(25, 120, DS1621.temperature);
-        tempGauge2.draw(135, 120, DS1621.temperature2);
+        DateTime dt = RTC.now();
+        tempGauge1.draw(25, 120, Measure.temperature);
+        tempGauge2.draw(135, 120, Measure.temperature2);
         
         if(LogData.count > 0) {
           int8_t min;
@@ -497,12 +498,12 @@ class DateEditor : public MaskEditor {
     }
     
     void onExit() {
-      DateTime dt = rtc.now();
+      DateTime dt = RTC.now();
       dt.year = CHARTONUM(str[6], 1000) + CHARTONUM(str[7], 100) + CHARTONUM(str[8], 10) + CHARTONUM(str[9], 1);
       dt.month = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
       dt.day = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
       //Serial.print(y);Serial.print(".");Serial.print(m);Serial.print(".");Serial.println(d);
-      rtc.adjust(dt);
+      RTC.adjust(dt);
     }
 };
 
@@ -519,11 +520,11 @@ class TimeEditor : public MaskEditor {
     }
     
     void onExit() {
-      DateTime dt = rtc.now();
+      DateTime dt = RTC.now();
       dt.hour = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
       dt.minute = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
       dt.second = 0;
-      rtc.adjust(dt);
+      RTC.adjust(dt);
     }
 };
 

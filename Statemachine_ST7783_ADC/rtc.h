@@ -189,4 +189,4 @@ class RV3049 {
 
 };
 
-RV3049 rtc;
+RV3049 RTC;

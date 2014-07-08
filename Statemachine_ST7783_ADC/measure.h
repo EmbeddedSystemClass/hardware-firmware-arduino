@@ -69,6 +69,7 @@ class TLC2543 {
     void begin() {
       pinMode(chipSelectPin, OUTPUT);
       digitalWrite(chipSelectPin, HIGH);
+      readAdcAll();
     }
     
     void readAdcAll() {
@@ -141,7 +142,7 @@ class TLC2543 {
     }
 };
 
-TLC2543 DS1621;
+TLC2543 Measure;
 
 
 

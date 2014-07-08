@@ -16,18 +16,18 @@ class LogData {
   
     void dispatch() {
       if (LogEvents.bLog) {                
-        assignValues(temperature1Log, DS1621.temperature, count);
-        assignValues(temperature2Log, DS1621.temperature2, count);
+        assignValues(temperature1Log, Measure.temperature, count);
+        assignValues(temperature2Log, Measure.temperature2, count);
         
         // create new file every month
-        DateTime dt = rtc.now();
+        DateTime dt = RTC.now();
         if(dt.month != month) {
           month = dt.month;
           createNewLogFile();
         }
         
         if(bLog2File) {
-          log2File(DS1621.temperature, DS1621.temperature2);
+          log2File(Measure.temperature, Measure.temperature2);
         }
         
 	if (count < LOG_DATA_SIZE) {
@@ -93,7 +93,7 @@ class LogData {
       }
       
       if (file.open(name, O_APPEND | O_EXCL | O_WRITE)) {
-        DateTime dt = rtc.now();
+        DateTime dt = RTC.now();
                       // 01234567890123456789012345678
         char buffer[] = "yyyy-mm-dd hh:mm:ss; 000; 000";
         bin2asc(dt.year, buffer, 4);
@@ -120,7 +120,7 @@ class LogData {
       // create a new file
       //                012345678901
       // char name[] = "yyyymmnn.TXT";
-      DateTime dt = rtc.now();
+      DateTime dt = RTC.now();
       
       for (uint8_t i = 0; i < 100; i++) {
         bin2asc(dt.year, name, 4);
