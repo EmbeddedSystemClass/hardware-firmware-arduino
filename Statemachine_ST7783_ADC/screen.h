@@ -81,26 +81,74 @@ class Button {
 
 class TempGauge {
   public:
-    byte lastValue;
+    uint8_t lastValue;
+    uint16_t color 
+    unsigned bInvalidateAll:1;
+    unsigned bOutOfRange:1;
+  
   public:
-    TempGauge() {
+    TempGauge() {        
+        bInvalidateAll = true;
+        bOutOfRange = false;
     }
     
-    void draw(byte x, byte y, byte value) {
-      if (value == lastValue)
+    void draw(byte x, byte y, int8_t value) {      
+      bOutOfRange = false;
+      
+      // clamp value to range
+      if(value < -30) {
+        value = -30;
+        bOutOfRange = true;
+      } else if(value > 50) {
+        value = 50;
+        bOutOfRange = true;
+      }
+      
+      uint8_t delta = abs(lastValue - value);      
+      
+      if(bOutOfRange == true) {
+         Display.displayText(x + 33, y, 4, "Err", RED, BACKCOLOR);
+      } else if (bInvalidateAll || delta > 0) {
+        lastValue = value;
+        char buffer[4] = {'+', 0, 0, DEGREE_CHAR };      
+        bin2asc(abs(value), buffer[1], 2); 
+        buffer[0] = value < 0 ? '-' : '+';
+        Display.displayText(x + 33, y, 4, buffer, RED, BACKCOLOR);
+      } else {
         return;
-      lastValue = value;
+      }
       
-      Display.fillCircle(x + 6, y + 2, 6, WHITE);
-      Display.fillRect(x, y , 13, 100, WHITE);
-      Display.fillCircle(x + 6, y + 106, 12, WHITE);
+      uint16_t newColor = value > 20 ? RED : BLUE;            
       
-      uint16_t color = value > 20 ? RED : BLUE;
+      if (bInvalidateAll || delta > 2 || color != newColor) {        
+        // draw border
+        if(bInvalidateAll) {          
+          Display.fillCircle(x + 6, y + 2, 6, WHITE);
+          Display.fillRect(x, y , 13, 100, WHITE);
+          Display.fillCircle(x + 6, y + 106, 12, WHITE);
+        }      
+        
+        // map range : -30°C - 50°C to pixel height 0 - 100px
+        uint8_t h = map(value, -30, 50, 0, 100); 
+        
+        // draw temperature
+        Display.fillRect(x + 2, y + h, 9, 100 - h, color);
+        if(color != newColor) {
+          Display.fillCircle(x + 6, y + 106, 10, color);
+        }
+        
+        // draw blank        
+        Display.fillRect(x + 2, y, 9, h, BLACK);
+        
+        color = newColor;
+      }
       
-      Display.fillRect(x + 2, y + 2, 9, 100, color);
-      Display.fillCircle(x + 6, y + 106, 10, color);
-      
-      Display.fillRect(x + 2, y, 9, map(value, -20, 100, 0, 100), BLACK);
+      bInvalidateAll = false;
+    }
+    
+    void reset() {
+      lastValue = -127;
+      bInvalidateAll = true;
     }
 };
 
@@ -108,6 +156,8 @@ class MainScreen : public Screen {
   public:
     TempGauge tempGauge1;
     TempGauge tempGauge2;
+  
+    int8_t min1, max1;
  
   public:
     MainScreen() {      
@@ -132,44 +182,38 @@ class MainScreen : public Screen {
       
       if (bInvalidate || DS1621.bReady) {
         if(bInvalidate) {
-          tempGauge1.lastValue = 255;
-          tempGauge2.lastValue = 255;
-        }
+          tempGauge1.reset();
+          tempGauge2.reset();
+        }        
         
-        bin2asc(DS1621.temperature, buffer, 2);
-        buffer[2] = DEGREE_CHAR;
-        buffer[3] = 0;
-        Display.displayText(58, 120, 4, buffer, RED, BACKCOLOR);
         tempGauge1.draw(25, 120, DS1621.temperature);
-        
-        bin2asc(DS1621.temperature2, buffer, 2);
-        buffer[2] = DEGREE_CHAR;
-        buffer[3] = 0;
-        Display.displayText(165, 120, 4, buffer, RED, BACKCOLOR);
         tempGauge2.draw(135, 120, DS1621.temperature2);
         
         if(LogData.count > 0) {
-          int8_t min = 120;
-          int8_t max = -120;
-          int8_t avg = 0;
+          int8_t min, max, avg;
+          
           LogData.getStat(LogData.temperature1Log, LogData.count, &min, &max, &avg);
-          strcpy_P(buffer, PSTR("Min:"));
-          bin2asc(min, &buffer[4], 2);
-          buffer[6] = DEGREE_CHAR;
-          buffer[7] = 0;          
-          Display.displayText(58, 160, 1, buffer, LIGHTGRAY, BACKCOLOR);
-          
-          strcpy_P(buffer, PSTR("Max:"));
-          bin2asc(max, &buffer[4], 2);
-          buffer[6] = DEGREE_CHAR;
-          buffer[7] = 0;
-          Display.displayText(58, 180, 1, buffer, LIGHTGRAY, BACKCOLOR);
-          
-          strcpy_P(buffer, PSTR("Avg:"));
-          bin2asc(avg, &buffer[4], 2);
-          buffer[6] = DEGREE_CHAR;
-          buffer[7] = 0;
-          Display.displayText(58, 200, 1, buffer, LIGHTGRAY, BACKCOLOR);
+          if(min != min1) 
+            min1 = min;
+            strcpy_P(buffer, PSTR("Min:"));
+            bin2asc(min, &buffer[4], 2);
+            buffer[6] = DEGREE_CHAR;
+            buffer[7] = 0;          
+            Display.displayText(58, 160, 1, buffer, LIGHTGRAY, BACKCOLOR);
+          }
+          if(max != max1) {
+            max1 = max;
+            strcpy_P(buffer, PSTR("Max:"));
+            bin2asc(max, &buffer[4], 2);
+            buffer[6] = DEGREE_CHAR;
+            buffer[7] = 0;
+            Display.displayText(58, 180, 1, buffer, LIGHTGRAY, BACKCOLOR);
+          }
+          //~ strcpy_P(buffer, PSTR("Avg:"));
+          //~ bin2asc(avg, &buffer[4], 2);
+          //~ buffer[6] = DEGREE_CHAR;
+          //~ buffer[7] = 0;
+          //~ Display.displayText(58, 200, 1, buffer, LIGHTGRAY, BACKCOLOR);
         }
       }
       
@@ -185,8 +229,8 @@ class MainScreen : public Screen {
   
       if(Button::hitTest(0, 240, 240,  80)) {
         hide();
-				tempGauge1.lastValue = -127;
-				tempGauge2.lastValue = -127;
+				tempGauge1.reset();
+				tempGauge2.reset();
         pScreen = pMenuScreen;
       }
       
