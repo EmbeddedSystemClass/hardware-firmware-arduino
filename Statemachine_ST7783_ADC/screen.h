@@ -1,16 +1,19 @@
 #ifndef _SCREENH_
 #define _SCREENH_
 
+/*
+  Screens
+
+ This example code is in the public domain.
+ */
+
 #define BACKCOLOR BLACK
 #define DEGREE_CHAR 127
 
 class Screen {
   public:
     unsigned bInvalidate:1;
-    unsigned bVisible:1;   
-
-    //static Screen* pCurrent;
-    //static Screen* pDateEditor;
+    unsigned bVisible:1;     
 
   public:
     Screen() {
@@ -147,33 +150,89 @@ class TempGauge {
       bInvalidateAll = false;
     }
     
-    void reset() {
+    void invalidate() {
       lastValue = -127;
       bInvalidateAll = true;
     }
 };
 
+class Statistic {
+  public:
+    int8_t min;
+    int8_t max;
+    
+  public:
+    Statistic() {               
+    }
+    
+    void draw(byte x, byte y, int8_t values[]) {      
+      if(LogData.count > 0) {
+        int8_t newMin;
+        int8_t newMax;
+        int8_t newAvg;
+              
+        LogData.getStat(values, LogData.count, &newMin, &newMax, &newAvg);
+        
+        char buffer[9]= { 0 };  
+        if(newMin != min) {
+          min = newMin;
+          strcpy_P(buffer, PSTR("Min:"));
+          bin2asc(min, &buffer[4], 2);
+          buffer[6] = DEGREE_CHAR;
+          buffer[7] = 0;          
+          Display.displayText(x, y, 1, buffer, LIGHTGRAY, BACKCOLOR);
+        }
+        if(newMax != max) {
+          max = newMax;
+          strcpy_P(buffer, PSTR("Max:"));
+          bin2asc(max, &buffer[4], 2);
+          buffer[6] = DEGREE_CHAR;
+          buffer[7] = 0;
+          Display.displayText(x, y + 20, 1, buffer, LIGHTGRAY, BACKCOLOR);
+        }
+      }
+    }    
+};
+
+class Statusbar {
+  public:
+    unsigned bInvalidate:1;
+	
+  public:
+    Statusbar() {
+      bInvalidate = true;
+    }
+    
+    void draw(byte x, byte y, byte width, byte height) {
+      if(bInvalidate) {        
+        Display.drawRoundRect(x, y, 10, 10, 2, WHITE);
+        if(LogData.bLog2SdEnabled)
+          Display.displayText_f(x + 12, y, 1, LIGHTGRAY, BACKCOLOR, PSTR("SD Enabled"));
+        else
+          Display.displayText_f(x + 12, y, 1, LIGHTGRAY, BACKCOLOR, PSTR("SD Disabled"));
+      }			
+      bInvalidate = false;
+    }    
+};
+
 class MainScreen : public Screen {
   public:
     TempGauge tempGauge1;
-    TempGauge tempGauge2;
+    TempGauge tempGauge2;	
+    Statistic	statistic1;   
+    Statusbar statusbar;
   
-    int8_t min1;
-    int8_t max1;
- 
   public:
     MainScreen() {      
     }
     
     void draw() {
-
       if (bInvalidate) {
-        Button::drawButton(0,   0, 240, 50, PSTR("Logger"), NULL);
-        Button::drawButton(0, 270, 240, 50, PSTR("Menu"), NULL);
-      }
-      
-      char buffer[9]= { "00:00:00" };  
+        Button::drawButton(0, 0, 240, 50, PSTR("Logger"), NULL);        
+      }      
+        
       if (bInvalidate || Events.bT1000MS) {
+        char buffer[9]= { "00:00:00" };
         DateTime dt = RTC.now();
         bin2asc(dt.hour, &buffer[0], 2);
         bin2asc(dt.minute, &buffer[3], 2);
@@ -182,45 +241,19 @@ class MainScreen : public Screen {
         Display.displayText(70, 70, 2, buffer, GREEN, BACKCOLOR);
       }
       
-      if (bInvalidate || Measure.bReady) {
+      if (bInvalidate || Measure.bReady) {        
         if(bInvalidate) {
-          tempGauge1.reset();
-          tempGauge2.reset();
-        }        
-        DateTime dt = RTC.now();
-        tempGauge1.draw(25, 120, Measure.temperature);
-        tempGauge2.draw(135, 120, Measure.temperature2);
-        
-        if(LogData.count > 0) {
-          int8_t min;
-          int8_t max;
-          int8_t avg;
-          
-          LogData.getStat(LogData.temperature1Log, LogData.count, &min, &max, &avg);
-          
-          if(min != min1) {
-            min1 = min;
-            strcpy_P(buffer, PSTR("Min:"));
-            bin2asc(min, &buffer[4], 2);
-            buffer[6] = DEGREE_CHAR;
-            buffer[7] = 0;          
-            Display.displayText(58, 160, 1, buffer, LIGHTGRAY, BACKCOLOR);
-          }
-          if(max != max1) {
-            max1 = max;
-            strcpy_P(buffer, PSTR("Max:"));
-            bin2asc(max, &buffer[4], 2);
-            buffer[6] = DEGREE_CHAR;
-            buffer[7] = 0;
-            Display.displayText(58, 180, 1, buffer, LIGHTGRAY, BACKCOLOR);
-          }
-          //~ strcpy_P(buffer, PSTR("Avg:"));
-          //~ bin2asc(avg, &buffer[4], 2);
-          //~ buffer[6] = DEGREE_CHAR;
-          //~ buffer[7] = 0;
-          //~ Display.displayText(58, 200, 1, buffer, LIGHTGRAY, BACKCOLOR);
-          
+          tempGauge1.invalidate();
+          tempGauge2.invalidate();
         }
+        
+        tempGauge1.draw(25, 120, Measure.temperature);
+        tempGauge2.draw(135, 120, Measure.temperature2);         
+        statistic1.draw(58, 160, LogData.temperature1Log);
+      }
+      
+      if (bInvalidate) {
+        statusbar.draw(0, 270, 240, 50);
       }
       
       bInvalidate = false;
@@ -233,10 +266,11 @@ class MainScreen : public Screen {
       
       draw();
   
-      if(Button::hitTest(0, 240, 240,  80)) {
+      if(Button::hitTest(0, 0, 240, 80)) {
         hide();
-				tempGauge1.reset();
-				tempGauge2.reset();
+        tempGauge1.invalidate();
+        tempGauge2.invalidate();
+        statusbar.bInvalidate = true;
         pScreen = pMenuScreen;
       }
       
@@ -271,16 +305,15 @@ class TempChartScreen : public Screen {
         bInvalidate = true;
       }
       
-      if (bInvalidate) {
-        Button::drawButton(0,   0, 240, 50, PSTR("Temperature"), NULL);      
+      if (bInvalidate) {             
         Button::drawButton(0, 270, 240,  50, PSTR("Exit"), NULL);
-        if(chartIndex == 0)
-          //t1Chart.drawTempChart(input);
+        if(chartIndex == 0) {
+          Button::drawButton(0,   0, 240, 50, PSTR("Temperature In"), NULL); 
           chart.drawChart(LogData.temperature1Log, LOG_DATA_SIZE, -120, 120);
-        else
-          //t2Chart.drawTempChart(input);
+        } else {
+          Button::drawButton(0,   0, 240, 50, PSTR("Temperature Out"), NULL); 
           chart.drawChart(LogData.temperature2Log, LOG_DATA_SIZE, -120, 120);
-          
+        }
         bInvalidate = false;
       }
               
@@ -531,7 +564,6 @@ class TimeEditor : public MaskEditor {
 TimeEditor TimeEditor;
 
 class LogSettingsScreen : public Screen {
-  
   public:
     byte dispatch(byte input) {
       if (!bVisible) {
@@ -540,21 +572,29 @@ class LogSettingsScreen : public Screen {
       
       if (bInvalidate) {
         Button::drawButton(0,   0, 240, 50, PSTR("Logging"), NULL);
-        Button::drawButton(0,  52, 240, 50, PSTR("Reset"), NULL);
-        Button::drawButton(0, 270, 240,  50, PSTR("Exit"), NULL);                     
+        Button::drawButton(0,  52, 240, 50, PSTR("Reset"),   NULL);
+        if(LogData.bLog2SdEnabled) {
+          Button::drawButton(0, 104, 240, 50, PSTR("SD Enabled"), NULL);
+        } else {
+          Button::drawButton(0, 104, 240, 50, PSTR("SD Disabled"), NULL);
+        }
+        Button::drawButton(0, 270, 240, 50, PSTR("Exit"),    NULL);                     
         bInvalidate = false;
       }
       
       if(Button::hitTest(0, 240, 240,  80)) {  // Exit
         hide();        
         pScreen = pMenuScreen;
-      } else if(Button::hitTest(0,  52, 240, 50)) {  // Reset
+      } else if(Button::hitTest(0, 52, 240, 50)) {  // Reset
         hide();
         pScreen = pMenuScreen;
         
         LogData.reset(LogData.temperature1Log);
         LogData.reset(LogData.temperature2Log);
         LogEvents.reset();
+      } else if(Button::hitTest(0, 104, 240, 50)) {
+        LogData.bLog2SdEnabled = !LogData.bLog2SdEnabled;
+        bInvalidate = true;
       }
         
       return 0;      

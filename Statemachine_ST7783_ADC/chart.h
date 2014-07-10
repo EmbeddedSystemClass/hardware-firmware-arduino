@@ -1,7 +1,11 @@
 #ifndef _CHARTSH_
 #define _CHARTSH_
 
-// Charts ****************************************************************
+/*
+  Charts
+  
+ This example code is in the public domain.
+ */
 
 #define DISPLAYHEIGHT TFTWIDTH
 #define DISPLAYWIDTH  TFTHEIGHT

@@ -1,3 +1,14 @@
+#ifndef _DATAH_
+#define _DATAH_
+
+/*
+  Data logging
+  - chart datasource array
+  - logging to SD Card
+
+ This example code is in the public domain.
+ */
+
 #define LOG_DATA_SIZE    24
 
 SdCard card;
@@ -7,42 +18,54 @@ char name[] = "yyyymmnn.TXT";
 
 class LogData {
   public:
-    byte month;
-    unsigned bLog2File;
+    unsigned bLog2SdEnabled:1;
+    unsigned bLogFileAvailable:1;
+       
     int8_t temperature1Log[LOG_DATA_SIZE];
     int8_t temperature2Log[LOG_DATA_SIZE];
+  
+    byte month; 
     int8_t count;
-  public:
+	
+  public:   
+    LogData() {
+      bLog2SdEnabled = true;
+      bLogFileAvailable = false;
+      month = 0;
+      count = 0;
+    }
   
     void dispatch() {
       if (LogEvents.bLog) {                
-        assignValues(temperature1Log, Measure.temperature, count);
-        assignValues(temperature2Log, Measure.temperature2, count);
+        pushBack(temperature1Log, Measure.temperature, count);
+        pushBack(temperature2Log, Measure.temperature2, count);
         
-        // create new file every month
-        DateTime dt = RTC.now();
-        if(dt.month != month) {
-          month = dt.month;
-          createNewLogFile();
+        if(bLog2SdEnabled) {
+          // create new file every month
+          DateTime dt = RTC.now();
+          if(dt.month != month) {
+            month = dt.month;
+            createNewLogFile();
+          }
+          
+          if(bLogFileAvailable) {
+            log2File(Measure.temperature, Measure.temperature2);
+          }          
         }
         
-        if(bLog2File) {
-          log2File(Measure.temperature, Measure.temperature2);
-        }
-        
-	if (count < LOG_DATA_SIZE) {
+        if (count < LOG_DATA_SIZE) {
           count++;
         }
       }
     }
   
-    void assignValues(int8_t values[], int8_t value, byte n) {
+    void pushBack(int8_t values[], int8_t value, byte n) {
       byte i;
       if (n >= LOG_DATA_SIZE) {
-	for (i = 0; i < LOG_DATA_SIZE - 1; i++) {
-	  values[i] = values[i + 1];
-	}
-	n = LOG_DATA_SIZE - 1;
+        for (i = 0; i < LOG_DATA_SIZE - 1; i++) {
+          values[i] = values[i + 1];
+        }
+        n = LOG_DATA_SIZE - 1;
       }
       values[n] = value;
     }
@@ -62,11 +85,8 @@ class LogData {
         values[i] = 0;
       }
       count = 0;
-    }
-    
-    /*
-     * Write an unsigned number to file
-     */
+    }    
+   
     void writeNumber(uint32_t n) {
       uint8_t buf[10];
       uint8_t i = 0;
@@ -137,13 +157,14 @@ class LogData {
       if (file.isOpen()) {
         file.write_P(PSTR("Logger\r\n"));
         file.close();
-        bLog2File = true;
+        bLogFileAvailable = true;
       } else {
-        bLog2File = false;
+        bLogFileAvailable = false;
         Serial.println(F("Error: file.open"));
       }
     }
 };
 
-
 LogData LogData;
+
+#endif

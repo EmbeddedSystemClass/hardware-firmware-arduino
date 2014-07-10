@@ -1,6 +1,12 @@
 #ifndef _EVENTSH_
 #define _EVENTSH_
 
+/*
+  Events:	timer and logging events
+
+ This example code is in the public domain.
+ */
+
 // Touche Screen
 #define YP A2  // must be an analog pin, use "An" notation!
 #define XM A1  // must be an analog pin, use "An" notation!
@@ -98,34 +104,9 @@ class EventManager {
 
 EventManager Events;
 
-//class MeasureEventManager {
-//    private:
-//      unsigned long lastUpdate;
-//    
-//    public:
-//      unsigned long interval;    
-//      unsigned bMeasure:1;  
-//    
-//    public:
-//      MeasureEventManager() {
-//        interval = 5000; // ms
-//      }
-//      
-//      void dispatch() {
-//        if (millis() - lastUpdate > interval) {
-//          lastUpdate = millis();
-//          bMeasure = true;
-//        } else {
-//          bMeasure = false;
-//        }
-//      }      
-//};
-//
-//MeasureEventManager MeasureEvents;
-
 class LogEventManager {
     private:
-      unsigned long lastUpdate;
+      unsigned long next;
     
     public:
       unsigned long interval;    
@@ -134,14 +115,17 @@ class LogEventManager {
          
     public:
       LogEventManager() {
-        interval = 3599000; //(ms) every hour
+        interval = 3600; // every hour, interval in seconds
       }
       
       void dispatch() {
         if (!bEnabled)
           return;
-        if (millis() - lastUpdate > interval) {
-          lastUpdate = millis();
+				
+				uint32_t now = RTC.now().getTimeStamp();
+				
+        if (now % interval && now >= next) {
+          next = (now + interval) % RTC.maxTimeStamp;
           bLog = true;
         } else {
           bLog = false;
@@ -150,11 +134,13 @@ class LogEventManager {
       
       void start() {
         bEnabled = true;
-        lastUpdate = millis() - interval + 10000;
+	uint32_t now = RTC.now().getTimeStamp();
+        next = now + interval;
       }
       
       void reset() {
-        lastUpdate = 0;
+        uint32_t now = RTC.now().getTimeStamp();
+        next = now + interval;
         bLog = false;
       }
 };

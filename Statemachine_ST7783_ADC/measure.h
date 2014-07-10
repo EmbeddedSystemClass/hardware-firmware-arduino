@@ -29,12 +29,12 @@
 #include <SPI.h>
 #include <avr/pgmspace.h>
 
-#define chipSelectPin A4
-
-uint16_t values[11] = { 0 };
+#define CS_ADC A4
 
 #define TEMPERATURE_ADC_SIZE  154
 #define TEMPERATURE_OFFSET -24
+
+uint16_t values[11] = { 0 };
 
 // Temperature table of ADC Digit Values, the first value is equal to offset value
 // Example:  
@@ -48,7 +48,7 @@ uint16_t values[11] = { 0 };
 //               3572        130 °C
 //            
 
-uint16_t temperatureADC[] PROGMEM = { 
+const uint16_t temperatureADC[] PROGMEM = { 
   6, 39, 72, 104, 137, 169, 201, 233, 265, 297, 329, 361, 393, 424, 456, 487, 519, 550, 581, 
   612, 643, 674, 704, 735, 766, 796, 827, 857, 887, 917, 947, 977, 1007, 1037, 1067, 1096, 1126, 
   1155, 1185, 1214, 1243, 1273, 1302, 1331, 1359, 1388, 1417, 1446, 1474, 1503, 1531, 1559, 1588, 
@@ -67,8 +67,8 @@ class TLC2543 {
     
   public:
     void begin() {
-      pinMode(chipSelectPin, OUTPUT);
-      digitalWrite(chipSelectPin, HIGH);
+      pinMode(CS_ADC, OUTPUT);
+      digitalWrite(CS_ADC, HIGH);
       readAdcAll();
     }
     
@@ -85,13 +85,13 @@ class TLC2543 {
       uint16_t ad;
       uint8_t ad_l; 
       
-      digitalWrite(chipSelectPin, LOW);
+      digitalWrite(CS_ADC, LOW);
       delayMicroseconds(10);
       
       ad = SPI.transfer((chx << 4) | 0x0C);  // 0x0C = 16-Bit, MSB-First, Unipolar
       ad_l = SPI.transfer(0);
       
-      digitalWrite(chipSelectPin, HIGH);
+      digitalWrite(CS_ADC, HIGH);
       
       ad <<= 8;  
       ad |= ad_l;  
@@ -143,7 +143,5 @@ class TLC2543 {
 };
 
 TLC2543 Measure;
-
-
 
 #endif

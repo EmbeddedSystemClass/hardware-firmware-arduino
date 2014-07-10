@@ -1,3 +1,6 @@
+#ifndef _RTCH_
+#define _RTCH_
+
 /*
   RTC RV3049
 
@@ -26,7 +29,10 @@
 #define RTC_SR		0x10
 #define RTC_PON		0x20
 
-#define chipSelectPin A5
+#define CS_RTC A5
+
+static byte bcd2bin (byte val) { return val - 6 * (val >> 4); }
+static byte bin2bcd (byte val) { return val + 6 * (val / 10); }
 
 class DateTime {
  
@@ -41,8 +47,6 @@ class DateTime {
     DateTime() { }
    
     DateTime (uint16_t y, byte m, byte d, byte h, byte mn, byte s) {
-//      if (y >= 2000)
-//          y -= 2000;
       year = y;
       month = m;
       day = d;
@@ -50,29 +54,24 @@ class DateTime {
       minute = mn;
       second = s;
     }
+		
+    uint32_t getTimeStamp() {
+      return 0;hour * 3600 + minute * 60 + second;
+    }		
 };
-
-////////////////////////////////////////////////////////////////////////////////
-// RTC_DS1307 implementation
-
-static byte bcd2bin (byte val) { return val - 6 * (val >> 4); }
-static byte bin2bcd (byte val) { return val + 6 * (val / 10); }
-
-uint8_t bcdToDecimal (uint8_t bcdByte)
-{
-	return (((bcdByte & 0xF0) >> 4) * 10) + (bcdByte & 0x0F);
-}
-
-uint8_t decimalToBCD (uint8_t decimalByte)
-{
-	return (((decimalByte / 10) << 4) | (decimalByte % 10));
-}
 
 class RV3049 {
   public:
+    uint32_t maxTimeStamp;
+	
+  public:
+    RV3049() {
+      maxTimeStamp = 24 * 3600; //maximum  in 24hour mode, 24h x 3600s = 86400s
+    }
+	
     void begin() {
-      pinMode(chipSelectPin, OUTPUT);
-      digitalWrite(chipSelectPin, LOW);
+      pinMode(CS_RTC, OUTPUT);
+      digitalWrite(CS_RTC, LOW);
     }
     
     byte isrunning(void) {
@@ -86,7 +85,7 @@ class RV3049 {
 
       SPI.setClockDivider(SPI_CLOCK_DIV4);
       
-      digitalWrite(chipSelectPin, HIGH);
+      digitalWrite(CS_RTC, HIGH);
       
       SPI.transfer(addr);
       uint8_t seconds = SPI.transfer(0);
@@ -97,33 +96,34 @@ class RV3049 {
       uint8_t months = SPI.transfer(0);
       uint8_t years = SPI.transfer(0);
               
-      digitalWrite(chipSelectPin, LOW);
+      digitalWrite(CS_RTC, LOW);
 	
-      seconds = bcdToDecimal(seconds);
-      minutes = bcdToDecimal(minutes);
-      hours = bcdToDecimal(hours);
-      weekdays = bcdToDecimal(weekdays);
-      days =	bcdToDecimal(days);
-      months = bcdToDecimal(months);
-      years = bcdToDecimal(years);
+      seconds = bcd2bin(seconds);
+      minutes = bcd2bin(minutes);
+      hours = bcd2bin(hours);
+      weekdays = bcd2bin(weekdays);
+      days =	bcd2bin(days);
+      months = bcd2bin(months);
+      years = bcd2bin(years);
       
       return DateTime (years, months, days, hours, minutes, seconds);
+
     }
   
     void adjust(const DateTime& dt) {
-      uint8_t seconds = decimalToBCD(dt.second);
-      uint8_t minutes = decimalToBCD(dt.minute);
-      uint8_t hours = decimalToBCD(dt.hour);
-      uint8_t weekdays = decimalToBCD(0);
-      uint8_t days = decimalToBCD(dt.day);
-      uint8_t months = decimalToBCD(dt.month);
-      uint8_t years = decimalToBCD(dt.year - 2000);
+      uint8_t seconds = bin2bcd(dt.second);
+      uint8_t minutes = bin2bcd(dt.minute);
+      uint8_t hours = bin2bcd(dt.hour);
+      uint8_t weekdays = bin2bcd(0);
+      uint8_t days = bin2bcd(dt.day);
+      uint8_t months = bin2bcd(dt.month);
+      uint8_t years = bin2bcd(dt.year - 2000);
       
       uint8_t page = 1;
       uint8_t pageaddr =0x0;
       uint8_t addr = ((page << 3) | pageaddr) | RTC_WRITE;
       
-      digitalWrite(chipSelectPin, HIGH);
+      digitalWrite(CS_RTC, HIGH);
        
       SPI.transfer(addr);
       SPI.transfer(seconds);
@@ -134,59 +134,57 @@ class RV3049 {
       SPI.transfer(months);
       SPI.transfer(years);
       
-      digitalWrite(chipSelectPin, LOW);
-    }
+      digitalWrite(CS_RTC, LOW);
+    }		
 
     void dispatch() {
       
     }
     
-    static void initRTC(void){
+    static void initRTC(void) {
 	
-	bool bSetDefaultTime=false;
+      bool bSetDefaultTime=false;
 	
-	uint8_t ctrl_Status = 0;
-	uint8_t page = 0;
-	uint8_t pageaddr =0x3;
-	uint8_t addr = (page << 3 | pageaddr) | RTC_READ;
+      uint8_t ctrl_Status = 0;
+      uint8_t page = 0;
+      uint8_t pageaddr =0x3;
+      uint8_t addr = (page << 3 | pageaddr) | RTC_READ;
 
-	digitalWrite(chipSelectPin, HIGH);
-	ctrl_Status = SPI.transfer(addr);
-	digitalWrite(chipSelectPin, LOW);
-	
-	if(ctrl_Status & RTC_PON){
-		//POWER-ON Bit löschen
-		page = 0;
-		pageaddr =0x3;
-		addr = (page << 3 | pageaddr) | RTC_WRITE;
-		ctrl_Status &= ~RTC_PON;
-		
-		digitalWrite(chipSelectPin, HIGH);
-		SPI.transfer(addr);
-		SPI.transfer(ctrl_Status);
-		digitalWrite(chipSelectPin, LOW);		
-		bSetDefaultTime = true;
-	}
-	if(ctrl_Status & RTC_SR){
-		//SELF-RECOVERY Bit löschen
-		page = 0;
-		pageaddr =0x3;
-		addr = (page << 3 | pageaddr) | RTC_WRITE;
-		ctrl_Status &= ~RTC_SR;
-		
-		digitalWrite(chipSelectPin, HIGH);
-		SPI.transfer(addr);
-		SPI.transfer(ctrl_Status);
-		digitalWrite(chipSelectPin, LOW);
-		
-		bSetDefaultTime = true;
-	}
-	//if(bSetDefaultTime){
-	//	SetDateTime(m_DefaultDateTime);
-	//}
-        //
-     }
+      digitalWrite(CS_RTC, HIGH);
+      ctrl_Status = SPI.transfer(addr);
+      digitalWrite(CS_RTC, LOW);
+      
+      if(ctrl_Status & RTC_PON) {
+        //POWER-ON Bit löschen
+        page = 0;
+        pageaddr =0x3;
+        addr = (page << 3 | pageaddr) | RTC_WRITE;
+        ctrl_Status &= ~RTC_PON;
+        
+        digitalWrite(CS_RTC, HIGH);
+        SPI.transfer(addr);
+        SPI.transfer(ctrl_Status);
+        digitalWrite(CS_RTC, LOW);		
+        bSetDefaultTime = true;
+      }
+      if(ctrl_Status & RTC_SR) {
+        //SELF-RECOVERY Bit löschen
+        page = 0;
+        pageaddr =0x3;
+        addr = (page << 3 | pageaddr) | RTC_WRITE;
+        ctrl_Status &= ~RTC_SR;
+        
+        digitalWrite(CS_RTC, HIGH);
+        SPI.transfer(addr);
+        SPI.transfer(ctrl_Status);
+        digitalWrite(CS_RTC, LOW);
+        
+        bSetDefaultTime = true;
+      }
+    }
 
 };
 
 RV3049 RTC;
+
+#endif

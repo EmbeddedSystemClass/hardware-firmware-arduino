@@ -1,7 +1,11 @@
 #ifndef _DISPLAYMANAGERH_
 #define _DISPLAYMANAGERH_
 
-// Display Driver ST7783 ****************************************************
+/*
+  Display Driver ST7783
+
+ This example code is in the public domain.
+ */
 
 #define TFTWIDTH  240
 #define TFTHEIGHT 320

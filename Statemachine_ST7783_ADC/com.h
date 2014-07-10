@@ -1,3 +1,12 @@
+#ifndef _COMH_
+#define _COMH_
+
+/*
+  Communication
+  
+ This example code is in the public domain.
+ */
+
 #define SIGNATURE_SIZE 4
 #define DATA_SIZE 9
 #define CMD_TIME 0
@@ -97,3 +106,5 @@ class Comunication {
 };
 
 Comunication Com;
+
+#endif
