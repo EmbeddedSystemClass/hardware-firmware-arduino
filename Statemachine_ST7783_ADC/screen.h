@@ -203,13 +203,21 @@ class Statusbar {
       bInvalidate = true;
     }
     
-    void draw(byte x, byte y, byte width, byte height) {
+    void draw(byte x, uint16_t y, byte width, byte height) {
       if(bInvalidate) {        
-        Display.drawRoundRect(x, y, 10, 10, 2, WHITE);
-        if(LogData.bLog2SdEnabled)
-          Display.displayText_f(x + 12, y, 1, LIGHTGRAY, BACKCOLOR, PSTR("SD Enabled"));
-        else
-          Display.displayText_f(x + 12, y, 1, LIGHTGRAY, BACKCOLOR, PSTR("SD Disabled"));
+        if(LogData.bLog2SdEnabled) {
+          Display.fillRoundRect(x, y, 10, 10, 2, WHITE);
+        } else {
+          Display.drawRoundRect(x, y, 10, 10, 2, WHITE);
+        }
+        Display.displayText_f(x + 12, y + 1, 1, WHITE /*LIGHTGRAY*/, BACKCOLOR, PSTR("SD LOG "));
+        
+        char buffer[11]= { "0000.00.00" };
+        DateTime dt = RTC.now();
+        bin2asc(2000 + dt.year, &buffer[0], 4);
+        bin2asc(dt.month, &buffer[5], 2);
+        bin2asc(dt.day, &buffer[8], 2);
+        Display.displayText(x + 175, y + 1, 1, buffer, WHITE, BACKCOLOR);
       }			
       bInvalidate = false;
     }    
@@ -253,7 +261,7 @@ class MainScreen : public Screen {
       }
       
       if (bInvalidate) {
-        statusbar.draw(0, 270, 240, 50);
+        statusbar.draw(2, 300, 240, 50);
       }
       
       bInvalidate = false;
@@ -308,10 +316,10 @@ class TempChartScreen : public Screen {
       if (bInvalidate) {             
         Button::drawButton(0, 270, 240,  50, PSTR("Exit"), NULL);
         if(chartIndex == 0) {
-          Button::drawButton(0,   0, 240, 50, PSTR("Temperature In"), NULL); 
+          Button::drawButton(0,   0, 240, 50, PSTR("In"), NULL); 
           chart.drawChart(LogData.temperature1Log, LOG_DATA_SIZE, -120, 120);
         } else {
-          Button::drawButton(0,   0, 240, 50, PSTR("Temperature Out"), NULL); 
+          Button::drawButton(0,   0, 240, 50, PSTR("Out"), NULL); 
           chart.drawChart(LogData.temperature2Log, LOG_DATA_SIZE, -120, 120);
         }
         bInvalidate = false;
@@ -574,7 +582,7 @@ class LogSettingsScreen : public Screen {
         Button::drawButton(0,   0, 240, 50, PSTR("Logging"), NULL);
         Button::drawButton(0,  52, 240, 50, PSTR("Reset"),   NULL);
         if(LogData.bLog2SdEnabled) {
-          Button::drawButton(0, 104, 240, 50, PSTR("SD Enabled"), NULL);
+          Button::drawButton(0, 104, 240, 50, PSTR("SD Enabled "), NULL);
         } else {
           Button::drawButton(0, 104, 240, 50, PSTR("SD Disabled"), NULL);
         }

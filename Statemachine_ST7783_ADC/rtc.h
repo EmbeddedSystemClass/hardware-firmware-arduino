@@ -56,7 +56,7 @@ class DateTime {
     }
 		
     uint32_t getTimeStamp() {
-      return 0;hour * 3600 + minute * 60 + second;
+      return hour * 3600 + minute * 60 + second;
     }		
 };
 
@@ -90,9 +90,9 @@ class RV3049 {
       SPI.transfer(addr);
       uint8_t seconds = SPI.transfer(0);
       uint8_t minutes = SPI.transfer(0);
-      uint8_t hours = SPI.transfer(0);
-      uint8_t weekdays = SPI.transfer(0);
+      uint8_t hours = SPI.transfer(0);      
       uint8_t days = SPI.transfer(0);
+      uint8_t weekdays = SPI.transfer(0);
       uint8_t months = SPI.transfer(0);
       uint8_t years = SPI.transfer(0);
               
@@ -100,9 +100,9 @@ class RV3049 {
 	
       seconds = bcd2bin(seconds);
       minutes = bcd2bin(minutes);
-      hours = bcd2bin(hours);
-      weekdays = bcd2bin(weekdays);
+      hours = bcd2bin(hours);      
       days =	bcd2bin(days);
+      weekdays = bcd2bin(weekdays);
       months = bcd2bin(months);
       years = bcd2bin(years);
       
@@ -111,14 +111,16 @@ class RV3049 {
     }
   
     void adjust(const DateTime& dt) {
+      SPI.setClockDivider(SPI_CLOCK_DIV4);
+      
       uint8_t seconds = bin2bcd(dt.second);
       uint8_t minutes = bin2bcd(dt.minute);
       uint8_t hours = bin2bcd(dt.hour);
-      uint8_t weekdays = bin2bcd(0);
+      //uint8_t weekdays = bin2bcd(0);
       uint8_t days = bin2bcd(dt.day);
       uint8_t months = bin2bcd(dt.month);
       uint8_t years = bin2bcd(dt.year - 2000);
-      
+
       uint8_t page = 1;
       uint8_t pageaddr =0x0;
       uint8_t addr = ((page << 3) | pageaddr) | RTC_WRITE;
@@ -129,8 +131,8 @@ class RV3049 {
       SPI.transfer(seconds);
       SPI.transfer(minutes);
       SPI.transfer(hours);
-      SPI.transfer(weekdays);
       SPI.transfer(days);
+      SPI.transfer(0);      
       SPI.transfer(months);
       SPI.transfer(years);
       
