@@ -55,8 +55,8 @@ class DateTime {
       second = s;
     }
 		
-    uint32_t getTimeStamp() {
-      return hour * 3600 + minute * 60 + second;
+    uint32_t getTimeStamp() {      
+      return ((uint32_t)hour * 3600) + ((uint32_t)minute * 60) + (uint32_t)second;
     }		
 };
 

@@ -122,7 +122,7 @@ class LogEventManager {
         if (!bEnabled)
           return;
 				
-				uint32_t now = RTC.now().getTimeStamp();
+	uint32_t now = RTC.now().getTimeStamp();
 				
         if (now % interval && now >= next) {
           next = (now + interval) % RTC.maxTimeStamp;
