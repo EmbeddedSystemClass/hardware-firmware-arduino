@@ -124,7 +124,7 @@ class LogEventManager {
 				
 	uint32_t now = RTC.now().getTimeStamp();
 				
-        if (now % interval && now >= next) {
+        if (now % interval == 0 && now >= next) {
           next = (now + interval) % RTC.maxTimeStamp;
           bLog = true;
         } else {
