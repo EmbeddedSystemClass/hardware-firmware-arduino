@@ -57,7 +57,7 @@ void loop() {
   Measure.dispatch();
   LogData.dispatch();
   Com.dispatch();
-  
+  RTC.dispatch();  
   //Serial.println(millis()-s1);
 }
 

@@ -63,10 +63,16 @@ class DateTime {
 class RV3049 {
   public:
     uint32_t maxTimeStamp;
+    unsigned b1S:1;
+    
+    uint8_t lastSecond;
+    
+    DateTime now1;
 	
   public:
     RV3049() {
       maxTimeStamp = 24 * 3600; //maximum  in 24hour mode, 24h x 3600s = 86400s
+      b1S = false;
     }
 	
     void begin() {
@@ -140,7 +146,13 @@ class RV3049 {
     }		
 
     void dispatch() {
+      now1 = now();
       
+      b1S = false;
+      if(now1.second != lastSecond) {
+        lastSecond = now1.second;
+        b1S = true;
+      }
     }
     
     static void initRTC(void) {

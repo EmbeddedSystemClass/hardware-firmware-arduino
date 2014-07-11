@@ -104,43 +104,41 @@ class EventManager {
 
 EventManager Events;
 
-class LogEventManager {
-    private:
-      unsigned long next;
-    
+class LogEventManager {      
     public:
-      unsigned long interval;    
+      uint16_t counter;
+      uint16_t interval;    
       unsigned bLog:1;
       unsigned bEnabled:1;
          
     public:
       LogEventManager() {
         interval = 3600; // every hour, interval in seconds
+        counter = interval;
       }
       
       void dispatch() {
+        bLog = false;
+        
         if (!bEnabled)
           return;
-				
-	uint32_t now = RTC.now().getTimeStamp();
-				
-        if (now % interval == 0 && now >= next) {
-          next = (now + interval) % RTC.maxTimeStamp;
-          bLog = true;
-        } else {
-          bLog = false;
-        }
+	
+        if(RTC.b1S) {          
+          if(--counter == 0) {
+            counter = interval;
+            bLog = true;
+          }
+        }        
       }
       
       void start() {
         bEnabled = true;
-	uint32_t now = RTC.now().getTimeStamp();
-        next = now + interval;
+        counter = interval;
+        bLog = false;	
       }
       
-      void reset() {
-        uint32_t now = RTC.now().getTimeStamp();
-        next = now + interval;
+      void reset() {        
+        counter = interval;
         bLog = false;
       }
 };
