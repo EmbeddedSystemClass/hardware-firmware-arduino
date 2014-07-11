@@ -14,7 +14,6 @@
 #include <SPI.h>
 #include <Fat16.h>
 //#include <Fat16util.h> // use functions to print strings from flash memory
-#include <Sensirion.h>
 #include <avr/pgmspace.h>
 
 #include "main.h"
@@ -50,15 +49,16 @@ void setup()
   LogEvents.start();
 }
 
-void loop() {  
+void loop() {
+  //unsigned long s1 = millis();
   Events.dispatch();
-  //MeasureEvents.dispatch();  
   pScreen->dispatch(0);  
   LogEvents.dispatch();  
   Measure.dispatch();
   LogData.dispatch();
   Com.dispatch();
-  //RTC.dispatch();
+  
+  //Serial.println(millis()-s1);
 }
 
 void serialEvent() {

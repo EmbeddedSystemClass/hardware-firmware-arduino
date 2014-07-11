@@ -212,12 +212,12 @@ class Statusbar {
         }
         Display.displayText_f(x + 12, y + 1, 1, WHITE /*LIGHTGRAY*/, BACKCOLOR, PSTR("SD LOG "));
         
-//        char buffer[11]= { "0000.00.00" };
-//        DateTime dt = RTC.now();
-//        bin2asc(2000 + dt.year, &buffer[0], 4);
-//        bin2asc(dt.month, &buffer[5], 2);
-//        bin2asc(dt.day, &buffer[8], 2);
-//        Display.displayText(x + 175, y + 1, 1, buffer, WHITE, BACKCOLOR);
+        char buffer[11]= { "0000.00.00" };
+        DateTime dt = RTC.now();
+        bin2asc(2000 + dt.year, &buffer[0], 4);
+        bin2asc(dt.month, &buffer[5], 2);
+        bin2asc(dt.day, &buffer[8], 2);
+        Display.displayText(x + 175, y + 1, 1, buffer, WHITE, BACKCOLOR);
       }			
       bInvalidate = false;
     }    
