@@ -41,7 +41,6 @@ void setup()
   SPI.begin();
   
   RTC.begin();
-  RTC.initRTC();
 
   Measure.begin();
 

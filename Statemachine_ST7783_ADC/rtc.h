@@ -43,6 +43,7 @@ class DateTime {
     byte hour;
     byte minute;
     byte second;
+    byte weekday;
     
     DateTime() { }
    
@@ -67,7 +68,7 @@ class RV3049 {
     
     uint8_t lastSecond;
     
-    DateTime now1;
+    DateTime now;
 	
   public:
     RV3049() {
@@ -78,54 +79,24 @@ class RV3049 {
     void begin() {
       pinMode(CS_RTC, OUTPUT);
       digitalWrite(CS_RTC, LOW);
+      
+      initRTC();
     }
     
     byte isrunning(void) {
       return true;
     }
     
-    DateTime now() {
-      uint8_t page = 1;
-      uint8_t pageaddr =0x0;
-      uint8_t addr = ((page << 3) | pageaddr) | RTC_READ;
-
+    void adjust(DateTime* dt) {
       SPI.setClockDivider(SPI_CLOCK_DIV4);
       
-      digitalWrite(CS_RTC, HIGH);
-      
-      SPI.transfer(addr);
-      uint8_t seconds = SPI.transfer(0);
-      uint8_t minutes = SPI.transfer(0);
-      uint8_t hours = SPI.transfer(0);      
-      uint8_t days = SPI.transfer(0);
-      uint8_t weekdays = SPI.transfer(0);
-      uint8_t months = SPI.transfer(0);
-      uint8_t years = SPI.transfer(0);
-              
-      digitalWrite(CS_RTC, LOW);
-	
-      seconds = bcd2bin(seconds);
-      minutes = bcd2bin(minutes);
-      hours = bcd2bin(hours);      
-      days =	bcd2bin(days);
-      weekdays = bcd2bin(weekdays);
-      months = bcd2bin(months);
-      years = bcd2bin(years);
-      
-      return DateTime (years, months, days, hours, minutes, seconds);
-
-    }
-  
-    void adjust(const DateTime& dt) {
-      SPI.setClockDivider(SPI_CLOCK_DIV4);
-      
-      uint8_t seconds = bin2bcd(dt.second);
-      uint8_t minutes = bin2bcd(dt.minute);
-      uint8_t hours = bin2bcd(dt.hour);
+      uint8_t seconds = bin2bcd(dt->second);
+      uint8_t minutes = bin2bcd(dt->minute);
+      uint8_t hours = bin2bcd(dt->hour);
       //uint8_t weekdays = bin2bcd(0);
-      uint8_t days = bin2bcd(dt.day);
-      uint8_t months = bin2bcd(dt.month);
-      uint8_t years = bin2bcd(dt.year - 2000);
+      uint8_t days = bin2bcd(dt->day);
+      uint8_t months = bin2bcd(dt->month);
+      uint8_t years = bin2bcd(dt->year - 2000);
 
       uint8_t page = 1;
       uint8_t pageaddr =0x0;
@@ -146,11 +117,36 @@ class RV3049 {
     }		
 
     void dispatch() {
-      now1 = now();
+      uint8_t page = 1;
+      uint8_t pageaddr =0x0;
+      uint8_t addr = ((page << 3) | pageaddr) | RTC_READ;
+
+      SPI.setClockDivider(SPI_CLOCK_DIV4);
+      
+      digitalWrite(CS_RTC, HIGH);
+      
+      SPI.transfer(addr);
+      now.second = SPI.transfer(0);
+      now.minute = SPI.transfer(0);
+      now.hour = SPI.transfer(0);      
+      now.day = SPI.transfer(0);
+      now.weekday = SPI.transfer(0);
+      now.month = SPI.transfer(0);
+      now.year = SPI.transfer(0);
+              
+      digitalWrite(CS_RTC, LOW);
+	
+      now.second = bcd2bin(now.second);
+      now.minute = bcd2bin(now.minute);
+      now.hour = bcd2bin(now.hour);      
+      now.day =	bcd2bin(now.day);
+      now.weekday = bcd2bin(now.weekday);
+      now.month = bcd2bin(now.month);
+      now.year = bcd2bin(now.year);
       
       b1S = false;
-      if(now1.second != lastSecond) {
-        lastSecond = now1.second;
+      if(now.second != lastSecond) {
+        lastSecond = now.second;
         b1S = true;
       }
     }

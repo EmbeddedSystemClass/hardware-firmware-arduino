@@ -42,9 +42,9 @@ class LogData {
         
         if(bLog2SdEnabled) {
           // create new file every month
-          DateTime dt = RTC.now();
-          if(dt.month != month) {
-            month = dt.month;
+          DateTime* dt = &RTC.now;
+          if(dt->month != month) {
+            month = dt->month;
             createNewLogFile();
           }
           
@@ -113,15 +113,15 @@ class LogData {
       }
       
       if (file.open(name, O_APPEND | O_EXCL | O_WRITE)) {
-        DateTime dt = RTC.now();
+        DateTime* dt = &RTC.now;
                       // 01234567890123456789012345678
         char buffer[] = "yyyy-mm-dd hh:mm:ss; 000; 000";
-        bin2asc(dt.year, buffer, 4);
-        bin2asc(dt.month, &buffer[5], 2);
-        bin2asc(dt.day, &buffer[8], 2);
-        bin2asc(dt.hour,&buffer[11], 2);
-        bin2asc(dt.minute, &buffer[14], 2);
-        bin2asc(dt.second, &buffer[17], 2);
+        bin2asc(dt->year, buffer, 4);
+        bin2asc(dt->month, &buffer[5], 2);
+        bin2asc(dt->day, &buffer[8], 2);
+        bin2asc(dt->hour,&buffer[11], 2);
+        bin2asc(dt->minute, &buffer[14], 2);
+        bin2asc(dt->second, &buffer[17], 2);
         bin2asc(value1, &buffer[21], 3);
         bin2asc(value2, &buffer[26], 3);
         file.println(buffer);      
@@ -140,11 +140,11 @@ class LogData {
       // create a new file
       //                012345678901
       // char name[] = "yyyymmnn.TXT";
-      DateTime dt = RTC.now();
+      DateTime* dt = &RTC.now;
       
       for (uint8_t i = 0; i < 100; i++) {
-        bin2asc(dt.year, name, 4);
-        bin2asc(dt.month, &name[4], 2);
+        bin2asc(dt->year, name, 4);
+        bin2asc(dt->month, &name[4], 2);
         name[6] = i/10 + '0';
         name[7] = i%10 + '0';
         //Serial.println(name);

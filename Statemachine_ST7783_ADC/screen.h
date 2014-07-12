@@ -194,41 +194,11 @@ class Statistic {
     }    
 };
 
-class Statusbar {
-  public:
-    unsigned bInvalidate:1;
-	
-  public:
-    Statusbar() {
-      bInvalidate = true;
-    }
-    
-    void draw(byte x, uint16_t y, byte width, byte height) {
-      if(bInvalidate) {        
-        if(LogData.bLog2SdEnabled) {
-          Display.fillRoundRect(x, y, 10, 10, 2, WHITE);
-        } else {
-          Display.drawRoundRect(x, y, 10, 10, 2, WHITE);
-        }
-        Display.displayText_f(x + 12, y + 1, 1, WHITE /*LIGHTGRAY*/, BACKCOLOR, PSTR("SD LOG "));
-        
-        char buffer[11]= { "0000.00.00" };
-        DateTime dt = RTC.now();
-        bin2asc(2000 + dt.year, &buffer[0], 4);
-        bin2asc(dt.month, &buffer[5], 2);
-        bin2asc(dt.day, &buffer[8], 2);
-        Display.displayText(x + 175, y + 1, 1, buffer, WHITE, BACKCOLOR);
-      }			
-      bInvalidate = false;
-    }    
-};
-
 class MainScreen : public Screen {
   public:
     TempGauge tempGauge1;
     TempGauge tempGauge2;	
-    Statistic	statistic1;   
-    Statusbar statusbar;
+    Statistic	statistic1;
   
   public:
     MainScreen() {      
@@ -237,16 +207,26 @@ class MainScreen : public Screen {
     void draw() {
       if (bInvalidate) {
         Button::drawButton(0, 0, 240, 50, PSTR("Logger"), NULL);        
-      }      
-        
+      }
+      
       if (bInvalidate || Events.bT1000MS) {
-        char buffer[9]= { "00:00:00" };
-        DateTime dt = RTC.now();
-        bin2asc(dt.hour, &buffer[0], 2);
-        bin2asc(dt.minute, &buffer[3], 2);
-        bin2asc(dt.second, &buffer[6], 2);  
+        DateTime* dt = &RTC.now;      
+        char buffer[11] = { 0 };
         
+        bin2asc(dt->hour, &buffer[0], 2);
+        buffer[2] = ':';
+        bin2asc(dt->minute, &buffer[3], 2);
+        buffer[5] = ':';
+        bin2asc(dt->second, &buffer[6], 2);
         Display.displayText(70, 70, 2, buffer, GREEN, BACKCOLOR);
+        
+        bin2asc(dt->day, &buffer[0], 2);
+        buffer[2] = '.';
+        bin2asc(dt->month, &buffer[3], 2);
+        buffer[5] = '.';
+        bin2asc(2000 + dt->year, &buffer[6], 4);
+        buffer[10] = 0;        
+        Display.displayText(177, 301, 1, buffer, WHITE, BACKCOLOR);
       }
       
       if (bInvalidate || Measure.bReady) {        
@@ -260,9 +240,14 @@ class MainScreen : public Screen {
         statistic1.draw(58, 160, LogData.temperature1Log);
       }
       
-      if (bInvalidate) {
-        statusbar.draw(2, 300, 240, 50);
-      }
+      if(bInvalidate) {        
+        if(LogData.bLog2SdEnabled) {
+          Display.fillRoundRect(2, 300, 10, 10, 2, WHITE);
+        } else {
+          Display.drawRoundRect(2, 300, 10, 10, 2, WHITE);
+        }
+        Display.displayText_f(14, 301, 1, WHITE /*LIGHTGRAY*/, BACKCOLOR, PSTR("SD LOG "));        
+      }	
       
       bInvalidate = false;
     }
@@ -278,7 +263,7 @@ class MainScreen : public Screen {
         hide();
         tempGauge1.invalidate();
         tempGauge2.invalidate();
-        statusbar.bInvalidate = true;
+        //statusbar.bInvalidate = true;
         pScreen = pMenuScreen;
       }
       
@@ -539,10 +524,10 @@ class DateEditor : public MaskEditor {
     }
     
     void onExit() {
-      DateTime dt = RTC.now();
-      dt.year = CHARTONUM(str[6], 1000) + CHARTONUM(str[7], 100) + CHARTONUM(str[8], 10) + CHARTONUM(str[9], 1);
-      dt.month = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
-      dt.day = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
+      DateTime* dt = &RTC.now;
+      dt->year = CHARTONUM(str[6], 1000) + CHARTONUM(str[7], 100) + CHARTONUM(str[8], 10) + CHARTONUM(str[9], 1);
+      dt->month = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
+      dt->day = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
       //Serial.print(y);Serial.print(".");Serial.print(m);Serial.print(".");Serial.println(d);
       RTC.adjust(dt);
     }
@@ -561,10 +546,10 @@ class TimeEditor : public MaskEditor {
     }
     
     void onExit() {
-      DateTime dt = RTC.now();
-      dt.hour = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
-      dt.minute = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
-      dt.second = 0;
+      DateTime* dt = &RTC.now;
+      dt->hour = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
+      dt->minute = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
+      dt->second = 0;
       RTC.adjust(dt);
     }
 };
