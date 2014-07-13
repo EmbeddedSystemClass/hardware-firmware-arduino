@@ -35,13 +35,13 @@ namespace Logger {
 		}
 
 		private void setDateTime_Click(object sender, EventArgs e) {
-			DataLogger.Instance.SetDate(datePicker.Value);
 			DataLogger.Instance.SetTime(timePicker.Value);
+			DataLogger.Instance.SetDate(datePicker.Value);
 		}
 
 		private void setSystemDateTime_Click(object sender, EventArgs e) {
-			DataLogger.Instance.SetDate(DateTime.Now);
 			DataLogger.Instance.SetTime(DateTime.Now);
+			DataLogger.Instance.SetDate(DateTime.Now);
 		}
 	}
 }

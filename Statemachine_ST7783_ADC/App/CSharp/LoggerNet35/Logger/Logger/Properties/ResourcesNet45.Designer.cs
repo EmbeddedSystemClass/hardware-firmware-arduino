@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WindowsFormsApplication1.Properties {
+namespace Logger.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace WindowsFormsApplication1.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("WindowsFormsApplication1.Properties.ResourcesNet45", typeof(ResourcesNet45).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Logger.Properties.ResourcesNet45", typeof(ResourcesNet45).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

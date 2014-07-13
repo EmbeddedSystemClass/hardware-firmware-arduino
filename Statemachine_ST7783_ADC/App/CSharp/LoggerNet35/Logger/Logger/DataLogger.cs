@@ -233,8 +233,8 @@ namespace Logger {
 			if (tryGetPort(out port)) 
 			{		
 				byte[] date = { /*0:set date cmd*/ 1, /*1:yy*/ 0, /*2:yy*/ 0, /*3:mm*/ 0, /*4:dd   */ 0, /*5:empty*/ 0, /*6:empty*/ 0, /*7:empty*/ 0, /*8:empty */ 0, /*9:checksum*/ 0 };
-				date[1] = (byte)(dateTime.Year / 1000);
-				date[2] = (byte)(dateTime.Year % 1000);
+				date[1] = 0;
+				date[2] = (byte)(dateTime.Year - 2000);
 				date[3] = (byte)dateTime.Month;
 				date[4] = (byte)dateTime.Day;
 				date[6] = getCheckSum(date, 0, 10);
