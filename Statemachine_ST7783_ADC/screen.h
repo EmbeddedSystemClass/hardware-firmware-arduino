@@ -1,6 +1,8 @@
 #ifndef _SCREENH_
 #define _SCREENH_
 
+#include <avr/pgmspace.h>
+
 /*
   Screens
 
@@ -54,19 +56,19 @@ class Button {
       }
       return false;
     }
-    
-    static void drawButton(int x, int y, int width, int height) {
-      int r = min(width, height) >> 3;
-    
+        
+    static void drawButton(int x, int y, int width, int height, const char *pFlashStr1, const char *pFlashStr2) {
+      int r = min(width, height) >> 3;    
       Display.drawRoundRect(x, y, width, height, r, WHITE);
-      //for(byte i=0; i < 3; i++) {
-      //  Display.drawRoundRect(x + i, y + i, width - i - i, height - i - i, r, Display.color565(80, 160 - i*8, 240));
-      //}
+      drawButtonText(x, y, width, height, pFlashStr1, pFlashStr2);
     }
     
-    static void drawButton(int x, int y, int width, int height, const char *pFlashStr1, const char *pFlashStr2) {
-      drawButton(x, y, width, height);
-      
+//    static void drawRectButton(int x, int y, int width, int height, const char *pFlashStr1, const char *pFlashStr2) {
+//      Display.drawRect(x, y, width, height, WHITE);
+//      drawButtonText(x, y, width, height, pFlashStr1, pFlashStr2);
+//    }
+    
+    static void drawButtonText(int x, int y, int width, int height, const char *pFlashStr1, const char *pFlashStr2) {
       byte yd = pFlashStr1 && pFlashStr2 ? 3 : 2;
       
       int tx = x + (width / 2) - (strlen_P(pFlashStr1) * TEXTWIDTH * 3 / 2);
@@ -169,9 +171,8 @@ class Statistic {
       if(LogData.count > 0) {
         int8_t newMin;
         int8_t newMax;
-        int8_t newAvg;
-              
-        LogData.getStat(values, LogData.count, &newMin, &newMax, &newAvg);
+                      
+        LogData.getStat(values, LogData.count, &newMin, &newMax);
         
         char buffer[9]= { 0 };  
         if(newMin != min) {
@@ -561,32 +562,44 @@ class LogSettingsScreen : public Screen {
     byte dispatch(byte input) {
       if (!bVisible) {
         show();
-      }  
+        
+      }     
       
       if (bInvalidate) {
-        Button::drawButton(0,   0, 240, 50, PSTR("Logging"), NULL);
-        Button::drawButton(0,  52, 240, 50, PSTR("Reset"),   NULL);
+        Button::drawButton(0, 0, 240, 50, PSTR("Reset"),   NULL);
+
         if(LogData.bLog2SdEnabled) {
-          Button::drawButton(0, 104, 240, 50, PSTR("SD Enabled "), NULL);
+          Button::drawButton(0, 52, 240, 50, PSTR("SD Enabled "), NULL);
         } else {
-          Button::drawButton(0, 104, 240, 50, PSTR("SD Disabled"), NULL);
+          Button::drawButton(0, 52, 240, 50, PSTR("SD Disabled"), NULL);
         }
+        
+        if(LogEvents.mode == 0)
+          Button::drawButton(0, 104, 240, 50, PSTR("  Hour  "), NULL);
+        else if(LogEvents.mode == 1)
+          Button::drawButton(0, 104, 240, 50, PSTR(" Minute "), NULL);
+        else if(LogEvents.mode == 2)
+          Button::drawButton(0, 104, 240, 50, PSTR("5 Second"), NULL);
+                
         Button::drawButton(0, 270, 240, 50, PSTR("Exit"),    NULL);                     
         bInvalidate = false;
       }
       
       if(Button::hitTest(0, 240, 240,  80)) {  // Exit
+        LogEvents.setMode(LogEvents.mode);
         hide();        
         pScreen = pMenuScreen;
-      } else if(Button::hitTest(0, 52, 240, 50)) {  // Reset
-        hide();
-        pScreen = pMenuScreen;
-        
+      } else if(Button::hitTest(0, 0, 240, 50)) {  // Reset
         LogData.reset(LogData.temperature1Log);
         LogData.reset(LogData.temperature2Log);
         LogEvents.reset();
-      } else if(Button::hitTest(0, 104, 240, 50)) {
+        hide();        
+        pScreen = pMenuScreen;
+      } else if(Button::hitTest(0, 52, 240, 50)) {  // log to SD Enable/Disable
         LogData.bLog2SdEnabled = !LogData.bLog2SdEnabled;
+        bInvalidate = true;
+      } else if(Button::hitTest(0, 104, 240, 50)) {  // mode (hour, minute, second)
+        LogEvents.mode = (LogEvents.mode + 1) % 3;
         bInvalidate = true;
       }
         

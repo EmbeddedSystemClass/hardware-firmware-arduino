@@ -70,6 +70,7 @@ class Comunication {
           }
         case CMD_CURRENT_TEMP:
           Serial.write(Measure.temperature);
+          Serial.write(Measure.temperature2);
           Serial.flush();
           break;
         case CMD_TEMP_LOG:

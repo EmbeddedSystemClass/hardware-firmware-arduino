@@ -70,14 +70,14 @@ class LogData {
       values[n] = value;
     }
     
-    void getStat(int8_t values[], byte count, int8_t* min, int8_t* max, int8_t* avg) {
-      int avgSum = 0;
+    void getStat(int8_t values[], byte count, int8_t* min, int8_t* max /*, int8_t* avg*/) {
+      //int avgSum = 0;
       for (byte i = 0; i < count; i++) {
         *min = min(values[i], *min);
         *max = max(values[i], *max);
-        avgSum += values[i];
+        //avgSum += values[i];
       }
-      *avg = avgSum / count;      
+      //*avg = avgSum / count;      
     }
     
     void reset(int8_t values[]) {

@@ -20,9 +20,8 @@ class Chart {
     void drawChart(int8_t values[], byte count, int rangeMin, int rangeMax) {
       int8_t min = rangeMax;
       int8_t max = rangeMin;
-      int8_t avg = 0;
 			
-      LogData.getStat(values, count, &min, &max, &avg);
+      LogData.getStat(values, count, &min, &max);
       
       // fit min, max in range of 10th steps *********
       if(min >= 0) { 

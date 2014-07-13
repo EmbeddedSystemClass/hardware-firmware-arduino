@@ -81,6 +81,7 @@ class RV3049 {
       digitalWrite(CS_RTC, LOW);
       
       initRTC();
+      dispatch();
     }
     
     byte isrunning(void) {

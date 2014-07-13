@@ -104,17 +104,24 @@ class EventManager {
 
 EventManager Events;
 
+#define LOG_INTERVAL_HOUR 0
+#define LOG_INTERVAL_MINUTE 1
+#define LOG_INTERVAL_SECOND 2
+
 class LogEventManager {      
     public:
       uint16_t counter;
       uint16_t interval;    
       unsigned bLog:1;
       unsigned bEnabled:1;
+      
+      uint8_t mode;
          
     public:
       LogEventManager() {
         interval = 3600; // every hour, interval in seconds
         counter = interval;
+        mode = 0;
       }
       
       void dispatch() {
@@ -129,6 +136,29 @@ class LogEventManager {
             bLog = true;
           }
         }        
+      }
+      
+      void setMode(byte mode) {
+        //uint32_t t = RTC.now.getTimeStamp();
+        
+        switch(mode) {
+          case LOG_INTERVAL_HOUR:
+            interval = 3600;            
+            //counter = 3600 - (t % 3600);
+            counter = 3600;
+            break;
+            
+          case LOG_INTERVAL_MINUTE:
+            interval = 60;
+            //counter = 60- (t % 60);
+            counter = 60;
+            break;
+            
+          case LOG_INTERVAL_SECOND:
+            interval = 5;
+            counter = 5;
+            break;
+        }
       }
       
       void start() {
