@@ -52,12 +52,22 @@ class Comunication {
         return;
         
       switch(data[0]) {
-        case CMD_TIME:         
-          //RTC.setTime(data[1], data[2], data[3]);
-          break;
-        case CMD_DATE:
-          //RTC.setDate(data[4], data[3], data[2] * 1000 + data[1]);
-          break;
+        case CMD_TIME: {
+            DateTime* dt = &RTC.now;
+            dt->hour = data[1];
+            dt->minute = data[2];
+            dt->second = data[3];
+            RTC.adjust(dt);
+            break; 
+          }
+        case CMD_DATE: {
+            DateTime* dt = &RTC.now;
+            dt->day = data[4];
+            dt->month = data[3];
+            dt->year = 2000 + data[2];
+            RTC.adjust(dt);
+            break; 
+          }
         case CMD_CURRENT_TEMP:
           Serial.write(Measure.temperature);
           Serial.flush();
