@@ -139,19 +139,17 @@ class LogEventManager {
       }
       
       void setMode(uint8_t mode) {
-        //uint32_t t = RTC.now.getTimeStamp();
-        
         switch(mode) {
           case LOG_INTERVAL_HOUR:
-            interval = 3600;            
-            //counter = 3600 - (t % 3600);
-            counter = 3600;
+            interval = 3600;                        
+            //counter = 3600;
+            counter = 3600 - (60 * RTC.now.minute) - RTC.now.second;
             break;
             
           case LOG_INTERVAL_MINUTE:
-            interval = 60;
-            //counter = 60- (t % 60);
-            counter = 60;
+            interval = 60;            
+            //counter = 60;
+            counter = 60 - RTC.now.second;
             break;
             
           case LOG_INTERVAL_SECOND:

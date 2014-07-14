@@ -82,7 +82,8 @@ class Comunication {
         case CMD_DIRECTORY:
           if (card.init() && Fat16::init(&card)) {
             // "Name          Modify Date/Time    Size";
-            Fat16::ls(LS_DATE | LS_SIZE);
+            //Fat16::ls(LS_DATE | LS_SIZE);
+            ls();
             Serial.println(F("EOF"));
           } else {
             Serial.println(F("card failed!"));
@@ -113,6 +114,22 @@ class Comunication {
       }
       
       bValid = false;
+    }
+    
+    void ls() {
+      dir_t d;
+      for (uint16_t index = 0; Fat16::readDir(&d, &index, DIR_ATT_VOLUME_ID); index++) {           
+        //Fat16::remove("");
+        for (uint8_t i = 0; i < 11; i++) {
+          if (d.name[i] == ' ') continue;
+          if (i == 8) {
+            Serial.write('.');            
+          }
+          Serial.write(d.name[i]);
+        }
+        
+        Serial.println();
+      }
     }
 };
 

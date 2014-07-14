@@ -34,9 +34,7 @@
 static uint8_t bcd2bin (uint8_t val) { return val - 6 * (val >> 4); }
 static uint8_t bin2bcd (uint8_t val) { return val + 6 * (val / 10); }
 
-class DateTime {
- 
-  public:
+struct DateTime {
     uint16_t year;
     uint8_t month;
     uint8_t day;
@@ -44,35 +42,16 @@ class DateTime {
     uint8_t minute;
     uint8_t second;
     uint8_t weekday;
-    
-    DateTime() { }
-   
-    DateTime (uint16_t y, uint8_t m, uint8_t d, uint8_t h, uint8_t mn, uint8_t s) {
-      year = y;
-      month = m;
-      day = d;
-      hour = h;
-      minute = mn;
-      second = s;
-    }
-		
-    uint32_t getTimeStamp() {      
-      return ((uint32_t)hour * 3600) + ((uint32_t)minute * 60) + (uint32_t)second;
-    }		
 };
 
 class RV3049 {
-  public:
-    uint32_t maxTimeStamp;
-    unsigned b1S:1;
-    
-    uint8_t lastSecond;
-    
+  public:    
+    unsigned b1S:1;    
+    uint8_t lastSecond;    
     DateTime now;
 	
   public:
-    RV3049() {
-      maxTimeStamp = 24 * 3600; //maximum  in 24hour mode, 24h x 3600s = 86400s
+    RV3049() {      
       b1S = false;
     }
 	
