@@ -17,7 +17,7 @@
 
 class Chart {    
   public:
-    void drawChart(int8_t values[], byte count, int rangeMin, int rangeMax) {
+    void drawChart(int8_t values[], uint8_t count, int16_t rangeMin, int16_t rangeMax) {
       int8_t min = rangeMax;
       int8_t max = rangeMin;
 			
@@ -27,7 +27,7 @@ class Chart {
       if(min >= 0) { 
         min = 0;
       } else {
-        for (int i = 0; i > rangeMin; i -= 10) {
+        for (int16_t i = 0; i > rangeMin; i -= 10) {
           if (i < min) {
             min = i;
             break;
@@ -38,7 +38,7 @@ class Chart {
       if(max <= 0) {
         max = 0;
       } else {
-        for (int i = 0; i < rangeMax; i += 10) {
+        for (int16_t i = 0; i < rangeMax; i += 10) {
           if (i > max) {
             max = i;
             break;
@@ -47,12 +47,12 @@ class Chart {
       }
       
       // range ***************************************
-      byte range = max - min;
-      byte zero = map(0, min, max, CHARTHEIGHT, CHART_Y);   
+      uint8_t range = max - min;
+      uint8_t zero = map(0, min, max, CHARTHEIGHT, CHART_Y);   
       
       // draw y-Grid lines ***************************
       for (int8_t i = min; i <= max; i+=5) {
-        byte y = map(i, min, max, CHARTHEIGHT, CHART_Y);
+        uint8_t y = map(i, min, max, CHARTHEIGHT, CHART_Y);
         Display.drawFastHLine(CHART_X , y, CHARTWIDTH, LIGHTGRAY);
        
         char buffer[4] = { "000" };
@@ -61,9 +61,9 @@ class Chart {
       }
       
       // draw values *********************************
-      byte w = (CHARTWIDTH) / count - 1;
-      for (byte i = 0; i < count; i++) {
-        byte y = map(values[i], min, max, CHARTHEIGHT, CHART_Y);
+      uint8_t w = (CHARTWIDTH) / count - 1;
+      for (uint8_t i = 0; i < count; i++) {
+        uint8_t y = map(values[i], min, max, CHARTHEIGHT, CHART_Y);
         //Serial.println(String(values[i]) + ";" + String(y) + ";" + String(zero));
         if (y < zero) 
           Display.fillRect(i * w + CHART_X, y, w, zero - y, RED);

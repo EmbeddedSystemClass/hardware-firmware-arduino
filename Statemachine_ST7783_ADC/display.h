@@ -44,16 +44,16 @@ class DisplayManager : public SWTFT {
     void display() {
     };
     
-    void displayText_f(int x, int y, int fontSize, const char *pFlashStr) {
+    void displayText_f(int16_t x, int16_t y, int16_t fontSize, const char *pFlashStr) {
       displayText_f(x, y, fontSize, BLACK, WHITE, pFlashStr);
     }
     
-    void displayText_f(int x, int y, int fontSize, uint16_t textColor, uint16_t backColor, const char *pFlashStr) {
+    void displayText_f(int16_t x, int16_t y, int16_t fontSize, uint16_t textColor, uint16_t backColor, const char *pFlashStr) {
       setTextWrap(false);
       setTextColor(textColor, backColor);
       setTextSize(fontSize);
       setCursor(x, y);
-      for (byte i = 0; (const char)(pgm_read_byte(&pFlashStr[i])) && i < 40; i++) {
+      for (uint8_t i = 0; (const char)(pgm_read_byte(&pFlashStr[i])) && i < 40; i++) {
         //setCursor(x + i * 6 * fontSize, y);
         char c = pgm_read_byte(&pFlashStr[i]);
         if (c == '\0') break;
@@ -61,12 +61,12 @@ class DisplayManager : public SWTFT {
       }
     }
     
-    void displayText(int x, int y, int fontSize, char str[])
+    void displayText(int16_t x, int16_t y, int16_t fontSize, char str[])
     {
       displayText(x, y, fontSize, str, BLACK, WHITE);
     }
   
-    void displayText(int x, int y, int fontSize, char str[], uint16_t textColor, uint16_t backColor)
+    void displayText(int16_t x, int16_t y, int16_t fontSize, char str[], uint16_t textColor, uint16_t backColor)
     {
       setTextColor(textColor, backColor);
       setTextSize(fontSize);
@@ -74,7 +74,7 @@ class DisplayManager : public SWTFT {
       println(str);	
     }
     
-    void displayText(int x, int y, int fontSize, char c, uint16_t textColor, uint16_t backColor)
+    void displayText(int16_t x, int16_t y, int16_t fontSize, char c, uint16_t textColor, uint16_t backColor)
     {
       setTextColor(textColor, backColor);
       setTextSize(fontSize);

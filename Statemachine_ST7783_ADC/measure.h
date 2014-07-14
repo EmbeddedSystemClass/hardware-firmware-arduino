@@ -114,7 +114,7 @@ class TLC2543 {
         temperature = -127;
         temperature2 = -127;
       
-        for(byte i = 0; i < TEMPERATURE_ADC_SIZE; i++) {
+        for(uint8_t i = 0; i < TEMPERATURE_ADC_SIZE; i++) {
           
           uint16_t value = pgm_read_word_near(temperatureADC + i);
           

@@ -33,7 +33,7 @@ class Screen {
       bVisible = true;
     }
     
-    virtual byte dispatch(byte input) {
+    virtual uint8_t dispatch(uint8_t input) {
     }
 };
 
@@ -48,7 +48,7 @@ static Screen* pMenuScreen;
 
 class Button {
   public:    
-    static bool hitTest(int x, int y, int width, int height) {
+    static bool hitTest(int16_t x, int16_t y, int16_t width, int16_t height) {
       if(Events.bOnTouch && Events.touchX > x && Events.touchX < (x + width)) {
         if(Events.touchY > y && Events.touchY < (y + height)) {
           return true;
@@ -57,22 +57,22 @@ class Button {
       return false;
     }
         
-    static void drawButton(int x, int y, int width, int height, const char *pFlashStr1, const char *pFlashStr2) {
-      int r = min(width, height) >> 3;    
+    static void drawButton(int16_t x, int16_t y, int16_t width, int16_t height, const char *pFlashStr1, const char *pFlashStr2) {
+      int16_t r = min(width, height) >> 3;    
       Display.drawRoundRect(x, y, width, height, r, WHITE);
       drawButtonText(x, y, width, height, pFlashStr1, pFlashStr2);
     }
     
-//    static void drawRectButton(int x, int y, int width, int height, const char *pFlashStr1, const char *pFlashStr2) {
+//    static void drawRectButton(int16_t x, int16_t y, int16_t width, int16_t height, const char *pFlashStr1, const char *pFlashStr2) {
 //      Display.drawRect(x, y, width, height, WHITE);
 //      drawButtonText(x, y, width, height, pFlashStr1, pFlashStr2);
 //    }
     
-    static void drawButtonText(int x, int y, int width, int height, const char *pFlashStr1, const char *pFlashStr2) {
-      byte yd = pFlashStr1 && pFlashStr2 ? 3 : 2;
+    static void drawButtonText(int16_t x, int16_t y, int16_t width, int16_t height, const char *pFlashStr1, const char *pFlashStr2) {
+      uint8_t yd = pFlashStr1 && pFlashStr2 ? 3 : 2;
       
-      int tx = x + (width / 2) - (strlen_P(pFlashStr1) * TEXTWIDTH * 3 / 2);
-      int ty = y + (height / yd) - (TEXTHEIGHT * 3 / 2); 
+      int16_t tx = x + (width / 2) - (strlen_P(pFlashStr1) * TEXTWIDTH * 3 / 2);
+      int16_t ty = y + (height / yd) - (TEXTHEIGHT * 3 / 2); 
       
       Display.displayText_f(tx, ty, 3, WHITE, BLACK, pFlashStr1);
       
@@ -98,7 +98,7 @@ class TempGauge {
         color = BACKCOLOR;
     }
     
-    void draw(byte x, byte y, int8_t value) {      
+    void draw(uint8_t x, uint8_t y, int8_t value) {      
       bOutOfRange = false;
       
       // clamp value to range
@@ -167,7 +167,7 @@ class Statistic {
     Statistic() {               
     }
     
-    void draw(byte x, byte y, int8_t values[]) {      
+    void draw(uint8_t x, uint8_t y, int8_t values[]) {      
       if(LogData.count > 0) {
         int8_t newMin;
         int8_t newMax;
@@ -253,7 +253,7 @@ class MainScreen : public Screen {
       bInvalidate = false;
     }
     
-    byte dispatch(byte input) {
+    uint8_t dispatch(uint8_t input) {
       if (!bVisible) {
         show();
       }
@@ -277,10 +277,10 @@ MainScreen MainScreen;
 class TempChartScreen : public Screen {
   public:    
     Chart chart;
-    byte chartIndex;
+    uint8_t chartIndex;
     
   public:
-    byte dispatch(byte input) {
+    uint8_t dispatch(uint8_t input) {
       if (!bVisible) {
         show();
       }
@@ -333,7 +333,7 @@ class TileMenu : public Screen {
       bInvalidate = false;
     }
     
-    byte dispatch(byte input) {
+    uint8_t dispatch(uint8_t input) {
       if (!bVisible) {
         show();
       } 
@@ -368,8 +368,8 @@ class NumberEditor : public Screen {
     unsigned bInvalidateValue:1;
     unsigned bDot:1;
     char str[12];
-    byte pos;
-    byte maxPos;
+    uint8_t pos;
+    uint8_t maxPos;
     
   public:
     
@@ -418,20 +418,20 @@ class NumberEditor : public Screen {
       bDot = false;
     }
     
-    virtual byte onNumberButton(byte number) {
+    virtual uint8_t onNumberButton(uint8_t number) {
       if(pos > maxPos) return false;
       str[pos++] = '0' + number;
       return true;
     }
     
-    virtual byte onDotButton() {
+    virtual uint8_t onDotButton() {
       if(bDot || pos > maxPos) return false;
       str[pos++] = '.';
       bDot = true;
       return true;
     }
     
-    virtual byte onBackSpaceButton() {
+    virtual uint8_t onBackSpaceButton() {
       if(pos > 0) pos--;
       if(str[pos] == '.') bDot = false;
       str[pos] = ' ';
@@ -440,7 +440,7 @@ class NumberEditor : public Screen {
     
     virtual void onExit() { }
     
-    byte dispatch(byte input) {      
+    uint8_t dispatch(uint8_t input) {      
       if (!bVisible) {
         intialize();
         show();
@@ -455,10 +455,10 @@ class NumberEditor : public Screen {
       
       if(Events.bOnTouch) {
         // Number Matrix test
-        int x = Events.touchX / 60;
-        int y = Events.touchY / 64 - 1;
+        int16_t x = Events.touchX / 60;
+        int16_t y = Events.touchY / 64 - 1;
         
-        int n = x + 7 - y * 3;
+        int16_t n = x + 7 - y * 3;
 
         if(n > 0 && n <= 9) {
           bInvalidateValue = onNumberButton(n);
@@ -495,18 +495,18 @@ class MaskEditor : public NumberEditor {
       bDot = false;
     }
     
-    virtual byte onNumberButton(byte number) {
+    virtual uint8_t onNumberButton(uint8_t number) {
       if(pos > maxPos) return false;
       str[pos++] = '0' + number;      
       if(str[pos] == '.') pos++;      
       return true;
     }
     
-    byte onDotButton() {
+    uint8_t onDotButton() {
       return false;
     }
     
-    byte onBackSpaceButton() {
+    uint8_t onBackSpaceButton() {
       if(pos > 0) pos--;
       if(str[pos] == '.' && pos > 1) pos--;
       str[pos] = '_';
@@ -559,7 +559,7 @@ TimeEditor TimeEditor;
 
 class LogSettingsScreen : public Screen {
   public:
-    byte dispatch(byte input) {
+    uint8_t dispatch(uint8_t input) {
       if (!bVisible) {
         show();
         

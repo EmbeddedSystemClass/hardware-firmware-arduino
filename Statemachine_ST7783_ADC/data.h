@@ -24,7 +24,7 @@ class LogData {
     int8_t temperature1Log[LOG_DATA_SIZE];
     int8_t temperature2Log[LOG_DATA_SIZE];
   
-    byte month; 
+    uint8_t month; 
     int8_t count;
 	
   public:   
@@ -59,8 +59,8 @@ class LogData {
       }
     }
   
-    void pushBack(int8_t values[], int8_t value, byte n) {
-      byte i;
+    void pushBack(int8_t values[], int8_t value, uint8_t n) {
+      uint8_t i;
       if (n >= LOG_DATA_SIZE) {
         for (i = 0; i < LOG_DATA_SIZE - 1; i++) {
           values[i] = values[i + 1];
@@ -70,9 +70,9 @@ class LogData {
       values[n] = value;
     }
     
-    void getStat(int8_t values[], byte count, int8_t* min, int8_t* max /*, int8_t* avg*/) {
+    void getStat(int8_t values[], uint8_t count, int8_t* min, int8_t* max /*, int8_t* avg*/) {
       //int avgSum = 0;
-      for (byte i = 0; i < count; i++) {
+      for (uint8_t i = 0; i < count; i++) {
         *min = min(values[i], *min);
         *max = max(values[i], *max);
         //avgSum += values[i];
@@ -81,7 +81,7 @@ class LogData {
     }
     
     void reset(int8_t values[]) {
-      for (byte i = 0; i < LOG_DATA_SIZE; i++) {
+      for (uint8_t i = 0; i < LOG_DATA_SIZE; i++) {
         values[i] = 0;
       }
       count = 0;
@@ -98,7 +98,7 @@ class LogData {
       file.write(&buf[sizeof(buf) - i], i); // write the part of buf with the number
     }
     
-    void log2File(byte value1, byte value2) {
+    void log2File(uint8_t value1, uint8_t value2) {
       // initialize the SD card
       if (!card.init()) {
         Serial.println(F("Error: int SD card"));

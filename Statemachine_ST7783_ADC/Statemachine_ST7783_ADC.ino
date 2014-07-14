@@ -63,15 +63,15 @@ void loop() {
 
 void serialEvent() {
   while (Serial.available()) {
-    // get the new byte:
+    // get the new uint8_t:
     char inChar = (char)Serial.read(); 
     Com.receive(inChar); 
   }
 }
 
-void bin2asc(unsigned int value, char buffer[], byte digits) {
-  byte i = 0; 
-  byte d;
+void bin2asc(unsigned int value, char buffer[], uint8_t digits) {
+  uint8_t i = 0; 
+  uint8_t d;
   unsigned int k;
   
   unsigned int P[] = { 1, 10, 100, 1000, 10000 };

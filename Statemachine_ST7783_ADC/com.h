@@ -16,17 +16,17 @@
 #define CMD_DIRECTORY 4
 #define CMD_FILE 5
 
-static byte Signature[] = { 0xCC, 0x33, 0x55, 0xAA };
+static uint8_t Signature[] = { 0xCC, 0x33, 0x55, 0xAA };
 
 class Comunication {
   public:
-    byte sigOffset;
-    byte dataOffset;
-    byte checkSum;
+    uint8_t sigOffset;
+    uint8_t dataOffset;
+    uint8_t checkSum;
     char data[DATA_SIZE];
     unsigned bValid:1;
     
-    void receive(byte inData) {      
+    void receive(uint8_t inData) {      
       if(sigOffset < SIGNATURE_SIZE) {
         checkSum = 0;
         if(Signature[sigOffset] == inData) {
@@ -74,7 +74,7 @@ class Comunication {
           Serial.flush();
           break;
         case CMD_TEMP_LOG:
-          for(byte i = 0; i < 24; i++) {
+          for(uint8_t i = 0; i < 24; i++) {
             Serial.write(LogData.temperature1Log[i]);
           }
           Serial.flush();

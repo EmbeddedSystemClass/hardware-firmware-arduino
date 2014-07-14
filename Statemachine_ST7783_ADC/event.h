@@ -30,15 +30,15 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 
 class EventManager {
   private:
-    byte lastButtonState;
-    byte counter;
+    uint8_t lastButtonState;
+    uint8_t counter;
     unsigned long lastTimerUpdate;
   
   public:
     unsigned bOnTouch:1;
     unsigned bLock:1;
-    int touchX;
-    int touchY;
+    int16_t touchX;
+    int16_t touchY;
 
     unsigned bT50MS:1;
     unsigned bT500MS:1;
@@ -138,7 +138,7 @@ class LogEventManager {
         }        
       }
       
-      void setMode(byte mode) {
+      void setMode(uint8_t mode) {
         //uint32_t t = RTC.now.getTimeStamp();
         
         switch(mode) {

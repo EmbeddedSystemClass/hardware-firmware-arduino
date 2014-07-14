@@ -31,23 +31,23 @@
 
 #define CS_RTC A5
 
-static byte bcd2bin (byte val) { return val - 6 * (val >> 4); }
-static byte bin2bcd (byte val) { return val + 6 * (val / 10); }
+static uint8_t bcd2bin (uint8_t val) { return val - 6 * (val >> 4); }
+static uint8_t bin2bcd (uint8_t val) { return val + 6 * (val / 10); }
 
 class DateTime {
  
   public:
-    unsigned int year;
-    byte month;
-    byte day;
-    byte hour;
-    byte minute;
-    byte second;
-    byte weekday;
+    uint16_t year;
+    uint8_t month;
+    uint8_t day;
+    uint8_t hour;
+    uint8_t minute;
+    uint8_t second;
+    uint8_t weekday;
     
     DateTime() { }
    
-    DateTime (uint16_t y, byte m, byte d, byte h, byte mn, byte s) {
+    DateTime (uint16_t y, uint8_t m, uint8_t d, uint8_t h, uint8_t mn, uint8_t s) {
       year = y;
       month = m;
       day = d;
@@ -84,7 +84,7 @@ class RV3049 {
       dispatch();
     }
     
-    byte isrunning(void) {
+    uint8_t isrunning(void) {
       return true;
     }
     
