@@ -143,18 +143,18 @@ class LogEventManager {
           case LOG_INTERVAL_HOUR:
             interval = 3600;                        
             //counter = 3600;
-            counter = 3600 - (60 * RTC.now.minute) - RTC.now.second;
+            counter = 3599 - (60 * RTC.now.minute) - RTC.now.second;
             break;
             
           case LOG_INTERVAL_MINUTE:
             interval = 60;            
             //counter = 60;
-            counter = 60 - RTC.now.second;
+            counter = 59 - RTC.now.second;
             break;
             
           case LOG_INTERVAL_SECOND:
-            interval = 5;
-            counter = 5;
+            interval = 4;
+            counter = 4;
             break;
         }
       }

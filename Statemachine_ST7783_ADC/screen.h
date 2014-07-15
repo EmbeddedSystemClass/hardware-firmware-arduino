@@ -548,13 +548,15 @@ class LogSettingsScreen : public Screen {
           Button::drawButton(0, 52, 240, 50, PSTR("SD Disabled"), NULL);
         }
         
+        //Button::drawButton(0, 104, 240, 50, PSTR("SD Delete"),    NULL);
+        
         if(LogEvents.mode == 0)
-          Button::drawButton(0, 104, 240, 50, PSTR("  Hour  "), NULL);
+          Button::drawButton(0, 156, 240, 50, PSTR("  Hour  "), NULL);
         else if(LogEvents.mode == 1)
-          Button::drawButton(0, 104, 240, 50, PSTR(" Minute "), NULL);
+          Button::drawButton(0, 156, 240, 50, PSTR(" Minute "), NULL);
         else if(LogEvents.mode == 2)
-          Button::drawButton(0, 104, 240, 50, PSTR("5 Second"), NULL);
-                
+          Button::drawButton(0, 156, 240, 50, PSTR("5 Second"), NULL);
+        
         Button::drawButton(0, 270, 240, 50, PSTR("Exit"),    NULL);                     
         bInvalidate = false;
       }
@@ -572,7 +574,9 @@ class LogSettingsScreen : public Screen {
       } else if(Button::hitTest(0, 52, 240, 50)) {  // log to SD Enable/Disable
         LogData.bLog2SdEnabled = !LogData.bLog2SdEnabled;
         bInvalidate = true;
-      } else if(Button::hitTest(0, 104, 240, 50)) {  // mode (hour, minute, second)
+      } else if(Button::hitTest(0, 104, 240, 50)) {  // delete files
+        Com.sdOperation(OP_DELETE_ALL);
+      } else if(Button::hitTest(0, 156, 240, 50)) {  // mode (hour, minute, second)
         LogEvents.mode = (LogEvents.mode + 1) % 3;
         bInvalidate = true;
       }
