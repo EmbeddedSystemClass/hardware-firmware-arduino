@@ -41,10 +41,9 @@ class LogData {
         pushBack(temperature2Log, Measure.temperature2, count);
         
         if(bLog2SdEnabled) {
-          // create new file every month
-          DateTime* dt = &RTC.now;
-          if(dt->month != month) {
-            month = dt->month;
+          // create new file every month          
+          if(RTC.now.month != month) {
+            month = RTC.now.month;
             createNewLogFile();
           }
           

@@ -16,6 +16,9 @@
 #define CMD_DIRECTORY 4
 #define CMD_FILE 5
 
+#define OP_DIR 0
+#define OP_DELETE_ALL 1
+
 static uint8_t Signature[] = { 0xCC, 0x33, 0x55, 0xAA };
 
 class Comunication {
@@ -83,7 +86,7 @@ class Comunication {
           if (card.init() && Fat16::init(&card)) {
             // "Name          Modify Date/Time    Size";
             //Fat16::ls(LS_DATE | LS_SIZE);
-            ls();
+            sdOperation(OP_DIR);
             Serial.println(F("EOF"));
           } else {
             Serial.println(F("card failed!"));
@@ -116,19 +119,21 @@ class Comunication {
       bValid = false;
     }
     
-    void ls() {
+    void sdOperation(uint8_t op) {
       dir_t d;
-      for (uint16_t index = 0; Fat16::readDir(&d, &index, DIR_ATT_VOLUME_ID); index++) {           
-        //Fat16::remove("");
-        for (uint8_t i = 0; i < 11; i++) {
-          if (d.name[i] == ' ') continue;
-          if (i == 8) {
-            Serial.write('.');            
-          }
-          Serial.write(d.name[i]);
+      for (uint16_t index = 0; Fat16::readDir(&d, &index, DIR_ATT_VOLUME_ID); index++) {                   
+        if(op == OP_DELETE_ALL) {
+          Fat16::remove((char*)d.name);
+        } else if(op == OP_DIR) {
+          for (uint8_t i = 0; i < 11; i++) {
+            if (d.name[i] == ' ') continue;
+            if (i == 8) {
+              Serial.write('.');            
+            }
+            Serial.write(d.name[i]);
+          }          
+          Serial.println();
         }
-        
-        Serial.println();
       }
     }
 };

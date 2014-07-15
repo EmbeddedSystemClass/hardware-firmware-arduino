@@ -158,48 +158,10 @@ class TempGauge {
     }
 };
 
-class Statistic {
-  public:
-    int8_t min;
-    int8_t max;
-    
-  public:
-    Statistic() {               
-    }
-    
-    void draw(uint8_t x, uint8_t y, int8_t values[]) {      
-      if(LogData.count > 0) {
-        int8_t newMin;
-        int8_t newMax;
-                      
-        LogData.getStat(values, LogData.count, &newMin, &newMax);
-        
-        char buffer[9]= { 0 };  
-        if(newMin != min) {
-          min = newMin;
-          strcpy_P(buffer, PSTR("Min:"));
-          bin2asc(min, &buffer[4], 2);
-          buffer[6] = DEGREE_CHAR;
-          buffer[7] = 0;          
-          Display.displayText(x, y, 1, buffer, LIGHTGRAY, BACKCOLOR);
-        }
-        if(newMax != max) {
-          max = newMax;
-          strcpy_P(buffer, PSTR("Max:"));
-          bin2asc(max, &buffer[4], 2);
-          buffer[6] = DEGREE_CHAR;
-          buffer[7] = 0;
-          Display.displayText(x, y + 20, 1, buffer, LIGHTGRAY, BACKCOLOR);
-        }
-      }
-    }    
-};
-
 class MainScreen : public Screen {
   public:
     TempGauge tempGauge1;
-    TempGauge tempGauge2;	
-    Statistic	statistic1;
+    TempGauge tempGauge2;	    
   
   public:
     MainScreen() {      
@@ -237,8 +199,7 @@ class MainScreen : public Screen {
         }
         
         tempGauge1.draw(25, 120, Measure.temperature);
-        tempGauge2.draw(135, 120, Measure.temperature2);         
-        statistic1.draw(58, 160, LogData.temperature1Log);
+        tempGauge2.draw(135, 120, Measure.temperature2);                 
       }
       
       if(bInvalidate) {        
@@ -438,7 +399,7 @@ class NumberEditor : public Screen {
       return true;      
     }
     
-    virtual void onExit() { }
+    virtual uint8_t onExit() { }
     
     uint8_t dispatch(uint8_t input) {      
       if (!bVisible) {
@@ -447,10 +408,11 @@ class NumberEditor : public Screen {
       }       
       
       if(Button::hitTest(180, 192, 60,  128)) {   // Exit pressed?
-        onExit();
-        hide();
-        pScreen = pMenuScreen;
-        return 0;
+        if(onExit()) {
+          hide();
+          pScreen = pMenuScreen;
+          return 0;
+        }
       }
       
       if(Events.bOnTouch) {
@@ -480,9 +442,7 @@ class NumberEditor : public Screen {
       if(bInvalidateValue) {
         Display.displayText(18, 21, 3, str, WHITE, BLACK);
         bInvalidateValue = false;
-      }
-      
-      
+      }      
     }
 };
 
@@ -524,13 +484,20 @@ class DateEditor : public MaskEditor {
       bDot = false;
     }
     
-    void onExit() {
+    uint8_t onExit() {
       DateTime* dt = &RTC.now;
-      dt->year = CHARTONUM(str[6], 1000) + CHARTONUM(str[7], 100) + CHARTONUM(str[8], 10) + CHARTONUM(str[9], 1);
-      dt->month = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
-      dt->day = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
-      //Serial.print(y);Serial.print(".");Serial.print(m);Serial.print(".");Serial.println(d);
+      uint8_t y = CHARTONUM(str[8], 10) + CHARTONUM(str[9], 1);
+      uint8_t m = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
+      if(m > 12) return false;
+      uint8_t d = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
+      if(d > 31) return false;      
+      
+      dt->year = 2000 + y;
+      dt->month = m;
+      dt->day = d;
       RTC.adjust(dt);
+      
+      return true;
     }
 };
 
@@ -546,12 +513,19 @@ class TimeEditor : public MaskEditor {
       bDot = false;
     }
     
-    void onExit() {
+    uint8_t onExit() {
       DateTime* dt = &RTC.now;
-      dt->hour = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
-      dt->minute = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
+      uint8_t h = CHARTONUM(str[0], 10) + CHARTONUM(str[1], 1);
+      if(h > 23) return false;
+      uint8_t m = CHARTONUM(str[3], 10) + CHARTONUM(str[4], 1);
+      if(m > 59) return false;
+      
+      dt->hour = h;
+      dt->minute = m;
       dt->second = 0;
       RTC.adjust(dt);
+      
+      return true;
     }
 };
 
