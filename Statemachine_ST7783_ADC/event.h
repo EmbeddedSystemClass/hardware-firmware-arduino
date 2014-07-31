@@ -107,66 +107,74 @@ EventManager Events;
 #define LOG_INTERVAL_HOUR 0
 #define LOG_INTERVAL_MINUTE 1
 #define LOG_INTERVAL_SECOND 2
+#define LOG_INTERVAL_5S 5
 
 class LogEventManager {      
-    public:
-      uint16_t counter;
-      uint16_t interval;    
+    public:        
       unsigned bLog:1;
       unsigned bEnabled:1;
       
       uint8_t mode;
+      uint8_t last;
          
     public:
-      LogEventManager() {
-        interval = 3600; // every hour, interval in seconds
-        counter = interval;
-        mode = 0;
+      LogEventManager() {        
+        setMode(LOG_INTERVAL_HOUR);
+        bEnabled = false;
       }
-      
+
       void dispatch() {
         bLog = false;
         
-        if (!bEnabled)
+        if(!bEnabled)
           return;
-	
-        if(RTC.b1S) {          
-          if(--counter == 0) {
-            counter = interval;
-            bLog = true;
-          }
-        }        
+
+        switch(mode) {			
+          case LOG_INTERVAL_HOUR:
+            if(RTC.now.hour != last) {              
+              last = RTC.now.hour;
+              bLog = true;              
+            }
+            break;
+          case LOG_INTERVAL_MINUTE:
+            if(RTC.now.minute != last) {              
+              last = RTC.now.minute;
+              bLog = true;              
+            }
+            break;
+          case LOG_INTERVAL_SECOND:
+            if(RTC.b1S) {					
+              if(--last == 0) {                
+                bLog = true;
+                last = LOG_INTERVAL_5S;
+              }
+            }
+            break;
+        }
       }
       
-      void setMode(uint8_t mode) {
+      void setMode(uint8_t newMode) {
+        mode = newMode;
         switch(mode) {
           case LOG_INTERVAL_HOUR:
-            interval = 3600;                        
-            //counter = 3600;
-            counter = 3599 - (60 * RTC.now.minute) - RTC.now.second;
+            last = RTC.now.hour;
             break;
-            
           case LOG_INTERVAL_MINUTE:
-            interval = 60;            
-            //counter = 60;
-            counter = 59 - RTC.now.second;
+            last = RTC.now.minute;
             break;
-            
           case LOG_INTERVAL_SECOND:
-            interval = 4;
-            counter = 4;
+            last = LOG_INTERVAL_5S;
             break;
         }
       }
       
       void start() {
-        bEnabled = true;
-        counter = interval;
-        bLog = false;	
+        bEnabled = true;        
+        bLog = false;
       }
       
-      void reset() {        
-        counter = interval;
+      void stop() {        
+        bEnabled = false;
         bLog = false;
       }
 };

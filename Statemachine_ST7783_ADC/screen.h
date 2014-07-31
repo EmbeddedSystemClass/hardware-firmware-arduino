@@ -568,7 +568,7 @@ class LogSettingsScreen : public Screen {
       } else if(Button::hitTest(0, 0, 240, 50)) {  // Reset
         LogData.reset(LogData.temperature1Log);
         LogData.reset(LogData.temperature2Log);
-        LogEvents.reset();
+        //LogEvents.reset();
         hide();        
         pScreen = pMenuScreen;
       } else if(Button::hitTest(0, 52, 240, 50)) {  // log to SD Enable/Disable
