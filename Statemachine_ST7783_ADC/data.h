@@ -23,6 +23,10 @@ class LogData {
        
     int8_t temperature1Log[LOG_DATA_SIZE];
     int8_t temperature2Log[LOG_DATA_SIZE];
+    
+    int16_t avgTemperatur1;
+    int16_t avgTemperatur2;
+    uint8_t avgCount;
   
     uint8_t month; 
     int8_t count;
@@ -33,12 +37,23 @@ class LogData {
       bLogFileAvailable = false;
       month = 0;
       count = 0;
+      avgCount = 0;
+      
+      avgTemperatur1 = 0;
+      avgTemperatur2 = 0;
     }
   
     void dispatch() {
+      if (Events.bT1MIN) {
+        avgTemperatur1 += Measure.temperature;
+        avgTemperatur2 += Measure.temperature2;
+        avgCount++;
+      }
+      
       if (LogEvents.bLog) {                
-        pushBack(temperature1Log, Measure.temperature, count);
-        pushBack(temperature2Log, Measure.temperature2, count);
+        pushBack(temperature1Log, avgTemperatur1 / avgCount, count);
+        pushBack(temperature2Log, avgTemperatur2 / avgCount, count);
+        avgCount = 0;
         
         if(bLog2SdEnabled) {
           // create new file every month          

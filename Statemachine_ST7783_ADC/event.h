@@ -31,7 +31,7 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 class EventManager {
   private:
     uint8_t lastButtonState;
-    uint8_t counter;
+    uint16_t counter;
     unsigned long lastTimerUpdate;
   
   public:
@@ -44,6 +44,7 @@ class EventManager {
     unsigned bT500MS:1;
     unsigned bT1000MS:1;
     unsigned bT5S:1;
+    unsigned bT1MIN:1;
 
     void dispatch() {
       updateTimerEvents();      
@@ -56,6 +57,7 @@ class EventManager {
       bT500MS = false;
       bT1000MS = false;
       bT5S = false;
+      bT1MIN = false;
       
       // generate 50ms, 500ms timer events
       if (millis() - lastTimerUpdate > 50) {
@@ -70,6 +72,9 @@ class EventManager {
         }
         if (counter % 100 == 0) {
           bT5S = true;
+        }
+        if (counter % 1200 == 0) {
+          bT1MIN = true;
         }
       } 
     }
