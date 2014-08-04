@@ -44,9 +44,12 @@ void setup()
 
   Measure.begin();
 
-  initScreens();  
-  LogEvents.start();
+  initScreens();
+  
+  LogEvents.begin();
   LogEvents.setMode(LOG_INTERVAL_HOUR);
+  
+  LogData.begin();
 }
 
 void loop() {

@@ -43,6 +43,12 @@ class LogData {
       avgTemperatur2 = 0;
     }
   
+    void begin() {
+      avgTemperatur1 = Measure.temperature;
+      avgTemperatur2 = Measure.temperature2;
+      avgCount = 1;
+    }
+  
     void dispatch() {
       if (Events.bT1MIN) {
         avgTemperatur1 += Measure.temperature;
@@ -50,9 +56,15 @@ class LogData {
         avgCount++;
       }
       
-      if (LogEvents.bLog) {                
-        pushBack(temperature1Log, avgTemperatur1 / avgCount, count);
-        pushBack(temperature2Log, avgTemperatur2 / avgCount, count);
+      if (LogEvents.bLog) {
+        int8_t avg1 = avgTemperatur1 / avgCount;
+        int8_t avg2 = avgTemperatur2 / avgCount;
+        
+        pushBack(temperature1Log, avg1, count);
+        pushBack(temperature2Log, avg2, count);
+
+        avgTemperatur1 = 0;
+        avgTemperatur2 = 0;
         avgCount = 0;
         
         if(bLog2SdEnabled) {
@@ -63,7 +75,7 @@ class LogData {
           }
           
           if(bLogFileAvailable) {
-            log2File(Measure.temperature, Measure.temperature2);
+            log2File(avg1, avg2);
           }          
         }
         

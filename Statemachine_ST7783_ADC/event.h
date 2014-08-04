@@ -173,7 +173,7 @@ class LogEventManager {
         }
       }
       
-      void start() {
+      void begin() {
         bEnabled = true;        
         bLog = false;
       }
