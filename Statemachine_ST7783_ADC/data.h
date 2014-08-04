@@ -61,11 +61,7 @@ class LogData {
         int8_t avg2 = avgTemperatur2 / avgCount;
         
         pushBack(temperature1Log, avg1, count);
-        pushBack(temperature2Log, avg2, count);
-
-        avgTemperatur1 = 0;
-        avgTemperatur2 = 0;
-        avgCount = 0;
+        pushBack(temperature2Log, avg2, count);        
         
         if(bLog2SdEnabled) {
           // create new file every month          
@@ -78,6 +74,10 @@ class LogData {
             log2File(avg1, avg2);
           }          
         }
+        
+        avgTemperatur1 = 0;
+        avgTemperatur2 = 0;
+        avgCount = 0;
         
         if (count < LOG_DATA_SIZE) {
           count++;
