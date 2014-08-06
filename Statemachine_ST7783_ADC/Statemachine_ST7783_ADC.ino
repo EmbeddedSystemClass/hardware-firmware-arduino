@@ -47,9 +47,7 @@ void setup()
   initScreens();
   
   LogEvents.begin();
-  LogEvents.setMode(LOG_INTERVAL_HOUR);
-  
-  LogData.begin();
+  LogEvents.setMode(LOG_INTERVAL_HOUR);  
 }
 
 void loop() {

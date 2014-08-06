@@ -23,10 +23,6 @@ class LogData {
        
     int8_t temperature1Log[LOG_DATA_SIZE];
     int8_t temperature2Log[LOG_DATA_SIZE];
-    
-    int16_t avgTemperatur1;
-    int16_t avgTemperatur2;
-    uint8_t avgCount;
   
     uint8_t month; 
     int8_t count;
@@ -37,31 +33,12 @@ class LogData {
       bLogFileAvailable = false;
       month = 0;
       count = 0;
-      avgCount = 0;
-      
-      avgTemperatur1 = 0;
-      avgTemperatur2 = 0;
-    }
-  
-    void begin() {
-      avgTemperatur1 = Measure.temperature;
-      avgTemperatur2 = Measure.temperature2;
-      avgCount = 1;
-    }
+    }   
   
     void dispatch() {
-      if (Events.bT1MIN) {
-        avgTemperatur1 += Measure.temperature;
-        avgTemperatur2 += Measure.temperature2;
-        avgCount++;
-      }
-      
-      if (LogEvents.bLog) {
-        int8_t avg1 = avgTemperatur1 / avgCount;
-        int8_t avg2 = avgTemperatur2 / avgCount;
-        
-        pushBack(temperature1Log, avg1, count);
-        pushBack(temperature2Log, avg2, count);        
+      if (LogEvents.bLog) {       
+        pushBack(temperature1Log, Measure.temperature, count);
+        pushBack(temperature2Log, Measure.temperature2, count);        
         
         if(bLog2SdEnabled) {
           // create new file every month          
@@ -71,13 +48,9 @@ class LogData {
           }
           
           if(bLogFileAvailable) {
-            log2File(avg1, avg2);
+            log2File(Measure.temperature, Measure.temperature2);
           }          
         }
-        
-        avgTemperatur1 = 0;
-        avgTemperatur2 = 0;
-        avgCount = 0;
         
         if (count < LOG_DATA_SIZE) {
           count++;
@@ -97,13 +70,10 @@ class LogData {
     }
     
     void getStat(int8_t values[], uint8_t count, int8_t* min, int8_t* max /*, int8_t* avg*/) {
-      //int avgSum = 0;
       for (uint8_t i = 0; i < count; i++) {
         *min = min(values[i], *min);
         *max = max(values[i], *max);
-        //avgSum += values[i];
       }
-      //*avg = avgSum / count;      
     }
     
     void reset(int8_t values[]) {
@@ -152,8 +122,6 @@ class LogData {
         bin2asc(value2, &buffer[26], 3);
         file.println(buffer);      
         file.close();
-        //Serial.println(F("Write to log"));
-        //Serial.println(buffer);
       }
     }
     
