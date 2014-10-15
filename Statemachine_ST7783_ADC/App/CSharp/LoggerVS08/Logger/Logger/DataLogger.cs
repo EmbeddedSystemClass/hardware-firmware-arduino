@@ -52,7 +52,7 @@ namespace Logger {
 						if (s.Length > 0) {
 							if (s.Contains("EOF"))
 								break;
-							files.Add(s.Substring(0, 11));
+							files.Add(s.Substring(0, 12));
 						}
 
 					}
@@ -182,7 +182,6 @@ namespace Logger {
 
 			if (tryGetPort(out port)) {
 				byte[] sensorsCmd = { /*0:get sensors cmd*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, /*9:checksum*/ 0 };
-
 				
 				// serial communication
 				port.Write(signature, 0, SIGNATURESIZE);
@@ -222,7 +221,9 @@ namespace Logger {
                 
                 // serial communication
 				port.Write(signature, 0, SIGNATURESIZE);
-				port.Write(time, 0, DATASIZE);				
+				System.Threading.Thread.Sleep(100);
+				port.Write(time, 0, DATASIZE);
+				System.Threading.Thread.Sleep(100);
 				port.Close();
             }
         }
@@ -240,8 +241,9 @@ namespace Logger {
 				date[6] = getCheckSum(date, 0, 10);
 
 				port.Write(signature, 0, SIGNATURESIZE);
+				System.Threading.Thread.Sleep(100);
 				port.Write(date, 0, DATASIZE);
-
+				System.Threading.Thread.Sleep(100);
 				port.Close();
 			}
 		}

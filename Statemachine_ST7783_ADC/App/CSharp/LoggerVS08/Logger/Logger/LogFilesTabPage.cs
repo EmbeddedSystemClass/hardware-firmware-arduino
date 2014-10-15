@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO.Ports;
 using System.IO;
+using System.Threading;
 
 namespace Logger {
 	public partial class LogFilesTabPage : LoggerTabPage {
@@ -16,14 +17,8 @@ namespace Logger {
 			InitializeComponent();
 
 			files = new List<string>();
-			logFilesListView.Items.Add("Test1");
-			//logFilesListView.Items.Add("Test2.csv");
-			//logFilesListView.Items.Add("Test3.CSV");
-			//logFilesListView.Items.Add("Test3.Csv");
-			files.Add("Test1");
-			//files.Add("Test2.csv");
-			//files.Add("Test3.CSV");
-			//files.Add("Test3.Csv");
+			//logFilesListView.Items.Add("Test1");			
+			//files.Add("Test1");			
 		}
 
 		private void refreshButton_Click(object sender, EventArgs e) {
@@ -52,35 +47,38 @@ namespace Logger {
 			FolderBrowserDialog fbd = new FolderBrowserDialog();
 			if (fbd.ShowDialog() == DialogResult.OK) {
 				ProgressBar.Instance.Visible = true;
-				foreach (int itemIndex in logFilesListView.SelectedIndices) {
-					List<string> fileLines = new List<string>();
-					string fileName = removeExtension(files[itemIndex], ".csv");
-					if (DataLogger.Instance.TryGetFile(fileName, out fileLines)) {						
-						string destFileName = getFreeFileName(
-							fbd.SelectedPath + "\\" + fileName, ".csv"
-						);
+				SaveFileButton.Instance.Enabled = false;
+				RefreshButton.Instance.Enabled = false;
+				HomeButton.Instance.Enabled = false;
+				logFilesListView.Enabled = false;
 
-						StreamWriter file = System.IO.File.CreateText(destFileName);
-						foreach (string line in fileLines) {
-							file.WriteLine(line);
-						}
-						file.Flush();
-						file.Close();
-					}
+				List<string> fileNames = new List<string>();
+				foreach (int itemIndex in logFilesListView.SelectedIndices) {					
+					string fileName = removeExtension(files[itemIndex], ".csv");
+					fileNames.Add(fileName);
 				}
-				ProgressBar.Instance.Visible = false;
+				FileRequest fileRequest = new FileRequest();
+				fileRequest.Begin(fileNames, fbd.SelectedPath);
+				fileRequest.OnAsyncReady += new EventHandler(fileRequest_OnAsyncReady);				
 			}			
 		}
 
-		private static string getFreeFileName(string fileName, string extension) {
-			int n = 0;
-			string s = fileName + extension;
-			while (System.IO.File.Exists(s)) {
-				n++;
-				s = fileName + n.ToString() + extension;
+		void fileRequest_OnAsyncReady(object sender, EventArgs e) {
+			if (InvokeRequired) {
+				Invoke((System.Windows.Forms.MethodInvoker)
+					delegate() {
+						fileRequest_OnAsyncReady(sender, e);
+					}
+				);
+				return;				
 			}
-			return fileName + n.ToString() + extension;
-		}
+			
+			RefreshButton.Instance.Enabled = true;
+			SaveFileButton.Instance.Enabled = true;
+			HomeButton.Instance.Enabled = true;
+			logFilesListView.Enabled = true;			
+			ProgressBar.Instance.Visible = false;
+		}				
 
 		private static string removeExtension(string fileName, string extension) {
 			int p = fileName.IndexOf(extension, StringComparison.OrdinalIgnoreCase);
@@ -138,6 +136,55 @@ namespace Logger {
 		public SaveFileButton() {
 			separatorButton = new ToolStripSeparator();
 			Image = ImageResource.Save16x16;
+		}
+	}
+
+	class FileRequest {
+		private List<string> fileNames;
+		private string destinationPath;
+
+		public event EventHandler OnAsyncReady;
+
+		public Exception Exception;
+
+		public void Begin(List<string> fileNames, string destinationPath) {
+			this.fileNames = fileNames;
+			this.destinationPath = destinationPath;
+			ThreadPool.QueueUserWorkItem(callMethod);
+		}
+
+		private void callMethod(object state) {
+			try {
+				foreach (string fileName in fileNames) {
+					List<string> fileLines = new List<string>();
+					if (DataLogger.Instance.TryGetFile(fileName, out fileLines)) {
+						string destFileName = getFreeFileName(
+							destinationPath + "\\" + fileName, ".csv"
+						);
+
+						StreamWriter file = System.IO.File.CreateText(destFileName);
+						foreach (string line in fileLines) {
+							file.WriteLine(line);
+						}
+						file.Flush();
+						file.Close();
+					}
+				}
+			} catch (Exception e) {
+				this.Exception = e;				
+			}			
+
+			OnAsyncReady(this, EventArgs.Empty);
+		}
+
+		private static string getFreeFileName(string fileName, string extension) {
+			int n = 0;
+			string s = fileName + extension;
+			while (System.IO.File.Exists(s)) {
+				n++;
+				s = fileName + n.ToString() + extension;
+			}
+			return fileName + n.ToString() + extension;
 		}
 	}
 }

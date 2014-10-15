@@ -33,6 +33,45 @@ namespace Logger {
 		}
 	}
 
+	public class HomeButton : ToolStripButton {
+		private ToolStripSeparator separatorButton;
+		private LoggerTabPage page;
+
+		public static HomeButton Instance = new HomeButton();
+
+		public void SetHomePage(LoggerTabPage page) {
+			this.page = page;			
+		}
+		
+		public void AddTo(ToolStrip toolStrip, bool addSeparator) {
+			if (addSeparator) {
+				toolStrip.Items.Add(separatorButton);
+			}
+
+			toolStrip.Items.Add(this);
+		}
+
+		public void AddTo(ToolStrip toolStrip) {
+			toolStrip.Items.Add(this);
+		}
+
+		public void RemoveFrom(ToolStrip toolStrip) {
+			toolStrip.Items.Remove(separatorButton);
+			toolStrip.Items.Remove(this);
+
+		}
+
+		public HomeButton() {
+			separatorButton = new ToolStripSeparator();
+			Image = ImageResource.Back16x16;
+		}
+
+		protected override void OnClick(EventArgs e) {
+			page.OnActivate();			
+			base.OnClick(e);
+		}
+	}
+
 	public class ClearButton : ToolStripButton {
 		private ToolStripSeparator separatorButton;
 

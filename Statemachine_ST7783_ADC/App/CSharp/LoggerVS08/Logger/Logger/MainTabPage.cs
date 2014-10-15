@@ -36,8 +36,20 @@ namespace Logger {
 		}
 
 		public override void OnInitialize() {
-			Main.Instance.ToolStrip.Items.Add(new HomeButton(this));
+			HomeButton.Instance.Visible = false;
+			HomeButton.Instance.SetHomePage(this);
+			Main.Instance.ToolStrip.Items.Add(HomeButton.Instance);
 			base.OnInitialize();
+		}
+
+		public override void OnActivate() {
+			HomeButton.Instance.Visible = false;
+			base.OnActivate();
+		}
+
+		public override void OnDeactivate() {
+			HomeButton.Instance.Visible = true;
+			base.OnDeactivate();
 		}
 	}
 
@@ -127,24 +139,5 @@ namespace Logger {
 				DataLogger.Instance.ResetLooger();
 			base.OnClick(e);
 		}
-	}
-
-	public class HomeButton : ToolStripButton {
-		private LoggerTabPage page;
-
-		public HomeButton(LoggerTabPage page) {
-			this.page = page;
-			DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.ImageAndText;
-			Image = ImageResource.Back16x16;
-			ImageTransparentColor = Color.Magenta;
-			Name = "Home";
-			Size = new Size(23, 22);
-			Text = "Home";		
-		}
-
-		protected override void OnClick(EventArgs e) {
-			page.OnActivate();
-			base.OnClick(e);
-		}
-	}
+	}	
 }
