@@ -9803,7 +9803,7 @@ type RDH, grid 15 mm</description>
 <part name="IC1" library="HL_IC1" deviceset="TLC2543" device="" value="TLC2543"/>
 <part name="R2" library="resistor" deviceset="R-EU_" device="0207/12" value="10K"/>
 <part name="R3" library="resistor" deviceset="R-EU_" device="0207/12" value="10K"/>
-<part name="R4" library="resistor" deviceset="R-EU_" device="0207/10" value="1K21"/>
+<part name="R4" library="resistor" deviceset="R-EU_" device="0207/10" value="1K5"/>
 <part name="R5" library="resistor" deviceset="R-EU_" device="0207/10" value="909R"/>
 <part name="R6" library="resistor" deviceset="R-EU_" device="0207/10" value="2K"/>
 <part name="R7" library="resistor" deviceset="R-EU_" device="0207/12" value="2K"/>
