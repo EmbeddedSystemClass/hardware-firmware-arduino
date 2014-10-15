@@ -29,7 +29,7 @@
 #define RTC_SR		0x10
 #define RTC_PON		0x20
 
-#define CS_RTC A5
+#define CS_RTC A4
 
 static uint8_t bcd2bin (uint8_t val) { return val - 6 * (val >> 4); }
 static uint8_t bin2bcd (uint8_t val) { return val + 6 * (val / 10); }

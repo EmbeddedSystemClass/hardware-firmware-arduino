@@ -29,7 +29,7 @@
 #include <SPI.h>
 #include <avr/pgmspace.h>
 
-#define CS_ADC A4
+#define CS_ADC A5
 
 #define TEMPERATURE_ADC_SIZE  154
 #define TEMPERATURE_OFFSET -24
