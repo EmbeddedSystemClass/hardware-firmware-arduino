@@ -10223,6 +10223,7 @@ auf VCC legen.</text>
 <wire x1="327.66" y1="185.42" x2="320.04" y2="185.42" width="0.1524" layer="91"/>
 <wire x1="320.04" y1="185.42" x2="320.04" y2="177.8" width="0.1524" layer="91"/>
 <junction x="320.04" y="177.8"/>
+<pinref part="U$1" gate="G$1" pin="VCC"/>
 </segment>
 <segment>
 <wire x1="96.52" y1="129.54" x2="96.52" y2="119.38" width="0.1524" layer="91"/>
@@ -10315,6 +10316,7 @@ auf VCC legen.</text>
 <pinref part="IOH" gate="A" pin="7"/>
 <wire x1="289.56" y1="210.82" x2="264.16" y2="210.82" width="0.1524" layer="91"/>
 <label x="281.94" y="210.82" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="GND@2"/>
 </segment>
 <segment>
 <wire x1="96.52" y1="60.96" x2="96.52" y2="76.2" width="0.1524" layer="91"/>
@@ -10458,6 +10460,7 @@ auf VCC legen.</text>
 <pinref part="IOH" gate="A" pin="6"/>
 <wire x1="264.16" y1="193.04" x2="289.56" y2="193.04" width="0.1524" layer="91"/>
 <label x="281.94" y="193.04" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="13"/>
 </segment>
 <segment>
 <pinref part="IC2" gate="A" pin="SCL"/>
@@ -10484,6 +10487,7 @@ auf VCC legen.</text>
 <pinref part="IOH" gate="A" pin="5"/>
 <wire x1="264.16" y1="190.5" x2="289.56" y2="190.5" width="0.1524" layer="91"/>
 <label x="281.94" y="190.5" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="12"/>
 </segment>
 <segment>
 <pinref part="IC2" gate="A" pin="SDO"/>
@@ -10503,6 +10507,7 @@ auf VCC legen.</text>
 <pinref part="IOH" gate="A" pin="4"/>
 <wire x1="289.56" y1="187.96" x2="264.16" y2="187.96" width="0.1524" layer="91"/>
 <label x="281.94" y="187.96" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="*11"/>
 </segment>
 <segment>
 <pinref part="IC2" gate="A" pin="SDI"/>
@@ -10522,6 +10527,7 @@ auf VCC legen.</text>
 <pinref part="IOH" gate="A" pin="3"/>
 <wire x1="264.16" y1="185.42" x2="289.56" y2="185.42" width="0.1524" layer="91"/>
 <label x="281.94" y="185.42" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="*10"/>
 </segment>
 </net>
 <net name="AD0" class="0">
@@ -10531,6 +10537,7 @@ auf VCC legen.</text>
 <pinref part="AD" gate="A" pin="1"/>
 <wire x1="289.56" y1="195.58" x2="264.16" y2="195.58" width="0.1524" layer="91"/>
 <label x="281.94" y="195.58" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="A0"/>
 </segment>
 </net>
 <net name="AD1" class="0">
@@ -10540,6 +10547,7 @@ auf VCC legen.</text>
 <pinref part="AD" gate="A" pin="2"/>
 <wire x1="264.16" y1="198.12" x2="289.56" y2="198.12" width="0.1524" layer="91"/>
 <label x="281.94" y="198.12" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="A1"/>
 </segment>
 </net>
 <net name="AD2" class="0">
@@ -10549,6 +10557,7 @@ auf VCC legen.</text>
 <pinref part="AD" gate="A" pin="3"/>
 <wire x1="289.56" y1="200.66" x2="264.16" y2="200.66" width="0.1524" layer="91"/>
 <label x="281.94" y="200.66" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="A2"/>
 </segment>
 </net>
 <net name="AD3" class="0">
@@ -10558,6 +10567,7 @@ auf VCC legen.</text>
 <pinref part="AD" gate="A" pin="4"/>
 <wire x1="264.16" y1="203.2" x2="289.56" y2="203.2" width="0.1524" layer="91"/>
 <label x="281.94" y="203.2" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="A3"/>
 </segment>
 </net>
 <net name="AD4/SDA" class="0">
@@ -10567,6 +10577,7 @@ auf VCC legen.</text>
 <pinref part="IOH" gate="A" pin="9"/>
 <wire x1="241.3" y1="180.34" x2="215.9" y2="180.34" width="0.1524" layer="91"/>
 <label x="218.44" y="180.34" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="A4"/>
 </segment>
 <segment>
 <wire x1="111.76" y1="198.12" x2="86.36" y2="198.12" width="0.1524" layer="91"/>
@@ -10581,6 +10592,7 @@ auf VCC legen.</text>
 <pinref part="IOH" gate="A" pin="10"/>
 <wire x1="241.3" y1="177.8" x2="215.9" y2="177.8" width="0.1524" layer="91"/>
 <label x="218.44" y="177.8" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="A5"/>
 </segment>
 <segment>
 <wire x1="210.82" y1="81.28" x2="200.66" y2="81.28" width="0.1524" layer="91"/>
@@ -10595,6 +10607,7 @@ auf VCC legen.</text>
 <pinref part="IOL" gate="A" pin="3"/>
 <wire x1="241.3" y1="203.2" x2="215.9" y2="203.2" width="0.1524" layer="91"/>
 <label x="218.44" y="203.2" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="IO1" class="0">
@@ -10604,6 +10617,7 @@ auf VCC legen.</text>
 <pinref part="IOL" gate="A" pin="2"/>
 <wire x1="215.9" y1="213.36" x2="241.3" y2="213.36" width="0.1524" layer="91"/>
 <label x="218.44" y="213.36" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="TXO"/>
 </segment>
 </net>
 <net name="IO0" class="0">
@@ -10613,6 +10627,7 @@ auf VCC legen.</text>
 <pinref part="IOL" gate="A" pin="1"/>
 <wire x1="241.3" y1="210.82" x2="215.9" y2="210.82" width="0.1524" layer="91"/>
 <label x="218.44" y="210.82" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="RXI"/>
 </segment>
 </net>
 <net name="IO3" class="0">
@@ -10622,6 +10637,7 @@ auf VCC legen.</text>
 <pinref part="IOL" gate="A" pin="4"/>
 <wire x1="215.9" y1="200.66" x2="241.3" y2="200.66" width="0.1524" layer="91"/>
 <label x="218.44" y="200.66" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="*3"/>
 </segment>
 </net>
 <net name="IO4" class="0">
@@ -10631,6 +10647,7 @@ auf VCC legen.</text>
 <pinref part="IOL" gate="A" pin="5"/>
 <wire x1="241.3" y1="198.12" x2="215.9" y2="198.12" width="0.1524" layer="91"/>
 <label x="218.44" y="198.12" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="4"/>
 </segment>
 </net>
 <net name="IO5" class="0">
@@ -10640,6 +10657,7 @@ auf VCC legen.</text>
 <pinref part="IOL" gate="A" pin="6"/>
 <wire x1="215.9" y1="195.58" x2="241.3" y2="195.58" width="0.1524" layer="91"/>
 <label x="218.44" y="195.58" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="*5"/>
 </segment>
 </net>
 <net name="IO6" class="0">
@@ -10649,6 +10667,7 @@ auf VCC legen.</text>
 <pinref part="IOL" gate="A" pin="7"/>
 <wire x1="241.3" y1="193.04" x2="215.9" y2="193.04" width="0.1524" layer="91"/>
 <label x="218.44" y="193.04" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="*6"/>
 </segment>
 </net>
 <net name="IO7" class="0">
@@ -10658,6 +10677,7 @@ auf VCC legen.</text>
 <pinref part="IOL" gate="A" pin="8"/>
 <wire x1="215.9" y1="190.5" x2="241.3" y2="190.5" width="0.1524" layer="91"/>
 <label x="218.44" y="190.5" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="7"/>
 </segment>
 </net>
 <net name="IO8" class="0">
@@ -10667,6 +10687,7 @@ auf VCC legen.</text>
 <pinref part="IOH" gate="A" pin="1"/>
 <wire x1="215.9" y1="187.96" x2="241.3" y2="187.96" width="0.1524" layer="91"/>
 <label x="218.44" y="187.96" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="8"/>
 </segment>
 </net>
 <net name="IO9" class="0">
@@ -10676,6 +10697,7 @@ auf VCC legen.</text>
 <pinref part="IOH" gate="A" pin="2"/>
 <wire x1="241.3" y1="185.42" x2="215.9" y2="185.42" width="0.1524" layer="91"/>
 <label x="218.44" y="185.42" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="*9"/>
 </segment>
 </net>
 <net name="X2_TX4-" class="0">
@@ -10955,6 +10977,7 @@ auf VCC legen.</text>
 <label x="307.34" y="182.88" size="1.778" layer="95"/>
 <wire x1="241.3" y1="208.28" x2="215.9" y2="208.28" width="0.1524" layer="91"/>
 <label x="218.44" y="208.28" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="RST"/>
 </segment>
 </net>
 <net name="A6" class="0">
@@ -10964,6 +10987,7 @@ auf VCC legen.</text>
 <label x="309.88" y="208.28" size="1.778" layer="95"/>
 <wire x1="289.56" y1="177.8" x2="264.16" y2="177.8" width="0.1524" layer="91"/>
 <label x="281.94" y="177.8" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="A6"/>
 </segment>
 </net>
 <net name="A7" class="0">
@@ -10973,6 +10997,7 @@ auf VCC legen.</text>
 <label x="309.88" y="205.74" size="1.778" layer="95"/>
 <wire x1="289.56" y1="180.34" x2="264.16" y2="180.34" width="0.1524" layer="91"/>
 <label x="281.94" y="180.34" size="1.778" layer="95"/>
+<pinref part="U$1" gate="G$1" pin="A7"/>
 </segment>
 </net>
 </nets>
