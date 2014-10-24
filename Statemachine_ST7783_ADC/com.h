@@ -72,18 +72,21 @@ class Comunication {
             RTC.adjust(dt);
             break; 
           }
-        case CMD_SENSOR_VALUES:          
-          Serial.write(Measure.temperature);          
-          Serial.write(Measure.temperature2);
+        case CMD_SENSOR_VALUES:
+          switch(data[1]) {
+            case 0:
+              Serial.write(Measure.temperature);
+              break;
+            case 1:
+                Serial.write(Measure.temperature2);
+                break;
+          }
           Serial.flush();
           break;
         case CMD_TEMP_LOG:          
           for(uint8_t i = 0; i < 24; i++) {
-            Serial.write(LogData.temperature1Log[i]);
-          }          
-          for(uint8_t i = 0; i < 24; i++) {
-            Serial.write(LogData.temperature2Log[i]);
-          }
+            Serial.write(LogData.temperature1Log[data[1]]);
+          }                    
           Serial.flush();
           break;
         case CMD_DIRECTORY:
