@@ -31,7 +31,7 @@ namespace Logger {
 				if(button.Checked) {
 					chart.Series.Add(button.Name);
 					List<TemperatureItem> items;
-					if (DataLogger.Instance.TryGetRAMlog(button.SensorId, out items)) {
+					if (DataLogger.Instance.TryGetDayLog(button.SensorId, out items)) {
 						foreach (TemperatureItem tItem in items) {
 							chart.Series[0].Points.AddXY(tItem.Id, tItem.Temperature);
 						}

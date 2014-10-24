@@ -240,7 +240,7 @@ namespace Logger {
 			}
 		}
 
-		public int SensorId { get; set; }
+		public byte SensorId { get; set; }
 	}
 
 	public class ProgressBar : ToolStripProgressBar {

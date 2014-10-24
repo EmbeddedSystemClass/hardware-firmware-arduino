@@ -139,6 +139,7 @@ class LogData {
       for (uint8_t i = 0; i < 100; i++) {
         bin2asc(dt->year, name, 4);
         bin2asc(dt->month, &name[4], 2);
+        name[0] = '2'; // Year 2000
         name[6] = i/10 + '0';
         name[7] = i%10 + '0';
         //Serial.println(name);

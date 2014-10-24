@@ -9,9 +9,10 @@
 
 #define SIGNATURE_SIZE 4
 #define DATA_SIZE 9
+
 #define CMD_TIME 0
 #define CMD_DATE 1
-#define CMD_CURRENT_TEMP 2
+#define CMD_SENSOR_VALUES 2
 #define CMD_TEMP_LOG 3
 #define CMD_DIRECTORY 4
 #define CMD_FILE 5
@@ -71,14 +72,17 @@ class Comunication {
             RTC.adjust(dt);
             break; 
           }
-        case CMD_CURRENT_TEMP:
-          Serial.write(Measure.temperature);
+        case CMD_SENSOR_VALUES:          
+          Serial.write(Measure.temperature);          
           Serial.write(Measure.temperature2);
           Serial.flush();
           break;
-        case CMD_TEMP_LOG:
+        case CMD_TEMP_LOG:          
           for(uint8_t i = 0; i < 24; i++) {
             Serial.write(LogData.temperature1Log[i]);
+          }          
+          for(uint8_t i = 0; i < 24; i++) {
+            Serial.write(LogData.temperature2Log[i]);
           }
           Serial.flush();
           break;

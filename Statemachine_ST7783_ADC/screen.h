@@ -169,7 +169,7 @@ class MainScreen : public Screen {
     
     void draw() {
       if (bInvalidate) {
-        Button::drawButton(0, 0, 240, 50, PSTR("Logger"), NULL);        
+        Button::drawButton(0, 0, 240, 50, NULL, NULL);        
       }
       
       if (bInvalidate || Events.bT1000MS) {
@@ -181,7 +181,7 @@ class MainScreen : public Screen {
         bin2asc(dt->minute, &buffer[3], 2);
         buffer[5] = ':';
         bin2asc(dt->second, &buffer[6], 2);
-        Display.displayText(70, 70, 2, buffer, GREEN, BACKCOLOR);
+        Display.displayText(48, 13, 3, buffer, WHITE, BACKCOLOR);
         
         bin2asc(dt->day, &buffer[0], 2);
         buffer[2] = '.';
@@ -189,7 +189,11 @@ class MainScreen : public Screen {
         buffer[5] = '.';
         bin2asc(2000 + dt->year, &buffer[6], 4);
         buffer[10] = 0;        
-        Display.displayText(177, 301, 1, buffer, WHITE, BACKCOLOR);
+        Display.displayText(60, 70, 2, buffer, LIGHTGRAY, BACKCOLOR);
+        
+        //char dayb[7][3] = { "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So" };        
+        //Display.displayText(60, 85, 2, *&dayb[3], LIGHTGRAY, BACKCOLOR);
+        
       }
       
       if (bInvalidate || Measure.bReady) {        
