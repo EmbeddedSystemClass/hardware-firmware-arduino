@@ -163,7 +163,7 @@ namespace Logger {
 					List<string> fileLines = new List<string>();
 					if (DataLogger.Instance.TryGetFile(fileName, out fileLines)) {
 						string destFileName = getFreeFileName(
-							destinationPath + "\\" + fileName, ".csv"
+							destinationPath + "\\" + fileName.Replace(".TXT", ""), ".csv"
 						);
 
 						StreamWriter file = System.IO.File.CreateText(destFileName);
@@ -183,12 +183,12 @@ namespace Logger {
 
 		private static string getFreeFileName(string fileName, string extension) {
 			int n = 0;
-			string s = fileName + extension;
+			string s = fileName + "-" + n.ToString() + extension;
 			while (System.IO.File.Exists(s)) {
 				n++;
-				s = fileName + n.ToString() + extension;
+				s = fileName + "-" + n.ToString() + extension;
 			}
-			return fileName + n.ToString() + extension;
+			return s;
 		}
 	}
 }
