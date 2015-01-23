@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.IO.Ports;
+using System.Management;
 
 namespace Logger {
 	public partial class MainTabPage : LoggerTabPage {
@@ -96,14 +97,29 @@ namespace Logger {
 			connectMenuStrip = new ContextMenuStrip();
 			connectMenuStrip.ItemClicked += connectMenuStrip_ItemClicked;
 
-			foreach (string item in SerialPort.GetPortNames()) {
-				connectMenuStrip.Items.Add(item);
+			List<string> portNames = new List<string>(SerialPort.GetPortNames());
+			portNames.Sort();
+			
+			string arduinoPort = "";
+			foreach (USBDeviceInfo deviceInfo in GetUSBDevices()) {
+				if (deviceInfo.Description.Contains("Arduino")) {
+					arduinoPort = deviceInfo.DeviceID;
+					break;
+				}
+			}
+
+			foreach (string item in portNames) {
+				if(item.Equals(arduinoPort)) {
+					connectMenuStrip.Items.Add(item + " Arduino");
+				} else {
+					connectMenuStrip.Items.Add(item);
+				}
 			}
 			ContextMenuStrip = connectMenuStrip;			
 		}
 
 		void connectMenuStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e) {			
-			PortName = e.ClickedItem.Text;
+			PortName = e.ClickedItem.Text.Replace(" Arduino", "");
 			DataLogger.Instance.Connect(PortName);
 		}
 
@@ -113,6 +129,31 @@ namespace Logger {
 			connectMenuStrip.Show(this, p);
 
 			base.OnClick(e);
+		}
+
+		static List<USBDeviceInfo> GetUSBDevices()
+		{
+			List<USBDeviceInfo> devices = new List<USBDeviceInfo>();
+
+			// https://msdn.microsoft.com/en-us/library/dn605981(v=vs.85).aspx
+			// https://msdn.microsoft.com/en-us/library/aa394413(v=vs.85).aspx
+
+			ManagementObjectCollection collection;			
+			using (var searcher = new ManagementObjectSearcher(@"Select * From Win32_SerialPort"))
+			collection = searcher.Get();      
+
+			foreach (var device in collection)
+			{
+				string s = (string)device.GetPropertyValue("Name");
+				devices.Add(new USBDeviceInfo(
+					(string)device.GetPropertyValue("DeviceID"),
+					(string)device.GetPropertyValue("PNPDeviceID"),
+					(string)device.GetPropertyValue("Description")
+				));
+			}
+
+		  collection.Dispose();
+		  return devices;
 		}
 	}
 
@@ -140,4 +181,18 @@ namespace Logger {
 			base.OnClick(e);
 		}
 	}	
+
+	class USBDeviceInfo {
+		public USBDeviceInfo(string deviceID, string pnpDeviceID, string description)
+		{
+		  this.DeviceID = deviceID;
+		  this.PnpDeviceID = pnpDeviceID;
+		  this.Description = description;
+		}
+		public string DeviceID { get; private set; }
+		public string PnpDeviceID { get; private set; }
+		public string Description { get; private set; }
+	}
+
 }
+
