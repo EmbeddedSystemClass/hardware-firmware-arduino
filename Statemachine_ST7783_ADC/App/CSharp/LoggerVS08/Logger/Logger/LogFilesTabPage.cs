@@ -35,17 +35,21 @@ namespace Logger {
 				logFileValuesListView.Items.Clear();
                 List<string> lines;
 				string s = logFilesListView.SelectedItems[0].Text;
+				ProgressBar.Instance.Style = ProgressBarStyle.Blocks;
+				ProgressBar.Instance.Visible = true;
 				if (DataLogger.Instance.TryGetFile(s, out lines)) {
 					foreach (string line in lines) {
 						logFileValuesListView.Items.Add(line);
 					}
 				}
+				ProgressBar.Instance.Visible = false;
 			}
 		}
 
 		private void saveButton_Click(object sender, EventArgs e) {			
 			FolderBrowserDialog fbd = new FolderBrowserDialog();
 			if (fbd.ShowDialog() == DialogResult.OK) {
+				ProgressBar.Instance.Style = ProgressBarStyle.Blocks;
 				ProgressBar.Instance.Visible = true;
 				SaveFileButton.Instance.Enabled = false;
 				RefreshButton.Instance.Enabled = false;

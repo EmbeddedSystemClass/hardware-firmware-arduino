@@ -80,24 +80,55 @@ namespace Logger {
 				// serial communication				
 				port.Write(signature, 0, SIGNATURESIZE);
 				port.Write(getFile, 0, DATASIZE);
+				
+				XModem.XModem xModem = new XModem.XModem(port);
+				xModem.PacketReceived += new EventHandler(xModem_PacketReceived);
+				byte[] xFile = xModem.XModemReceive(true);
 
-				System.Threading.Thread.Sleep(250);
-
-				// read file				
-				for (long i = 0; i < 1000000; i++) {
-					if (port.BytesToRead > 0) {
-						string s = port.ReadLine();
-						if (s.Length > 0) {
-							if (s.Contains("EOF"))
-								break;
-							lines.Add(s.Substring(0, s.Length - 1));
-						}
+				port.Close();				
+				
+				if (xFile != null)
+				{
+					StringBuilder sb = new StringBuilder();
+					for (int i = 0; i < xFile.Length; i++) {
+						sb.Append((char)xFile[i]);
 					}
-				}
-				port.Close();						
+					
+					string[] strings = sb.ToString().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+					foreach (string line in strings) {
+						string[] values = line.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+						if (values.Length == 3) {
+							for (int i = 1; i < 3; i++) {
+								int x = 0;
+								if (int.TryParse(values[i], out x)) {
+									if (x > 127) {
+										x = x - 256;
+									}
+									values[i] = x.ToString();
+								}								
+							}							
+							lines.Add(String.Format("{0}; {1}; {2}", values[0], values[1], values[2]));							
+						} else {
+							lines.Add(line);
+						}
+					}					
+				}										
 			}
 			
 			return lines != null && lines.Count > 0;
+		}
+
+		void xModem_PacketReceived(object sender, EventArgs e) {
+			if (ProgressBar.Instance.ProgressBar.InvokeRequired) {
+				ProgressBar.Instance.ProgressBar.Invoke((System.Windows.Forms.MethodInvoker)
+					delegate() {
+						xModem_PacketReceived(sender, e);
+					}
+				);
+				return;
+			}
+			ProgressBar.Instance.ProgressBar.Value = (ProgressBar.Instance.ProgressBar.Value + 1) % 100;
 		}
 
 		public bool TryGetCurrentValue(byte sensorId, out int temperature) {
@@ -173,7 +204,7 @@ namespace Logger {
 
 		public bool TryGetSensors(out List<SensorItem> sensors) {
 			sensors = new List<SensorItem>();
-			SerialPort port;
+			//SerialPort port;
 			
 			// Demo
 			sensors.Add(new SensorItem() { Id = 0, Name = "T1" });

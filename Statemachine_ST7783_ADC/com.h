@@ -7,6 +7,10 @@
  This example code is in the public domain.
  */
 
+//#include <XModem.h>
+
+
+
 #define SIGNATURE_SIZE 4
 #define DATA_SIZE 9
 
@@ -111,9 +115,11 @@ class Comunication {
             name[6] = data[7];
             name[7] = data[8];            
             if(file.open(name, O_READ)) {
-              int16_t c;
-              while ((c = file.read()) > 0) 
-                Serial.write((char)c);
+              XModem xmodem(&Serial, ModeXModem);
+              xmodem.sendFile(file, "datalog.txt");
+              //int16_t c;
+              //while ((c = file.read()) > 0) 
+              //  Serial.write((char)c);
               file.close();
             }
             Serial.println(F("EOF"));            

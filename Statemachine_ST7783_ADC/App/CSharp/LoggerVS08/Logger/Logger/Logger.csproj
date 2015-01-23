@@ -64,6 +64,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CRC16.cs" />
     <Compile Include="DateTimeTabPage.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -155,6 +156,7 @@
     <Compile Include="CurrentTabPage.Designer.cs">
       <DependentUpon>CurrentTabPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="XModem.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
