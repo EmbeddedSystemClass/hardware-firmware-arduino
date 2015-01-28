@@ -44,7 +44,7 @@
 			chartArea1.AxisY.TextOrientation = System.Windows.Forms.DataVisualization.Charting.TextOrientation.Rotated270;
 			chartArea1.AxisY.Title = "In °C";
 			chartArea1.AxisY2.TextOrientation = System.Windows.Forms.DataVisualization.Charting.TextOrientation.Rotated270;
-			chartArea1.AxisY2.Title = "Out °C";
+			chartArea1.AxisY2.Title = "Out °C";			
 			chartArea1.Name = "ChartArea1";
 			this.chart.ChartAreas.Add(chartArea1);
 			legend1.Name = "Legend1";

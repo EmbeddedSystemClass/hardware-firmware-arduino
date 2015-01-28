@@ -30,14 +30,48 @@ namespace Logger {
 		private void refresh(object sender, EventArgs e) {
 			for (int i = 0; i < SensorButton.Instances.Count; i++) {
 				SensorButton sensorButton = SensorButton.Instances[i];
-				if(sensorButton.Checked) {
+				if (sensorButton.Checked) {
 					List<TemperatureItem> temperaturItems;
-					if (DataLogger.Instance.TryGetDayLog(sensorButton.SensorId, out temperaturItems)) {						
+					if (DataLogger.Instance.TryGetDayLog(sensorButton.SensorId, out temperaturItems)) {
 						Series series = chart.Series[i];
+						series.Enabled = true;
 						series.Points.Clear();
-						for (int n = 0; n < 24; n++) {							
+						for (int n = 0; n < 24; n++) {
 							series.Points.AddXY(n + 1, (double)temperaturItems[n].Temperature);
 						}
+					}
+				} else {
+					chart.Series[i].Enabled = false;
+				}
+			}
+
+			ChartArea chartArea = chart.ChartAreas[0];
+			chartArea.RecalculateAxesScale();
+
+			if (chart.Series[0].Enabled && chart.Series[1].Enabled) {
+				Axis yAxis1 = chartArea.AxisY;
+				Axis yAxis2 = chartArea.AxisY2;
+
+				double max = Math.Max(yAxis1.Maximum, yAxis2.Maximum);
+				double div = max / 10.0f;
+
+				if (div > 1.0f) {
+					Axis yAxis;
+
+					if (max == yAxis1.Maximum) {
+						yAxis = yAxis2;
+					} else {
+						yAxis = yAxis1;
+					}
+
+					int n = 10;
+					while (div < yAxis.Maximum && n > 0) {
+						div += div;
+						n--;
+					}
+
+					if (n > 0) {
+						yAxis.Maximum = div;
 					}
 				}
 			}
