@@ -28,6 +28,8 @@ namespace Logger {
 		}
 
 		private void refresh(object sender, EventArgs e) {
+			chart.SuspendLayout();
+
 			for (int i = 0; i < SensorButton.Instances.Count; i++) {
 				SensorButton sensorButton = SensorButton.Instances[i];
 				if (sensorButton.Checked) {
@@ -77,6 +79,8 @@ namespace Logger {
 			}
 
 			updateUi();
+
+			chart.ResumeLayout();
 		}
 
 		private void printMenuItem_Click(object sender, EventArgs e) {
