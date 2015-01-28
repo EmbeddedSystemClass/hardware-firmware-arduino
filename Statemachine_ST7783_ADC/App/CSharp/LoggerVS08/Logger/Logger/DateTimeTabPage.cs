@@ -18,22 +18,6 @@ namespace Logger {
 			systemTimeLabel.Text = DateTime.Now.ToString("HH:mm:ss");
 		}
 
-		private void setDateButton_Click(object sender, EventArgs e) {
-			DataLogger.Instance.SetDate(datePicker.Value);
-		}
-
-		private void setTimeButton_Click(object sender, EventArgs e) {
-			DataLogger.Instance.SetTime(timePicker.Value);
-		}
-
-		private void setSystemDateButton_Click(object sender, EventArgs e) {
-			DataLogger.Instance.SetDate(DateTime.Now);
-		}
-
-		private void setSystemTimeButton_Click(object sender, EventArgs e) {
-			DataLogger.Instance.SetTime(DateTime.Now);
-		}
-
 		private void setDateTime_Click(object sender, EventArgs e) {
 			DataLogger.Instance.SetTime(timePicker.Value);
 			DataLogger.Instance.SetDate(datePicker.Value);

@@ -144,7 +144,7 @@ namespace Logger {
 				port.Write(signature, 0, SIGNATURESIZE);
 				port.Write(getTemperature, 0, DATASIZE);
 
-				System.Threading.Thread.Sleep(100);
+				System.Threading.Thread.Sleep(200);
 
 				// read temperature, 100 attempts
 				for (int i = 0; i < 99; i++) {
@@ -174,23 +174,21 @@ namespace Logger {
 				port.Write(signature, 0, SIGNATURESIZE);
 				port.Write(getTemperature, 0, DATASIZE);
 
-				System.Threading.Thread.Sleep(100);
+				System.Threading.Thread.Sleep(200);
 
-				// read temperature log
-				logItems = new List<TemperatureItem>();
-				for (int i = 0; i < 99; i++) {
-					if (port.BytesToRead > 0) {
-						for (int n = 0; n < port.BytesToRead; n++) {
-							logItems.Add(new TemperatureItem()
-								{
-									Id = logItems.Count + 1,
-									Temperature = (byte)port.ReadByte()
-								}
-							);
-						}
+				XModem.XModem xModem = new XModem.XModem(port);
+				//xModem.PacketReceived += new EventHandler(xModem_PacketReceived);
+				byte[] xFile = xModem.XModemReceive(true);
 
-						if (logItems.Count >= 24)
-							break;					
+				if (xFile != null) {
+					logItems = new List<TemperatureItem>();
+					for (int i = 0; i < 24; i++) {
+						logItems.Add(
+							new TemperatureItem() {
+								Id = logItems.Count + 1,
+								Temperature = xFile[i]
+							}
+						);
 					}
 				}
 

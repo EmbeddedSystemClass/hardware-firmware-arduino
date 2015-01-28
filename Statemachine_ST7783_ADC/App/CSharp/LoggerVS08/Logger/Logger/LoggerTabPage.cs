@@ -148,6 +148,14 @@ namespace Logger {
 			set { timer.Enabled = value; }
 		}
 
+		public bool TimerButtonEnabled {
+			get { return timerButton.Enabled; }
+			set { 
+				timerButton.Enabled = value;
+				intervalTextBox.Enabled = value;
+			}	
+		}
+
 		private void updateTimer() {
 			int interval = 0;
 			if (int.TryParse(intervalTextBox.Text, out interval)) {
@@ -193,9 +201,9 @@ namespace Logger {
 				SensorButton btn = new SensorButton();
 				btn.SensorId = sensor.Id;
 				btn.Name = sensor.Id.ToString();
-				btn.Text = sensor.Name;
+				btn.Text = sensor.Name;				
 				Instances.Add(btn);
-			}			
+			}
 		}
 
 		public static void Clear() {
@@ -207,9 +215,11 @@ namespace Logger {
 				return;
 			toolStrip.Items.Add(Instances[0].separatorButton);
 			foreach (SensorButton item in Instances) {
-				toolStrip.Items.Add(item);	
+				toolStrip.Items.Add(item);
+				item.Checked = true;
 			}
 			toolStrip.Items.Add(Instances[0].enableAllButton);
+			Instances[0].enableAllButton.Checked = true;
 		}
 
 		public static void RemoveFrom(ToolStrip toolStrip) {

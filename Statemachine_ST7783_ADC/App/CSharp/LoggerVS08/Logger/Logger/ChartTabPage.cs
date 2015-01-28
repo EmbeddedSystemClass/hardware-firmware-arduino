@@ -18,9 +18,11 @@ namespace Logger {
 		}
 
 		private void resetTemperatureChart() {
-			chart.Series[0].Points.Clear();
-			for (int i = 0; i < 24; i++) {
-				chart.Series[0].Points.AddXY(i, 0);
+			foreach (var series in chart.Series) {
+				series.Points.Clear();
+				for (int i = 0; i < 24; i++) {
+					series.Points.AddXY(i, 0);
+				}
 			}
 		}
 
@@ -33,7 +35,7 @@ namespace Logger {
 					List<TemperatureItem> items;
 					if (DataLogger.Instance.TryGetDayLog(button.SensorId, out items)) {
 						foreach (TemperatureItem tItem in items) {
-							chart.Series[0].Points.AddXY(tItem.Id, tItem.Temperature);
+							chart.Series[button.SensorId].Points.AddXY(tItem.Id, tItem.Temperature);
 						}
 					}
 				}
@@ -77,6 +79,7 @@ namespace Logger {
 		}
 
 		public override void OnActivate() {
+			RefreshButton.Instance.TimerButtonEnabled = false;
 			RefreshButton.Instance.AddTo(Main.Instance.ToolStrip);
 			RefreshButton.Instance.Refresh += refresh;
 
@@ -94,6 +97,7 @@ namespace Logger {
 		}
 
 		public override void OnDeactivate() {
+			RefreshButton.Instance.TimerButtonEnabled = true;
 			RefreshButton.Instance.RemoveFrom(Main.Instance.ToolStrip);
 			RefreshButton.Instance.Refresh -= refresh;
 

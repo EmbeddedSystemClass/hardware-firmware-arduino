@@ -32,14 +32,14 @@
 			this.toolStripSeparator = new System.Windows.Forms.ToolStripSeparator();
 			this.mainTab = new System.Windows.Forms.TabControl();
 			this.mainTabPage = new System.Windows.Forms.TabPage();
-			this.currentTabPage = new System.Windows.Forms.TabPage();
-			this.chartTabPage = new System.Windows.Forms.TabPage();
-			this.logFilesTabPage = new System.Windows.Forms.TabPage();
-			this.dateTimePage = new System.Windows.Forms.TabPage();
 			this.mainTabPageControl = new Logger.MainTabPage();
+			this.currentTabPage = new System.Windows.Forms.TabPage();
 			this.currentTabPageControl = new Logger.CurrentTabPage();
+			this.chartTabPage = new System.Windows.Forms.TabPage();
 			this.chartTabPageControl = new Logger.ChartTabPage();
+			this.logFilesTabPage = new System.Windows.Forms.TabPage();
 			this.logFilesTabPageControl = new Logger.LogFilesTabPage();
+			this.dateTimePage = new System.Windows.Forms.TabPage();
 			this.dateTimePageControl = new Logger.DateTimeTabPage();
 			this.mainToolStrip.SuspendLayout();
 			this.mainTab.SuspendLayout();
@@ -53,8 +53,6 @@
 			// mainToolStrip
 			// 
 			this.mainToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-			this.mainToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripSeparator});
 			this.mainToolStrip.Location = new System.Drawing.Point(0, 0);
 			this.mainToolStrip.Name = "mainToolStrip";
 			this.mainToolStrip.Size = new System.Drawing.Size(373, 25);
@@ -96,6 +94,16 @@
 			this.mainTabPage.Text = "mainTabPage";
 			this.mainTabPage.UseVisualStyleBackColor = true;
 			// 
+			// mainTabPageControl
+			// 
+			this.mainTabPageControl.AutoSize = true;
+			this.mainTabPageControl.BackColor = System.Drawing.Color.White;
+			this.mainTabPageControl.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.mainTabPageControl.Location = new System.Drawing.Point(0, 0);
+			this.mainTabPageControl.Name = "mainTabPageControl";
+			this.mainTabPageControl.Size = new System.Drawing.Size(365, 322);
+			this.mainTabPageControl.TabIndex = 0;
+			// 
 			// currentTabPage
 			// 
 			this.currentTabPage.BackColor = System.Drawing.Color.White;
@@ -107,6 +115,16 @@
 			this.currentTabPage.TabIndex = 1;
 			this.currentTabPage.Text = "Temperature";
 			this.currentTabPage.UseVisualStyleBackColor = true;
+			// 
+			// currentTabPageControl
+			// 
+			this.currentTabPageControl.AutoSize = true;
+			this.currentTabPageControl.BackColor = System.Drawing.Color.White;
+			this.currentTabPageControl.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.currentTabPageControl.Location = new System.Drawing.Point(0, 0);
+			this.currentTabPageControl.Name = "currentTabPageControl";
+			this.currentTabPageControl.Size = new System.Drawing.Size(365, 322);
+			this.currentTabPageControl.TabIndex = 0;
 			// 
 			// chartTabPage
 			// 
@@ -120,6 +138,16 @@
 			this.chartTabPage.Text = "Log Chart";
 			this.chartTabPage.UseVisualStyleBackColor = true;
 			// 
+			// chartTabPageControl
+			// 
+			this.chartTabPageControl.AutoSize = true;
+			this.chartTabPageControl.BackColor = System.Drawing.Color.White;
+			this.chartTabPageControl.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.chartTabPageControl.Location = new System.Drawing.Point(0, 0);
+			this.chartTabPageControl.Name = "chartTabPageControl";
+			this.chartTabPageControl.Size = new System.Drawing.Size(365, 322);
+			this.chartTabPageControl.TabIndex = 0;
+			// 
 			// logFilesTabPage
 			// 
 			this.logFilesTabPage.BackColor = System.Drawing.Color.White;
@@ -132,6 +160,16 @@
 			this.logFilesTabPage.Text = "Log files";
 			this.logFilesTabPage.UseVisualStyleBackColor = true;
 			// 
+			// logFilesTabPageControl
+			// 
+			this.logFilesTabPageControl.AutoSize = true;
+			this.logFilesTabPageControl.BackColor = System.Drawing.Color.White;
+			this.logFilesTabPageControl.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.logFilesTabPageControl.Location = new System.Drawing.Point(0, 0);
+			this.logFilesTabPageControl.Name = "logFilesTabPageControl";
+			this.logFilesTabPageControl.Size = new System.Drawing.Size(365, 322);
+			this.logFilesTabPageControl.TabIndex = 0;
+			// 
 			// dateTimePage
 			// 
 			this.dateTimePage.Controls.Add(this.dateTimePageControl);
@@ -142,46 +180,6 @@
 			this.dateTimePage.TabIndex = 4;
 			this.dateTimePage.Text = "tabPage1";
 			this.dateTimePage.UseVisualStyleBackColor = true;
-			// 
-			// mainTabPageControl
-			// 
-			this.mainTabPageControl.AutoSize = true;
-			this.mainTabPageControl.BackColor = System.Drawing.Color.White;
-			this.mainTabPageControl.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.mainTabPageControl.Location = new System.Drawing.Point(0, 0);
-			this.mainTabPageControl.Name = "mainTabPageControl";
-			this.mainTabPageControl.Size = new System.Drawing.Size(365, 322);
-			this.mainTabPageControl.TabIndex = 0;
-			// 
-			// currentTabPageControl
-			// 
-			this.currentTabPageControl.AutoSize = true;
-			this.currentTabPageControl.BackColor = System.Drawing.Color.White;
-			this.currentTabPageControl.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.currentTabPageControl.Location = new System.Drawing.Point(0, 0);
-			this.currentTabPageControl.Name = "currentTabPageControl";
-			this.currentTabPageControl.Size = new System.Drawing.Size(365, 322);
-			this.currentTabPageControl.TabIndex = 0;
-			// 
-			// chartTabPageControl
-			// 
-			this.chartTabPageControl.AutoSize = true;
-			this.chartTabPageControl.BackColor = System.Drawing.Color.White;
-			this.chartTabPageControl.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.chartTabPageControl.Location = new System.Drawing.Point(0, 0);
-			this.chartTabPageControl.Name = "chartTabPageControl";
-			this.chartTabPageControl.Size = new System.Drawing.Size(365, 322);
-			this.chartTabPageControl.TabIndex = 0;
-			// 
-			// logFilesTabPageControl
-			// 
-			this.logFilesTabPageControl.AutoSize = true;
-			this.logFilesTabPageControl.BackColor = System.Drawing.Color.White;
-			this.logFilesTabPageControl.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.logFilesTabPageControl.Location = new System.Drawing.Point(0, 0);
-			this.logFilesTabPageControl.Name = "logFilesTabPageControl";
-			this.logFilesTabPageControl.Size = new System.Drawing.Size(365, 322);
-			this.logFilesTabPageControl.TabIndex = 0;
 			// 
 			// dateTimePageControl
 			// 
@@ -202,6 +200,7 @@
 			this.Controls.Add(this.mainTab);
 			this.Controls.Add(this.mainToolStrip);
 			this.Name = "Main";
+			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 			this.Text = "Logger";
 			this.mainToolStrip.ResumeLayout(false);
 			this.mainToolStrip.PerformLayout();
