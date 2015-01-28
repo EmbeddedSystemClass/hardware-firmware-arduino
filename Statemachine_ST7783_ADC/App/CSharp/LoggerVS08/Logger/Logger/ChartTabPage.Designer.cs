@@ -24,6 +24,7 @@
 		/// </summary>
 		private void InitializeComponent() {
 			System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+			System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
 			System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
 			System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
 			System.Windows.Forms.DataVisualization.Charting.Title title1 = new System.Windows.Forms.DataVisualization.Charting.Title();
@@ -40,16 +41,25 @@
 			this.chart.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid;
 			chartArea1.AxisX.MajorGrid.Enabled = false;
 			chartArea1.AxisX.Title = "Hours";
-			chartArea1.AxisY.TextOrientation = System.Windows.Forms.DataVisualization.Charting.TextOrientation.Horizontal;
-			chartArea1.AxisY.Title = "°C";
+			chartArea1.AxisY.TextOrientation = System.Windows.Forms.DataVisualization.Charting.TextOrientation.Rotated270;
+			chartArea1.AxisY.Title = "In °C";
+			chartArea1.AxisY2.TextOrientation = System.Windows.Forms.DataVisualization.Charting.TextOrientation.Rotated270;
+			chartArea1.AxisY2.Title = "Out °C";
 			chartArea1.Name = "ChartArea1";
 			this.chart.ChartAreas.Add(chartArea1);
+			legend1.Name = "Legend1";
+			legend1.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Bottom;
+			legend1.Alignment = System.Drawing.StringAlignment.Center;
+			this.chart.Legends.Add(legend1);
 			this.chart.Location = new System.Drawing.Point(3, 3);
 			this.chart.Name = "chart";
 			series1.ChartArea = "ChartArea1";
-			series1.Name = "Series1";
+			series1.Legend = "Legend1";
+			series1.Name = "In";
 			series2.ChartArea = "ChartArea1";
-			series2.Name = "Series2";
+			series2.Legend = "Legend1";
+			series2.Name = "Out";
+			series2.YAxisType = System.Windows.Forms.DataVisualization.Charting.AxisType.Secondary;
 			this.chart.Series.Add(series1);
 			this.chart.Series.Add(series2);
 			this.chart.Size = new System.Drawing.Size(637, 349);

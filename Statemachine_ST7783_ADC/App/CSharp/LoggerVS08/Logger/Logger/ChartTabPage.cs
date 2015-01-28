@@ -18,24 +18,25 @@ namespace Logger {
 		}
 
 		private void resetTemperatureChart() {
-			foreach (var series in chart.Series) {
+			for (int i = 0; i < 2; i++) {
+				Series series = chart.Series[i];
 				series.Points.Clear();
-				for (int i = 0; i < 24; i++) {
-					series.Points.AddXY(i, 0);
+				for (int n = 0; n < 24; n++) {
+					series.Points.AddXY(n + 1, 0);
 				}
 			}
 		}
 
 		private void refresh(object sender, EventArgs e) {
-			chart.Series.Clear();
-
-			foreach (SensorButton button in SensorButton.Instances) {
-				if(button.Checked) {
-					chart.Series.Add(button.Name);
-					List<TemperatureItem> items;
-					if (DataLogger.Instance.TryGetDayLog(button.SensorId, out items)) {
-						foreach (TemperatureItem tItem in items) {
-							chart.Series[button.SensorId].Points.AddXY(tItem.Id, tItem.Temperature);
+			for (int i = 0; i < SensorButton.Instances.Count; i++) {
+				SensorButton sensorButton = SensorButton.Instances[i];
+				if(sensorButton.Checked) {
+					List<TemperatureItem> temperaturItems;
+					if (DataLogger.Instance.TryGetDayLog(sensorButton.SensorId, out temperaturItems)) {						
+						Series series = chart.Series[i];
+						series.Points.Clear();
+						for (int n = 0; n < 24; n++) {							
+							series.Points.AddXY(n + 1, (double)temperaturItems[n].Temperature);
 						}
 					}
 				}

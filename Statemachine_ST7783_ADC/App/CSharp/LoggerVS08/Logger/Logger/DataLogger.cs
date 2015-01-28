@@ -174,7 +174,7 @@ namespace Logger {
 				port.Write(signature, 0, SIGNATURESIZE);
 				port.Write(getTemperature, 0, DATASIZE);
 
-				System.Threading.Thread.Sleep(200);
+				System.Threading.Thread.Sleep(250);
 
 				XModem.XModem xModem = new XModem.XModem(port);
 				//xModem.PacketReceived += new EventHandler(xModem_PacketReceived);
@@ -202,36 +202,8 @@ namespace Logger {
 
 		public bool TryGetSensors(out List<SensorItem> sensors) {
 			sensors = new List<SensorItem>();
-			//SerialPort port;
-			
-			// Demo
 			sensors.Add(new SensorItem() { Id = 0, Name = "T1" });
 			sensors.Add(new SensorItem() { Id = 1, Name = "T2" });
-
-			//if (tryGetPort(out port)) {
-			//    byte[] sensorsCmd = { /*0:get sensors cmd*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, /*9:checksum*/ 0 };
-				
-			//    // serial communication
-			//    port.Write(signature, 0, SIGNATURESIZE);
-			//    port.Write(sensorsCmd, 0, DATASIZE);
-			//    System.Threading.Thread.Sleep(100);
-
-			//    // read sensor id's				
-			//    for (long i = 0; i < 100; i++) {
-			//        if (port.BytesToRead > 0) {
-			//            string s = port.ReadLine();
-			//            if (s.Length > 0) {
-			//                if (s.Contains("EOF"))
-			//                    break;
-			//                sensors.Add(
-			//                    new SensorItem() { Id = sensors.Count, Name = s.Substring(0, s.Length - 1) }
-			//                );
-			//            }
-			//        }
-			//    }
-
-			//    port.Close();
-			//}
 			return sensors.Count > 0;
 		}
 

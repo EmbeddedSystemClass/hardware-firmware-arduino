@@ -53,7 +53,7 @@ namespace XModem
 	    int counter;
 	    ushort crc = 0;
 	    for( counter = 0; counter < len; counter++)
-        crc = (ushort)((crc << 8) ^ crc16tab[((crc >> 8) ^ buf[index+counter]) & 0x00FF]);
+			crc = (ushort)((crc << 8) ^ crc16tab[((crc >> 8) ^ buf[index+counter]) & 0x00FF]);
 	    return crc;
     }
 
