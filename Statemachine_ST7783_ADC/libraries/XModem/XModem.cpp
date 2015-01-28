@@ -9,13 +9,14 @@
 #define MAX_RETRY    30
 
 /* Initialize XModem session */
-XModem::XModem(Stream *port, char mode)
+XModem::XModem(Stream *port, char mode, unsigned int maxPacketLen)
 {
 	packetNo = 1;
 	crcBuf = 0;
 	checksumBuf = 0;
 	filepos = 0;
-	packetLen = 128; // Default number of payload bytes
+  this->maxPacketLen = maxPacketLen;
+	packetLen = maxPacketLen; //128; // Default number of payload bytes
 	if (mode == ModeYModem)
 	{
 		this->mode = ModeYModem;
@@ -70,7 +71,7 @@ char XModem::sync(void)
 	} while ((inChar != 'C') && (inChar != NAK));
 	// Determine which checksum algorithm to use
 	// this routine also determines the packet length
-	this->packetLen = 128;
+	this->packetLen = maxPacketLen /*128*/;
 	if (inChar == NAK)
 		this->oldChecksum=1;
 	else
@@ -112,7 +113,7 @@ char XModem::waitACK(void)
 	return(inChar);
 }
 
-void XModem::sendFile(Fat16 dataFile, char *fileName)
+void XModem::sendFile(XReaderBase* dataFile, char *fileName)
 {
 	unsigned char finished=0;
 	char inChar;
@@ -120,7 +121,7 @@ void XModem::sendFile(Fat16 dataFile, char *fileName)
 	unsigned char tryNo;
 
 	// Rewind data file before sending the file..
-	dataFile.seekSet(0);
+	dataFile->seekSet(0);
 
 	// When doing YModem, send block 0 to inform host about 
 	// file name to be received
@@ -164,7 +165,7 @@ void XModem::sendFile(Fat16 dataFile, char *fileName)
 
 	while (!finished)
 	{
-		filepos = dataFile.curPosition();
+		filepos = dataFile->curPosition();
 
 		// Sending a packet will be retried
 		tryNo = 0;
@@ -173,14 +174,14 @@ void XModem::sendFile(Fat16 dataFile, char *fileName)
 			// Seek to start of current data block, 
 			// will advance through the file as
 			// block will be acked..
-			dataFile.seekSet(filepos);
+			dataFile->seekSet(filepos);
 
 			// Reset checksum stuff
 			checksumBuf = 0x00;
 			crcBuf = 0x00; 
 
 			// Try to send packet, so header first
-			if (packetLen == 128)
+			if (packetLen == maxPacketLen/*128*/)
 				port->write(SOH);
 			else
 				port->write(STX);
@@ -189,9 +190,9 @@ void XModem::sendFile(Fat16 dataFile, char *fileName)
 			port->write(~packetNo);
 			for (i = 0; i<packetLen; i++)
 			{
-				inChar = dataFile.read();
+				inChar = dataFile->read();
 				this->outputByte(inChar);
-				finished = filepos >= dataFile.fileSize();
+				finished = filepos >= dataFile->fileSize();
 				// Pad file with zeroes
 				if (finished)
 					inChar = 0x00;

@@ -7,9 +7,6 @@
  This example code is in the public domain.
  */
 
-//#include <XModem.h>
-
-
 
 #define SIGNATURE_SIZE 4
 #define DATA_SIZE 9
@@ -25,6 +22,8 @@
 #define OP_DELETE_ALL 1
 
 static uint8_t Signature[] = { 0xCC, 0x33, 0x55, 0xAA };
+static XFileReader m_XFileReader;
+static XByteArrayReader m_XArrayReader;
 
 class Comunication {
   public:
@@ -76,23 +75,31 @@ class Comunication {
             RTC.adjust(dt);
             break; 
           }
-        case CMD_SENSOR_VALUES:
+        case CMD_SENSOR_VALUES: {
           switch(data[1]) {
             case 0:
               Serial.write(Measure.temperature);
               break;
             case 1:
-                Serial.write(Measure.temperature2);
-                break;
+              Serial.write(Measure.temperature2);
+              break;
           }
           Serial.flush();
           break;
-        case CMD_TEMP_LOG:          
-          for(uint8_t i = 0; i < 24; i++) {
-            Serial.write(LogData.temperature1Log[data[1]]);
-          }                    
-          Serial.flush();
+        }
+        case CMD_TEMP_LOG: {
+          XModem xmodem(&Serial, ModeXModem, 128);
+          switch(data[1]) {
+            case 0:
+              m_XArrayReader.SetArray((uint8_t*)LogData.temperature1Log, LOG_DATA_SIZE);
+              break;
+            case 1:
+              m_XArrayReader.SetArray((uint8_t*)LogData.temperature2Log, LOG_DATA_SIZE);
+              break;
+          }         
+          xmodem.sendFile(&m_XArrayReader, "");
           break;
+        }
         case CMD_DIRECTORY:
           if (card.init() && Fat16::init(&card)) {
             // "Name          Modify Date/Time    Size";
@@ -115,8 +122,9 @@ class Comunication {
             name[6] = data[7];
             name[7] = data[8];            
             if(file.open(name, O_READ)) {
-              XModem xmodem(&Serial, ModeXModem);
-              xmodem.sendFile(file, "datalog.txt");
+              XModem xmodem(&Serial, ModeXModem, 128);
+              m_XFileReader.m_pDataFile = &file;
+              xmodem.sendFile(&m_XFileReader, "datalog.txt");
               //int16_t c;
               //while ((c = file.read()) > 0) 
               //  Serial.write((char)c);

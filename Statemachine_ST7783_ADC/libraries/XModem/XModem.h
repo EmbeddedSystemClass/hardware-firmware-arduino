@@ -10,7 +10,8 @@
 #define _ZMODEM_H
 
 #include <Arduino.h>
-#include <Fat16.h>
+//#include <Fat16.h>
+#include "XReader.h"
 
 /*
  * ascii constants
@@ -37,13 +38,14 @@
 class XModem
 {
 	public:
-		XModem(Stream *port, char mode);
-		void sendFile(Fat16 dataFile, char *fileName);
+		XModem(Stream *port, char mode, unsigned int maxPacketLen);
+		void sendFile(XReaderBase* dataFile, char *fileName);
 	private:
 		Stream *port;
 		unsigned char packetNo, checksumBuf;
 		long filepos;
 		unsigned int packetLen;
+    unsigned int maxPacketLen;
 		int crcBuf;
 		unsigned char mode;
 		unsigned char oldChecksum;
