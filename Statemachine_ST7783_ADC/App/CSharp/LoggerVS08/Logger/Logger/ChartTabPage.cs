@@ -22,7 +22,7 @@ namespace Logger {
 				Series series = chart.Series[i];
 				series.Points.Clear();
 				for (int n = 0; n < 24; n++) {
-					series.Points.AddXY(n + 1, 0);
+					series.Points.AddXY(n, 0);
 				}
 			}
 		}
@@ -39,7 +39,7 @@ namespace Logger {
 						series.Enabled = true;
 						series.Points.Clear();
 						for (int n = 0; n < 24; n++) {
-							series.Points.AddXY(n + 1, (double)temperaturItems[n].Temperature);
+							series.Points.AddXY(n, (double)temperaturItems[n].Temperature);
 						}
 					}
 				} else {
