@@ -39,14 +39,14 @@ namespace Logger {
 						series.Enabled = true;
 						series.Points.Clear();
 						for (int n = 0; n < 24; n++) {
-							series.Points.AddXY(n, (double)temperaturItems[n].Temperature);
+							series.Points.AddXY(23-n, (double)temperaturItems[n].Temperature);
 						}
 					}
 				} else {
 					chart.Series[i].Enabled = false;
 				}
 			}
-
+			
 			ChartArea chartArea = chart.ChartAreas[0];
 			chartArea.RecalculateAxesScale();
 
@@ -117,6 +117,11 @@ namespace Logger {
 			SaveFileButton.Instance.Enabled = chart.Series.Count > 0;
 		}
 
+		void printChart(object sender, EventArgs e) {
+			chart.Printing.PrintDocument.DefaultPageSettings.Landscape = true;			
+			chart.Printing.PrintPreview();
+		}
+
 		public override void OnActivate() {
 			RefreshButton.Instance.TimerButtonEnabled = false;
 			RefreshButton.Instance.AddTo(Main.Instance.ToolStrip);
@@ -130,10 +135,13 @@ namespace Logger {
 			SaveFileButton.Instance.AddTo(Main.Instance.ToolStrip);
 			SaveFileButton.Instance.Click += save;
 
+			PrintButton.Instance.AddTo(Main.Instance.ToolStrip);
+			PrintButton.Instance.Click += printChart;
+
 			updateUi();
 
 			base.OnActivate();
-		}
+		}		
 
 		public override void OnDeactivate() {
 			RefreshButton.Instance.TimerButtonEnabled = true;
@@ -146,8 +154,32 @@ namespace Logger {
 			SensorButton.RemoveFrom(Main.Instance.ToolStrip);
 
 			SaveFileButton.Instance.RemoveFrom(Main.Instance.ToolStrip);
+
+			PrintButton.Instance.Click -= save;
+			PrintButton.Instance.RemoveFrom(Main.Instance.ToolStrip);
 			
 			base.OnDeactivate();
+		}
+	}
+
+	public class PrintButton : ToolStripButton {
+		private ToolStripSeparator separatorButton;
+
+		public static PrintButton Instance = new PrintButton();
+
+		public void AddTo(ToolStrip toolStrip) {
+			toolStrip.Items.Add(separatorButton);
+			toolStrip.Items.Add(this);
+		}
+
+		public void RemoveFrom(ToolStrip toolStrip) {
+			toolStrip.Items.Remove(separatorButton);
+			toolStrip.Items.Remove(this);
+		}
+
+		public PrintButton() {
+			separatorButton = new ToolStripSeparator();
+			Image = ImageResource.Print16x16;
 		}
 	}
 }

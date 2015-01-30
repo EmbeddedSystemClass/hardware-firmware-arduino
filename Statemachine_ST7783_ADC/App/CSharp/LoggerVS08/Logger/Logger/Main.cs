@@ -32,6 +32,8 @@ namespace Logger
 
 			mainTabPageControl.OnInitialize();
 
+			ConnectButton.Instance.TryAutoConnect();
+
 			updateUi();
         }
 

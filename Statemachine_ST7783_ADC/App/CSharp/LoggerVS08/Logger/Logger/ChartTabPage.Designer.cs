@@ -43,6 +43,7 @@
 			chartArea1.AxisX.MajorGrid.Enabled = false;
 			chartArea1.AxisX.Maximum = 23;
 			chartArea1.AxisX.Minimum = 0;
+			chartArea1.AxisX.IsReversed = true;
 			chartArea1.AxisX.Title = "Hours";
 			chartArea1.AxisY.TextOrientation = System.Windows.Forms.DataVisualization.Charting.TextOrientation.Rotated270;
 			chartArea1.AxisY.Title = "In °C";

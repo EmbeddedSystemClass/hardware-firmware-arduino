@@ -70,21 +70,56 @@ void serialEvent() {
   }
 }
 
-void bin2asc(unsigned int value, char buffer[], uint8_t digits) {
-  uint8_t i = 0; 
+//void bin2asc(unsigned int value, char buffer[], uint8_t digits) {
+//  if(digits > 5) {
+//    buffer[0] = 'Err';
+//    return;
+//  }
+//  
+//  uint8_t i = 0; 
+//  uint8_t d;
+//  unsigned int k;
+//  
+//  unsigned int P[] = { 1, 10, 100, 1000, 10000 };
+//  
+//  k = P[digits-1]; 
+//
+//  while(i < digits) {
+//    d = value / k;
+//    value -= (d * k);
+//    buffer[i] = d + '0';
+//    k /= 10;
+//    i++;
+//  }
+//}
+
+void bin2asc(int value, char buffer[], uint8_t digits) {
+  if(digits > 5) {
+    buffer[0] = 'Err';
+    return;
+  }
+  
+  uint8_t i = 0;
+  uint8_t n = 0;
   uint8_t d;
   unsigned int k;
+
+  if(value < 0) {
+    value = -value;
+    buffer[n] = '-';
+    n++;
+  }
   
   unsigned int P[] = { 1, 10, 100, 1000, 10000 };
   
-  k = P[digits-1]; 
+  k = P[digits-1];
 
   while(i < digits) {
     d = value / k;
     value -= (d * k);
-    buffer[i] = d + '0';
+    buffer[n] = d + '0';
     k /= 10;
     i++;
+    n++;
   }
 }
- 

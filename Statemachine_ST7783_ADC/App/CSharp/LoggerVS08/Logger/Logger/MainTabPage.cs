@@ -16,7 +16,7 @@ namespace Logger {
 		public MainTabPage() {
 			InitializeComponent();
 
-			connectButton = new ConnectButton("Connect", true, ImageResource.Connection32x32);			
+			connectButton = new ConnectButton("Connect", true, ImageResource.Connection32x32);	
 			mainTabFlowLayoutPanel.Controls.Add(connectButton);
 
 			resetButton = new ResetButton("Reset", false, ImageResource.Remove32x32);			
@@ -78,11 +78,15 @@ namespace Logger {
 	}
 
 	public class ConnectButton : Button {
+		public static ConnectButton Instance;
+
 		private ContextMenuStrip connectMenuStrip;
-		
+				
 		public string PortName { get; set; }
 
-		public ConnectButton(string name, bool enabled, Image image) {			
+		public ConnectButton(string name, bool enabled, Image image) {
+			Instance = this;
+
 			BackColor = Color.Transparent;
 			Enabled = enabled;
 			FlatAppearance.BorderSize = 0;
@@ -108,14 +112,23 @@ namespace Logger {
 				}
 			}
 
-			foreach (string item in portNames) {
-				if(item.Equals(arduinoPort)) {
-					connectMenuStrip.Items.Add(item + " Arduino");
+			foreach (string portName in portNames) {
+				if(portName.Equals(arduinoPort)) {
+					connectMenuStrip.Items.Add(portName + " Arduino");
+					PortName = portName;
 				} else {
-					connectMenuStrip.Items.Add(item);
+					connectMenuStrip.Items.Add(portName);
 				}
 			}
 			ContextMenuStrip = connectMenuStrip;			
+		}
+
+		public bool TryAutoConnect() {
+			if (PortName.Length > 0) {
+				DataLogger.Instance.Connect( PortName);
+				return true;
+			}
+			return false;
 		}
 
 		void connectMenuStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e) {			

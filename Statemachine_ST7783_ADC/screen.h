@@ -118,7 +118,7 @@ class TempGauge {
         lastValue = value;
         char buffer[5] = {'+', 0, 0, DEGREE_CHAR, 0 };      
         bin2asc(abs(value), &buffer[1], 2); 
-        buffer[0] = value < 0 ? '-' : '+';
+        //buffer[0] = value < 0 ? '-' : '+';
         Display.displayText(x + 25, y, 3, buffer, RED, BACKCOLOR);
       } else {
         return;

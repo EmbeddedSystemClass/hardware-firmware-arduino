@@ -94,7 +94,7 @@ class LogData {
       file.write(&buf[sizeof(buf) - i], i); // write the part of buf with the number
     }
     
-    void log2File(uint8_t value1, uint8_t value2) {
+    void log2File(int8_t value1, int8_t value2) {
       // initialize the SD card
       if (!card.init()) {
         Serial.println(F("Error: int SD card"));

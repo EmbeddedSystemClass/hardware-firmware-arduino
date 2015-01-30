@@ -23,7 +23,7 @@
 
 static uint8_t Signature[] = { 0xCC, 0x33, 0x55, 0xAA };
 static XFileReader m_XFileReader;
-static XByteArrayReader m_XArrayReader;
+static XIntArrayReader m_XArrayReader;
 
 class Comunication {
   public:
@@ -91,10 +91,10 @@ class Comunication {
           XModem xmodem(&Serial, ModeXModem, 128);
           switch(data[1]) {
             case 0:
-              m_XArrayReader.SetArray((uint8_t*)LogData.temperature1Log, LOG_DATA_SIZE);
+              m_XArrayReader.SetArray(LogData.temperature1Log, LOG_DATA_SIZE);
               break;
             case 1:
-              m_XArrayReader.SetArray((uint8_t*)LogData.temperature2Log, LOG_DATA_SIZE);
+              m_XArrayReader.SetArray(LogData.temperature2Log, LOG_DATA_SIZE);
               break;
           }         
           xmodem.sendFile(&m_XArrayReader, "");

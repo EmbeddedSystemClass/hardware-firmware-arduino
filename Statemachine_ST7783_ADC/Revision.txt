@@ -1,0 +1,4 @@
+TODO:
+Logger Application:
+- Chart: sind weniger als 24 Werte vorhanden, muﬂ die X-Achse entsprechend skaltiert werden.
+	 Es darf dann nicht ein Zeitraum von 23-0 Std. angezeigt werden.
