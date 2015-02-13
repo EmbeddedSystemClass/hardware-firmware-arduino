@@ -108,6 +108,7 @@ void bin2asc(int value, char buffer[], uint8_t digits) {
     value = -value;
     buffer[n] = '-';
     n++;
+    digits--;
   }
   
   unsigned int P[] = { 1, 10, 100, 1000, 10000 };

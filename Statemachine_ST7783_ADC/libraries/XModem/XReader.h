@@ -59,3 +59,43 @@ class XByteArrayReader : public XReaderBase {
       return m_Count;
     }
 };
+
+class XIntArrayReader : public XReaderBase {
+  public:
+    int8_t* m_pArray;
+    int8_t* m_pCurrent;
+    uint32_t m_Count;
+      
+  public:
+    void SetArray(int8_t* pArray, uint32_t count)
+    { 
+      m_pArray = pArray;
+      m_pCurrent = pArray;
+      m_Count = count;      
+    }
+    
+    virtual uint32_t curPosition(void) 
+    { 
+      return m_pCurrent - m_pArray; 
+    }
+    
+    virtual uint8_t seekSet(uint32_t pos)
+    { 
+      if(pos < m_Count) {
+        m_pCurrent = m_pArray + pos;
+        return true; 
+      }
+      m_pCurrent = m_pArray;
+      return false;
+    }
+    
+    virtual int16_t read(void)
+    { 
+      return *m_pCurrent++;       
+    }
+    
+    virtual uint32_t fileSize(void) 
+    {
+      return m_Count;
+    }
+};

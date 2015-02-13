@@ -16,9 +16,7 @@ namespace Logger {
 		public LogFilesTabPage() {
 			InitializeComponent();
 
-			files = new List<string>();
-			//logFilesListView.Items.Add("Test1");			
-			//files.Add("Test1");			
+			files = new List<string>();					
 		}
 
 		private void refreshButton_Click(object sender, EventArgs e) {
@@ -30,48 +28,69 @@ namespace Logger {
 			}
 		}		
 
-		private void logFilesListView_DoubleClick(object sender, EventArgs e) {			
+		private void logFilesListView_DoubleClick(object sender, EventArgs e) {
 			if (logFilesListView.SelectedItems.Count > 0) {
-				logFileValuesListView.Items.Clear();
-                List<string> lines;
+				logFileValuesListView.Items.Clear();                
 				string s = logFilesListView.SelectedItems[0].Text;
+				enableCtrls(false);
+				ProgressBar.Instance.Value = 0;
 				ProgressBar.Instance.Style = ProgressBarStyle.Blocks;
-				ProgressBar.Instance.Visible = true;
-				if (DataLogger.Instance.TryGetFile(s, out lines)) {
-					foreach (string line in lines) {
-						logFileValuesListView.Items.Add(line);
-					}
-				}
-				ProgressBar.Instance.Visible = false;
+				ProgressBar.Instance.Cancel += new EventHandler(cancel_FileRequest);
+				ProgressBar.Instance.Visible = true;								
+				SingleFileRequest.Instance.OnAsyncReady += singleFileRequest_OnAsyncReady;
+				SingleFileRequest.Instance.Start(s);
 			}
-		}
-
+		}		
+		
 		private void saveButton_Click(object sender, EventArgs e) {			
 			FolderBrowserDialog fbd = new FolderBrowserDialog();
 			if (fbd.ShowDialog() == DialogResult.OK) {
+				enableCtrls(false);
+				ProgressBar.Instance.Value = 0;
 				ProgressBar.Instance.Style = ProgressBarStyle.Blocks;
-				ProgressBar.Instance.Visible = true;
+				ProgressBar.Instance.Cancel += new EventHandler(cancel_FileRequest);
+				ProgressBar.Instance.Visible = true;				
 				SaveFileButton.Instance.Enabled = false;
 				RefreshButton.Instance.Enabled = false;
 				HomeButton.Instance.Enabled = false;
-				logFilesListView.Enabled = false;
-
+				
 				List<string> fileNames = new List<string>();
 				foreach (int itemIndex in logFilesListView.SelectedIndices) {					
 					string fileName = removeExtension(files[itemIndex], ".csv");
 					fileNames.Add(fileName);
 				}
-				FileRequest fileRequest = new FileRequest();
-				fileRequest.Begin(fileNames, fbd.SelectedPath);
-				fileRequest.OnAsyncReady += new EventHandler(fileRequest_OnAsyncReady);				
+				MultiFileRequest.Instance.OnAsyncReady += multiFileRequest_OnAsyncReady;	
+				MultiFileRequest.Instance.Begin(fileNames, fbd.SelectedPath);
 			}			
 		}
 
-		void fileRequest_OnAsyncReady(object sender, EventArgs e) {
+		void singleFileRequest_OnAsyncReady(object sender, EventArgs e) {
+			if (InvokeRequired) {
+				Invoke((System.Windows.Forms.MethodInvoker)
+						delegate() {
+							singleFileRequest_OnAsyncReady(sender, e);
+						}
+					);
+				return;
+			}
+			logFilesListView.Enabled = true;
+			SingleFileRequest.Instance.OnAsyncReady -= singleFileRequest_OnAsyncReady;			
+			ProgressBar.Instance.Visible = false;
+
+			if (SingleFileRequest.Instance.Lines != null && SingleFileRequest.Instance.Lines.Count > 0) {
+				foreach (string line in SingleFileRequest.Instance.Lines) {
+					logFileValuesListView.Items.Add(line);
+				}
+			}
+
+			enableCtrls(true);
+		}		
+
+		void multiFileRequest_OnAsyncReady(object sender, EventArgs e) {
 			if (InvokeRequired) {
 				Invoke((System.Windows.Forms.MethodInvoker)
 					delegate() {
-						fileRequest_OnAsyncReady(sender, e);
+						multiFileRequest_OnAsyncReady(sender, e);
 					}
 				);
 				return;				
@@ -82,7 +101,18 @@ namespace Logger {
 			HomeButton.Instance.Enabled = true;
 			logFilesListView.Enabled = true;			
 			ProgressBar.Instance.Visible = false;
-		}				
+		}
+
+		void cancel_FileRequest(object sender, EventArgs e) {
+			ProgressBar.Instance.Visible = false;
+			SingleFileRequest.Instance.OnAsyncReady -= singleFileRequest_OnAsyncReady;
+			SingleFileRequest.Instance.Abort();
+
+			MultiFileRequest.Instance.OnAsyncReady -= multiFileRequest_OnAsyncReady;
+			MultiFileRequest.Instance.Abort();
+
+			enableCtrls(true);
+		}
 
 		private static string removeExtension(string fileName, string extension) {
 			int p = fileName.IndexOf(extension, StringComparison.OrdinalIgnoreCase);
@@ -119,7 +149,14 @@ namespace Logger {
 
 			ProgressBar.Instance.RemoveFrom(Main.Instance.ToolStrip);
 			base.OnDeactivate();
-		}		
+		}
+
+		private void enableCtrls(bool bEnable) {
+			logFilesListView.Enabled = bEnable;
+			SaveFileButton.Instance.Enabled = bEnable;
+			RefreshButton.Instance.Enabled = bEnable;
+			HomeButton.Instance.Enabled = bEnable;
+		}
 	}
 
 	public class SaveFileButton : ToolStripButton {
@@ -143,9 +180,12 @@ namespace Logger {
 		}
 	}
 
-	class FileRequest {
+	class MultiFileRequest {
 		private List<string> fileNames;
 		private string destinationPath;
+		private XModem.XModemHandler xModemHandler;
+
+		public static MultiFileRequest Instance;
 
 		public event EventHandler OnAsyncReady;
 
@@ -154,14 +194,20 @@ namespace Logger {
 		public void Begin(List<string> fileNames, string destinationPath) {
 			this.fileNames = fileNames;
 			this.destinationPath = destinationPath;
+			this.xModemHandler = new XModem.XModemHandler();
 			ThreadPool.QueueUserWorkItem(callMethod);
+		}
+
+		public void Abort() {
+			if(xModemHandler != null)
+				xModemHandler.IsCanceled = true;
 		}
 
 		private void callMethod(object state) {
 			try {
 				foreach (string fileName in fileNames) {
 					List<string> fileLines = new List<string>();
-					if (DataLogger.Instance.TryGetFile(fileName, out fileLines)) {
+					if (DataLogger.Instance.TryGetFile(fileName, out fileLines, xModemHandler)) {
 						string destFileName = getFreeFileName(
 							destinationPath + "\\" + fileName.Replace(".TXT", ""), ".csv"
 						);
@@ -176,9 +222,11 @@ namespace Logger {
 				}
 			} catch (Exception e) {
 				this.Exception = e;				
-			}			
+			}
 
-			OnAsyncReady(this, EventArgs.Empty);
+			if (!xModemHandler.IsCanceled && OnAsyncReady != null) {
+				OnAsyncReady(this, EventArgs.Empty);
+			}
 		}
 
 		private static string getFreeFileName(string fileName, string extension) {
@@ -189,6 +237,43 @@ namespace Logger {
 				s = fileName + "-" + n.ToString() + extension;
 			}
 			return s;
+		}
+	}
+
+	public class SingleFileRequest {
+		public string FileName;
+		public List<string> Lines;
+
+		private Thread thread;
+		private XModem.XModemHandler xModemHandler;
+
+		public static SingleFileRequest Instance;
+
+		public event EventHandler OnAsyncReady;
+
+		public SingleFileRequest() {
+			xModemHandler = new XModem.XModemHandler();
+		}
+
+		public void Start(string fileName) {
+			FileName = fileName;
+			xModemHandler.IsCanceled = false;
+			thread = new Thread(DoWork);
+			thread.Start();
+		}
+
+		public void Abort() {
+			xModemHandler.IsCanceled = true;
+			//thread.Abort();
+		}
+
+		public static void DoWork() {
+			Instance.Lines = new List<string>();
+			DataLogger.Instance.TryGetFile(Instance.FileName, out Instance.Lines, Instance.xModemHandler);
+			if (!Instance.xModemHandler.IsCanceled) {
+				Instance.OnAsyncReady(Instance, EventArgs.Empty);
+			}
+
 		}
 	}
 }

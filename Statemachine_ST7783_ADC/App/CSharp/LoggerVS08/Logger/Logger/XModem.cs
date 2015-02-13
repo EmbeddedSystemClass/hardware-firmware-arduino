@@ -22,7 +22,8 @@ namespace XModem
   //Feel free to use/modify/copy/distribute this file
   public class XModem
   {
-    #region Events
+
+	#region Events
 
     public event System.EventHandler PacketReceived;
     public event System.EventHandler PacketSent;
@@ -70,7 +71,7 @@ namespace XModem
     ///////////////////////////
     //receive byte Array via XModem using either Checksum or CRC error detection
     /// ///////////////////////
-    public byte[] XModemReceive(bool useCRC)
+    public byte[] XModemReceive(bool useCRC, XModemHandler stop)
     {
       //since we don't know how many bytes we receive it's the
       //best solution to use a MemoryStream
@@ -85,8 +86,8 @@ namespace XModem
           this.writeByte(C);
       else //send and don't use CRC          
           this.writeByte(NAK);
-	  
-      while (retry < 16)
+
+	  while (retry < 16)
       {
         try { 
 			c = port.ReadByte(); 
@@ -114,11 +115,15 @@ namespace XModem
 
           #endregion
 
+		  if (stop.IsCanceled) {
+			  break;
+		  }	
+		  
           if (xbuff[1] == (byte)(~xbuff[2]) && xbuff[1] == packetno && check(useCRC, xbuff, 3, bufsz))
           {
             //add buffer to memory stream
             buf.Write(xbuff, 3, bufsz);
-            this.writeByte(ACK);
+            this.writeByte(ACK);			
 
             #region fire event & increment packet number
 
@@ -418,4 +423,9 @@ namespace XModem
 
     #endregion
   }
+
+	public class XModemHandler
+	{
+		public bool IsCanceled { get; set; }
+	}
 }

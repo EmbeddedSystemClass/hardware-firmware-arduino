@@ -124,7 +124,7 @@ namespace Logger {
 		}
 
 		public bool TryAutoConnect() {
-			if (PortName.Length > 0) {
+			if (!string.IsNullOrEmpty(PortName) && PortName.Length > 0) {
 				DataLogger.Instance.Connect( PortName);
 				return true;
 			}
@@ -189,7 +189,7 @@ namespace Logger {
 				Main.Instance, "ResetButton logger", "Reset", 
 				MessageBoxButtons.YesNo, MessageBoxIcon.Question
 			);
-			if(dr == DialogResult.OK)
+			if(dr == DialogResult.Yes)
 				DataLogger.Instance.ResetLooger();
 			base.OnClick(e);
 		}

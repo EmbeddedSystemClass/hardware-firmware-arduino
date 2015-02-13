@@ -154,6 +154,7 @@ namespace Logger {
 			SensorButton.RemoveFrom(Main.Instance.ToolStrip);
 
 			SaveFileButton.Instance.RemoveFrom(Main.Instance.ToolStrip);
+			SaveFileButton.Instance.Click -= save;
 
 			PrintButton.Instance.Click -= save;
 			PrintButton.Instance.RemoveFrom(Main.Instance.ToolStrip);

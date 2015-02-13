@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO.Ports;
+using System.Threading;
 
 namespace Logger {
 	public class DataLogger {
@@ -22,8 +23,7 @@ namespace Logger {
 
 		public static List<SensorItem> Sensors { get { return sensors; } }
 
-		public DataLogger() {
-			Instance = this;
+		public DataLogger() {			
 		}		
 
 		public bool IsConnected { get; set; }
@@ -57,6 +57,7 @@ namespace Logger {
 
 					}
 				}
+				files.Sort();
 				port.Close();
 			}
 			
@@ -64,6 +65,11 @@ namespace Logger {
 		}
 
 		public bool TryGetFile(string fileName, out List<string> lines) {
+			XModem.XModemHandler xModemHandler = new XModem.XModemHandler();
+			return TryGetFile(fileName, out lines, xModemHandler);
+		}
+
+		public bool TryGetFile(string fileName, out List<string> lines, XModem.XModemHandler xModemHandler) {
 			lines = null;
 
 			SerialPort port;
@@ -80,18 +86,21 @@ namespace Logger {
 				// serial communication				
 				port.Write(signature, 0, SIGNATURESIZE);
 				port.Write(getFile, 0, DATASIZE);
-				
+
+				Thread.Sleep(250);
+
 				XModem.XModem xModem = new XModem.XModem(port);
 				xModem.PacketReceived += new EventHandler(xModem_PacketReceived);
-				byte[] xFile = xModem.XModemReceive(true);
+				byte[] xFile = xModem.XModemReceive(true, xModemHandler);
 
-				port.Close();				
-				
-				if (xFile != null)
+				port.Close();
+
+				if (!xModemHandler.IsCanceled && xFile != null)
 				{
 					StringBuilder sb = new StringBuilder();
 					for (int i = 0; i < xFile.Length; i++) {
-						sb.Append((char)xFile[i]);
+						if(xFile[i] < 127)
+							sb.Append((char)xFile[i]);
 					}
 					
 					string[] strings = sb.ToString().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
@@ -115,8 +124,8 @@ namespace Logger {
 					}					
 				}										
 			}
-			
-			return lines != null && lines.Count > 0;
+
+			return !xModemHandler.IsCanceled && lines != null && lines.Count > 0;
 		}
 
 		void xModem_PacketReceived(object sender, EventArgs e) {
@@ -178,7 +187,7 @@ namespace Logger {
 
 				XModem.XModem xModem = new XModem.XModem(port);
 				//xModem.PacketReceived += new EventHandler(xModem_PacketReceived);
-				byte[] xFile = xModem.XModemReceive(true);
+				byte[] xFile = xModem.XModemReceive(true, new XModem.XModemHandler());
 
 				if (xFile != null) {
 					logItems = new List<TemperatureItem>();
@@ -250,8 +259,15 @@ namespace Logger {
 
 		public void Connect(string portName) {
 			this.portName = portName;
-			IsConnected = TryGetSensors(out sensors);
-			OnConnectionChanged(this, EventArgs.Empty);
+
+			SerialPort port;
+
+			if (tryGetPort(out port)) {
+				IsConnected = TryGetSensors(out sensors);
+				OnConnectionChanged(this, EventArgs.Empty);
+			} else {
+				MessageBox.Show("Port not available");
+			}
 		}
 
 		public void Disconnect(string portName) {
@@ -293,15 +309,20 @@ namespace Logger {
 
 		private bool tryGetPort(out SerialPort port) {
 			port = null;
+			bool result = false;
 
-			if (!string.IsNullOrEmpty(portName)) {
-				port = new SerialPort(portName, 9600);
-				port.DtrEnable = false;
-				port.Open();
-				return true;
+			try {
+				if (!string.IsNullOrEmpty(portName)) {
+					port = new SerialPort(portName, 9600);
+					port.DtrEnable = false;
+					port.Open();
+					result = true;
+				}
+			} catch {
+				result = false;			
 			}
 
-			return false;
+			return result;
 		}
     }
 
@@ -323,5 +344,5 @@ namespace Logger {
 		ShowTemperatureChartTab,
 		ShowFilesTab,
 		Reset
-	}	
+	}
 }

@@ -259,6 +259,8 @@ namespace Logger {
 
 		public static ProgressBar Instance = new ProgressBar();
 
+		public event EventHandler Cancel;
+
 		public void AddTo(ToolStrip toolStrip, bool addSeparator) {
 			if (addSeparator) {
 				toolStrip.Items.Add(separatorButton);
@@ -288,8 +290,17 @@ namespace Logger {
 		}
 
 		private void cancelButton_Click(object sender, EventArgs e) {
-			throw new NotImplementedException();
-		}				
+			if (Cancel != null) {
+				Cancel(this, EventArgs.Empty);
+			}			
+		}
+
+		public new bool CancelButtonVisible {
+			get { return cancelButton.Visible; }
+			set {
+				cancelButton.Visible = value;
+			}
+		}
 
 		public new bool Visible {
 			get { return base.Visible; }
