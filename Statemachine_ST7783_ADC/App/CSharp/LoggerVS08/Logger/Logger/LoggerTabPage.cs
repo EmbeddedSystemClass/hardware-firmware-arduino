@@ -295,7 +295,7 @@ namespace Logger {
 			}			
 		}
 
-		public new bool CancelButtonVisible {
+		public bool CancelButtonVisible {
 			get { return cancelButton.Visible; }
 			set {
 				cancelButton.Visible = value;

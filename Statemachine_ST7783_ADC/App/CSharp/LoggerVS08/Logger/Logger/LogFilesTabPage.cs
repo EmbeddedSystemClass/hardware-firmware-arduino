@@ -38,7 +38,7 @@ namespace Logger {
 				ProgressBar.Instance.Cancel += new EventHandler(cancel_FileRequest);
 				ProgressBar.Instance.Visible = true;								
 				SingleFileRequest.Instance.OnAsyncReady += singleFileRequest_OnAsyncReady;
-				SingleFileRequest.Instance.Start(s);
+				SingleFileRequest.Instance.Begin(s);
 			}
 		}		
 		
@@ -189,8 +189,6 @@ namespace Logger {
 
 		public event EventHandler OnAsyncReady;
 
-		public Exception Exception;
-
 		public void Begin(List<string> fileNames, string destinationPath) {
 			this.fileNames = fileNames;
 			this.destinationPath = destinationPath;
@@ -220,8 +218,8 @@ namespace Logger {
 						file.Close();
 					}
 				}
-			} catch (Exception e) {
-				this.Exception = e;				
+			} catch /*(Exception e)*/ {
+				
 			}
 
 			if (!xModemHandler.IsCanceled && OnAsyncReady != null) {
@@ -244,36 +242,34 @@ namespace Logger {
 		public string FileName;
 		public List<string> Lines;
 
-		private Thread thread;
 		private XModem.XModemHandler xModemHandler;
 
 		public static SingleFileRequest Instance;
 
 		public event EventHandler OnAsyncReady;
 
-		public SingleFileRequest() {
-			xModemHandler = new XModem.XModemHandler();
-		}
-
-		public void Start(string fileName) {
+		public void Begin(string fileName) {
 			FileName = fileName;
-			xModemHandler.IsCanceled = false;
-			thread = new Thread(DoWork);
-			thread.Start();
+			this.xModemHandler = new XModem.XModemHandler();
+			ThreadPool.QueueUserWorkItem(callMethod);
 		}
 
 		public void Abort() {
-			xModemHandler.IsCanceled = true;
-			//thread.Abort();
+			if (xModemHandler != null)
+				xModemHandler.IsCanceled = true;
 		}
 
-		public static void DoWork() {
-			Instance.Lines = new List<string>();
-			DataLogger.Instance.TryGetFile(Instance.FileName, out Instance.Lines, Instance.xModemHandler);
-			if (!Instance.xModemHandler.IsCanceled) {
-				Instance.OnAsyncReady(Instance, EventArgs.Empty);
+		private void callMethod(object state) {
+			try {
+				Instance.Lines = new List<string>();
+				DataLogger.Instance.TryGetFile(Instance.FileName, out Instance.Lines, Instance.xModemHandler);
+			} catch /*(Exception e)*/ {
+				
 			}
 
+			if (!xModemHandler.IsCanceled && OnAsyncReady != null) {
+				OnAsyncReady(this, EventArgs.Empty);
+			}
 		}
 	}
 }
