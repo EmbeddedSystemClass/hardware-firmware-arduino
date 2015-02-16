@@ -107,9 +107,9 @@ char XModem::waitACK(void)
 		i++;
 		if (i>200)
 			return(-1);
-		if (inChar == CAN)
-			return(-1);
-	} while ((inChar != NAK) && (inChar != ACK) && (inChar != 'C'));
+		//if (inChar == CAN)
+		//	return(-1);
+	} while ((inChar != NAK) && (inChar != ACK) && (inChar != 'C') && (inChar != CAN));
 	return(inChar);
 }
 
@@ -210,6 +210,9 @@ void XModem::sendFile(XReaderBase* dataFile, char *fileName)
 			}
 
 			inChar = waitACK();
+      if(inChar == CAN) {
+        return;
+      }
 			tryNo++;
 			if (tryNo > MAX_RETRY)
 				goto err;
@@ -232,4 +235,5 @@ void XModem::sendFile(XReaderBase* dataFile, char *fileName)
 	// When we get here everything was successful.
 err:
 	port->println("Error sending...");
+
 }
