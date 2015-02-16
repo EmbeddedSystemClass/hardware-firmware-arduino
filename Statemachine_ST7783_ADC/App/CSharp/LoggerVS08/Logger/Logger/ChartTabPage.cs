@@ -50,31 +50,37 @@ namespace Logger {
 			ChartArea chartArea = chart.ChartAreas[0];
 			chartArea.RecalculateAxesScale();
 
-			if (chart.Series[0].Enabled && chart.Series[1].Enabled) {
-				Axis yAxis1 = chartArea.AxisY;
-				Axis yAxis2 = chartArea.AxisY2;
 
-				double max = Math.Max(yAxis1.Maximum, yAxis2.Maximum);
-				double div = max / 10.0f;
+			double[] scale = { 5, 10, 25, 50, 75, 150 };
 
-				if (div > 1.0f) {
-					Axis yAxis;
+			double max1 = chart.Series[0].Points.FindMaxByValue().YValues[0];
+			double max2 = chart.Series[1].Points.FindMaxByValue().YValues[0];
 
-					if (max == yAxis1.Maximum) {
-						yAxis = yAxis2;
-					} else {
-						yAxis = yAxis1;
+			double min1 = chart.Series[0].Points.FindMinByValue().YValues[0];
+			double min2 = chart.Series[1].Points.FindMinByValue().YValues[0];
+
+			double m1 = System.Math.Max(System.Math.Abs(min1), max1);
+			double m2 = System.Math.Max(System.Math.Abs(min2), max2);
+
+			bool isNeg = min1 < 0 || min2 < 0;
+
+			for (int i = 0; i < scale.Length; i++) {
+				if (scale[i] > m1) {
+					chartArea.AxisY.Maximum = scale[i];
+					if (isNeg) {
+						chartArea.AxisY.Minimum = -scale[i];
 					}
+					break;
+				}
+			}
 
-					int n = 10;
-					while (div < yAxis.Maximum && n > 0) {
-						div += div;
-						n--;
+			for (int i = 0; i < scale.Length; i++) {
+				if (scale[i] > m2) {
+					chartArea.AxisY2.Maximum = scale[i];
+					if (isNeg) {
+						chartArea.AxisY2.Minimum = -scale[i];
 					}
-
-					if (n > 0) {
-						yAxis.Maximum = div;
-					}
+					break;
 				}
 			}
 

@@ -109,6 +109,7 @@ namespace Logger {
 						string[] values = line.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 						if (values.Length == 3) {
 							for (int i = 1; i < 3; i++) {
+								// Workaround: old files contains 255 in place of -1
 								int x = 0;
 								if (int.TryParse(values[i], out x)) {
 									if (x > 127) {
@@ -188,14 +189,14 @@ namespace Logger {
 				XModem.XModem xModem = new XModem.XModem(port);
 				//xModem.PacketReceived += new EventHandler(xModem_PacketReceived);
 				byte[] xFile = xModem.XModemReceive(true, new XModem.XModemHandler());
-
+				
 				if (xFile != null) {
 					logItems = new List<TemperatureItem>();
 					for (int i = 0; i < 24; i++) {
-						logItems.Add(
+						logItems.Add(							
 							new TemperatureItem() {
 								Id = logItems.Count + 1,
-								Temperature = xFile[i]
+								Temperature = (SByte)xFile[i]
 							}
 						);
 					}
@@ -329,7 +330,7 @@ namespace Logger {
     public class TemperatureItem
     {        
         public int Id { get; set; }
-        public byte Temperature { get; set; }
+        public int Temperature { get; set; }
     }
 
 	public class SensorItem {
