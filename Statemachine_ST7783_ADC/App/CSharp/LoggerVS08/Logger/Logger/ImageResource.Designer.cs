@@ -179,6 +179,13 @@ namespace Logger {
             }
         }
         
+        internal static System.Drawing.Bitmap Restart32x32 {
+            get {
+                object obj = ResourceManager.GetObject("Restart32x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap Save16x16 {
             get {
                 object obj = ResourceManager.GetObject("Save16x16", resourceCulture);
@@ -189,6 +196,13 @@ namespace Logger {
         internal static System.Drawing.Bitmap Temperature16x16 {
             get {
                 object obj = ResourceManager.GetObject("Temperature16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap Temperature32x32 {
+            get {
+                object obj = ResourceManager.GetObject("Temperature32x32", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

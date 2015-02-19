@@ -19,7 +19,7 @@ namespace Logger {
 			connectButton = new ConnectButton("Connect", true, ImageResource.Connection32x32);	
 			mainTabFlowLayoutPanel.Controls.Add(connectButton);
 
-			resetButton = new ResetButton("Reset", false, ImageResource.Remove32x32);			
+			resetButton = new ResetButton("Reset", false, ImageResource.Restart32x32);			
 			mainTabFlowLayoutPanel.Controls.Add(resetButton);			
 		}				
 

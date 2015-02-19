@@ -230,6 +230,8 @@
     <Content Include="Resources\Clear16x16.png" />
     <Content Include="Resources\Multiply16x16.png" />
     <Content Include="Resources\Print16x16.png" />
+    <None Include="Resources\Temperature32x32.png" />
+    <None Include="Resources\Restart32x32.png" />
     <Content Include="Resources\Temperature16x16.png" />
     <Content Include="Resources\RefreshBlue16x16.png" />
     <Content Include="Resources\RefreshBlue32x32.png" />
