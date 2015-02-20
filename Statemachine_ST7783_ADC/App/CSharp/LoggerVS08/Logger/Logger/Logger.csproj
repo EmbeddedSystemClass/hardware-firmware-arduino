@@ -27,6 +27,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <ApplicationIcon>Log-Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -227,7 +228,11 @@
   <ItemGroup>
     <None Include="Resources\Back16x16.png" />
     <None Include="Resources\Save16x16.png" />
+    <Content Include="Log-Icon.ico" />
     <Content Include="Resources\Clear16x16.png" />
+    <Content Include="Resources\Log-Icon.ico" />
+    <Content Include="Resources\Log-Icon32x32.png" />
+    <Content Include="Resources\Log-Icon48x48.png" />
     <Content Include="Resources\Multiply16x16.png" />
     <Content Include="Resources\Print16x16.png" />
     <None Include="Resources\Temperature32x32.png" />
