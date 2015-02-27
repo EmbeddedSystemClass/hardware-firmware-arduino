@@ -124,9 +124,15 @@ namespace Logger {
 		}
 
 		void printChart(object sender, EventArgs e) {
-			chart.Printing.PrintDocument.DefaultPageSettings.Landscape = true;			
-			chart.Printing.PrintPreview();
+			PrintDialog pd = new PrintDialog();
+			if (pd.ShowDialog() == DialogResult.OK) {
+				chart.Printing.PrintDocument.PrinterSettings.PrinterName = pd.PrinterSettings.PrinterName;
+				chart.Printing.PrintDocument.DefaultPageSettings.Landscape = true;
+				chart.Printing.PrintPreview();
+			}
 		}
+
+
 
 		public override void OnActivate() {
 			RefreshButton.Instance.TimerButtonEnabled = false;
