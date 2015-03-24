@@ -741,4 +741,3 @@ void SWTFT::writeRegisterPair(uint8_t aH, uint8_t aL, uint16_t d) {
   writeRegisterPairInline(aH, aL, d);
 }
 #endif
-
