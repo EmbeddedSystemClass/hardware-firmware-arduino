@@ -1,41 +1,9 @@
-/*
-  SD card datalogger
-
- This example shows how to log data from three analog sensors
- to an SD card using the SD library.
-
- The circuit:
- * analog sensors on analog ins 0, 1, and 2
- * SD card attached to SPI bus as follows:
- ** MOSI - pin 11
- ** MISO - pin 12
- ** CLK - pin 13
- ** CS - pin 4
-
- created  24 Nov 2010
- modified 9 Apr 2012
- by Tom Igoe
-
- This example code is in the public domain.
-
- */
-
-#include <SPI.h>
-#include <SD.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_ADXL345_U.h>
 
 /* Assign a unique ID to this sensor at the same time */
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
-
-
-
-// On the Ethernet Shield, CS is pin 4. Note that even if it's not
-// used as the CS pin, the hardware CS pin (10 on most Arduino boards,
-// 53 on the Mega) must be left as an output or the SD library
-// functions will not work.
-const int chipSelect = 10;
 
 void displaySensorDetails(void)
 {
@@ -139,27 +107,10 @@ void displayRange(void)
   Serial.println(" g");  
 }
 
-void setup()
+void setup(void) 
 {
-  // Open serial communications and wait for port to open:
   Serial.begin(9600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for Leonardo only
-  }
-
-
-  Serial.print("Initializing SD card...");
-  // make sure that the default chip select pin is set to
-  // output, even if you don't use it:
-  pinMode(10, OUTPUT);
-
-  // see if the card is present and can be initialized:
-  if (!SD.begin(chipSelect)) {
-    Serial.println("Card failed, or not present");
-    // don't do anything more:
-    return;
-  }
-  Serial.println("card initialized.");
+  Serial.println("Accelerometer Test"); Serial.println("");
   
   /* Initialise the sensor */
   if(!accel.begin())
@@ -168,8 +119,8 @@ void setup()
     Serial.println("Ooops, no ADXL345 detected ... Check your wiring!");
     while(1);
   }
-  
-    /* Set the range to whatever is appropriate for your project */
+
+  /* Set the range to whatever is appropriate for your project */
   accel.setRange(ADXL345_RANGE_16_G);
   // displaySetRange(ADXL345_RANGE_8_G);
   // displaySetRange(ADXL345_RANGE_4_G);
@@ -184,43 +135,15 @@ void setup()
   Serial.println("");
 }
 
-void loop()
+void loop(void) 
 {
-  // open the file. note that only one file can be open at a time,
-  // so you have to close this one before opening another.
-  File dataFile = SD.open("datalog.txt", FILE_WRITE);
- 
   /* Get a new sensor event */ 
   sensors_event_t event; 
   accel.getEvent(&event);
  
   /* Display the results (acceleration is measured in m/s^2) */
-  //Serial.print("X: "); Serial.print(event.acceleration.x); Serial.print("  ");
-  //Serial.print("Y: "); Serial.print(event.acceleration.y); Serial.print("  ");
-  //Serial.print("Z: "); Serial.print(event.acceleration.z); Serial.print("  ");Serial.println("m/s^2 ");
-  
-  
-  String dataString = String(event.acceleration.x) + ";" + String(event.acceleration.y) + ";" + String(event.acceleration.z);
-  
-  if (dataFile) {
-    dataFile.println(dataString);
-    dataFile.close();
-    // print to the serial port too:
-    Serial.println(dataString);
-  }
-  // if the file isn't open, pop up an error:
-  else {
-    Serial.println("error opening datalog.txt");
-  }
-  
-  delay(100);
+  Serial.print("X: "); Serial.print(event.acceleration.x); Serial.print("  ");
+  Serial.print("Y: "); Serial.print(event.acceleration.y); Serial.print("  ");
+  Serial.print("Z: "); Serial.print(event.acceleration.z); Serial.print("  ");Serial.println("m/s^2 ");
+  delay(500);
 }
-
-
-
-
-
-
-
-
-
