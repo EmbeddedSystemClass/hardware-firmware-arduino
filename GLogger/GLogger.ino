@@ -34,6 +34,7 @@ int ledState = HIGH;        // the current state of the output pin
 int buttonState;            // the current reading from the input pin
 int lastButtonState = LOW;  // the previous reading from the input pin
 long lastDebounceTime = 0;  // the last time the output pin was toggled
+long lastLogTime = 0;       // the last time data logged
 
 int logEnabled = 0;         // log state  
 
@@ -225,6 +226,8 @@ void setup()
   // displaySetRange(ADXL345_RANGE_8_G);
   // displaySetRange(ADXL345_RANGE_4_G);
   // displaySetRange(ADXL345_RANGE_2_G);
+  
+  accel.setDataRate(ADXL345_DATARATE_800_HZ);
 
 #ifdef DEBUG  
   // Display some basic information on this sensor
@@ -246,8 +249,9 @@ void loop()
   if(logEnabled) {
     uint32_t currentMillis = millis();
     
-    // log data every 25ms (40Hz)
-    if((currentMillis % 25) == 0) {      
+    // log data
+    if((currentMillis - lastLogTime) >= 10) {
+      lastLogTime = currentMillis;
       sensors_event_t event; 
       accel.getEvent(&event);
          
