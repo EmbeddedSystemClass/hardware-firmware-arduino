@@ -1,0 +1,3 @@
+-Display ST7783
+-Temperature Sensor PT1000
+-ADC TLC2543
