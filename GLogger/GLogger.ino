@@ -172,13 +172,21 @@ void handleDatafileState()
 {
   if(logEnabled) {
     if(dataFile == NULL) {
-      dataFile = SD.open("datalog.txt", FILE_WRITE);
-      if(dataFile) {
-        Serial.println("datafile opened.");
-      } else {        
-        logEnabled = false;
-        Serial.println("can not open datafile.");
-      }
+      for(int i = 0; i < 100; i++) {
+        char fileName[16] = { 0 };
+        sprintf(fileName, "log%d.txt", i);
+        Serial.println(fileName);
+        if(!SD.exists(fileName)) {
+          dataFile = SD.open(fileName, FILE_WRITE);
+          if(dataFile) {
+            Serial.println("datafile opened.");
+          } else {        
+            logEnabled = false;
+            Serial.println("can not open datafile.");
+          }
+          break;
+        }
+      }      
     }
   } else if(dataFile) {    
     dataFile.close();
@@ -191,6 +199,8 @@ void setup()
   // Initialize button and led
   pinMode(buttonPin, INPUT);
   pinMode(ledPin, OUTPUT);
+  
+  buttonState = digitalRead(buttonPin);
   
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
@@ -250,7 +260,7 @@ void loop()
     uint32_t currentMillis = millis();
     
     // log data
-    if((currentMillis - lastLogTime) >= 10) {
+    if((currentMillis - lastLogTime) >= 20) {
       lastLogTime = currentMillis;
       sensors_event_t event; 
       accel.getEvent(&event);
@@ -261,6 +271,7 @@ void loop()
         String(event.acceleration.z);
         
       dataFile.println(dataString);
+      dataFile.flush();
     }
   } 
 }
