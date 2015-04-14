@@ -135,7 +135,7 @@ void setup()
   // Set the range
   accel.setRange(ADXL345_RANGE_16_G);
   // Set data rate
-  accel.setDataRate(ADXL345_DATARATE_800_HZ);
+  accel.setDataRate(ADXL345_DATARATE_200_HZ);
   Serial.println(F("sensor ADXL345 initialized."));
   
   Serial.println("");  
