@@ -203,7 +203,10 @@ class MainScreen : public Screen {
         }
         
         tempGauge1.draw(25, 120, Measure.temperature);
-        tempGauge2.draw(135, 120, Measure.temperature2);                 
+        tempGauge2.draw(135, 120, Measure.temperature2);
+        
+        Display.displayText_f(50, 160, 2, WHITE /*LIGHTGRAY*/, BACKCOLOR, PSTR("IN"));
+        Display.displayText_f(160, 160, 2, WHITE /*LIGHTGRAY*/, BACKCOLOR, PSTR("OUT"));
       }
       
       if(bInvalidate) {        

@@ -23,7 +23,7 @@
 
 static uint8_t Signature[] = { 0xCC, 0x33, 0x55, 0xAA };
 static XFileReader m_XFileReader;
-static XByteArrayReader m_XArrayReader;
+static XIntArrayReader m_XArrayReader;
 
 class Comunication {
   public:
