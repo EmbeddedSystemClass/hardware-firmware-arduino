@@ -33,6 +33,45 @@ namespace Logger {
 		}
 	}
 
+	public class HomeButton : ToolStripButton {
+		private ToolStripSeparator separatorButton;
+		private LoggerTabPage page;
+
+		public static HomeButton Instance = new HomeButton();
+
+		public void SetHomePage(LoggerTabPage page) {
+			this.page = page;			
+		}
+		
+		public void AddTo(ToolStrip toolStrip, bool addSeparator) {
+			if (addSeparator) {
+				toolStrip.Items.Add(separatorButton);
+			}
+
+			toolStrip.Items.Add(this);
+		}
+
+		public void AddTo(ToolStrip toolStrip) {
+			toolStrip.Items.Add(this);
+		}
+
+		public void RemoveFrom(ToolStrip toolStrip) {
+			toolStrip.Items.Remove(separatorButton);
+			toolStrip.Items.Remove(this);
+
+		}
+
+		public HomeButton() {
+			separatorButton = new ToolStripSeparator();
+			Image = ImageResource.Back16x16;
+		}
+
+		protected override void OnClick(EventArgs e) {
+			page.OnActivate();			
+			base.OnClick(e);
+		}
+	}
+
 	public class ClearButton : ToolStripButton {
 		private ToolStripSeparator separatorButton;
 
@@ -109,6 +148,14 @@ namespace Logger {
 			set { timer.Enabled = value; }
 		}
 
+		public bool TimerButtonEnabled {
+			get { return timerButton.Enabled; }
+			set { 
+				timerButton.Enabled = value;
+				intervalTextBox.Enabled = value;
+			}	
+		}
+
 		private void updateTimer() {
 			int interval = 0;
 			if (int.TryParse(intervalTextBox.Text, out interval)) {
@@ -154,9 +201,9 @@ namespace Logger {
 				SensorButton btn = new SensorButton();
 				btn.SensorId = sensor.Id;
 				btn.Name = sensor.Id.ToString();
-				btn.Text = sensor.Name;
+				btn.Text = sensor.Name;				
 				Instances.Add(btn);
-			}			
+			}
 		}
 
 		public static void Clear() {
@@ -168,9 +215,11 @@ namespace Logger {
 				return;
 			toolStrip.Items.Add(Instances[0].separatorButton);
 			foreach (SensorButton item in Instances) {
-				toolStrip.Items.Add(item);	
+				toolStrip.Items.Add(item);
+				item.Checked = true;
 			}
 			toolStrip.Items.Add(Instances[0].enableAllButton);
+			Instances[0].enableAllButton.Checked = true;
 		}
 
 		public static void RemoveFrom(ToolStrip toolStrip) {
@@ -201,7 +250,7 @@ namespace Logger {
 			}
 		}
 
-		public int SensorId { get; set; }
+		public byte SensorId { get; set; }
 	}
 
 	public class ProgressBar : ToolStripProgressBar {
@@ -209,6 +258,8 @@ namespace Logger {
 		private ToolStripButton cancelButton;
 
 		public static ProgressBar Instance = new ProgressBar();
+
+		public event EventHandler Cancel;
 
 		public void AddTo(ToolStrip toolStrip, bool addSeparator) {
 			if (addSeparator) {
@@ -239,8 +290,17 @@ namespace Logger {
 		}
 
 		private void cancelButton_Click(object sender, EventArgs e) {
-			throw new NotImplementedException();
-		}				
+			if (Cancel != null) {
+				Cancel(this, EventArgs.Empty);
+			}			
+		}
+
+		public bool CancelButtonVisible {
+			get { return cancelButton.Visible; }
+			set {
+				cancelButton.Visible = value;
+			}
+		}
 
 		public new bool Visible {
 			get { return base.Visible; }

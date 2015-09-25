@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO.Ports;
+using System.Threading;
 
 namespace Logger {
 	public class DataLogger {
@@ -22,8 +23,7 @@ namespace Logger {
 
 		public static List<SensorItem> Sensors { get { return sensors; } }
 
-		public DataLogger() {
-			Instance = this;
+		public DataLogger() {			
 		}		
 
 		public bool IsConnected { get; set; }
@@ -52,11 +52,12 @@ namespace Logger {
 						if (s.Length > 0) {
 							if (s.Contains("EOF"))
 								break;
-							files.Add(s.Substring(0, 11));
+							files.Add(s.Substring(0, 12));
 						}
 
 					}
 				}
+				files.Sort();
 				port.Close();
 			}
 			
@@ -64,6 +65,11 @@ namespace Logger {
 		}
 
 		public bool TryGetFile(string fileName, out List<string> lines) {
+			XModem.XModemHandler xModemHandler = new XModem.XModemHandler();
+			return TryGetFile(fileName, out lines, xModemHandler);
+		}
+
+		public bool TryGetFile(string fileName, out List<string> lines, XModem.XModemHandler xModemHandler) {
 			lines = null;
 
 			SerialPort port;
@@ -81,39 +87,74 @@ namespace Logger {
 				port.Write(signature, 0, SIGNATURESIZE);
 				port.Write(getFile, 0, DATASIZE);
 
-				System.Threading.Thread.Sleep(250);
+				Thread.Sleep(250);
 
-				// read file				
-				for (long i = 0; i < 1000000; i++) {
-					if (port.BytesToRead > 0) {
-						string s = port.ReadLine();
-						if (s.Length > 0) {
-							if (s.Contains("EOF"))
-								break;
-							lines.Add(s.Substring(0, s.Length - 1));
-						}
+				XModem.XModem xModem = new XModem.XModem(port);
+				xModem.PacketReceived += new EventHandler(xModem_PacketReceived);
+				byte[] xFile = xModem.XModemReceive(true, xModemHandler);
+
+				port.Close();
+
+				if (!xModemHandler.IsCanceled && xFile != null)
+				{
+					StringBuilder sb = new StringBuilder();
+					for (int i = 0; i < xFile.Length; i++) {
+						if(xFile[i] < 127)
+							sb.Append((char)xFile[i]);
 					}
-				}
-				port.Close();						
+					
+					string[] strings = sb.ToString().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+					foreach (string line in strings) {
+						string[] values = line.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+						if (values.Length == 3) {
+							for (int i = 1; i < 3; i++) {
+								// Workaround: old files contains 255 in place of -1
+								int x = 0;
+								if (int.TryParse(values[i], out x)) {
+									if (x > 127) {
+										x = x - 256;
+									}
+									values[i] = x.ToString();
+								}								
+							}							
+							lines.Add(String.Format("{0}; {1}; {2}", values[0], values[1], values[2]));							
+						} else {
+							lines.Add(line);
+						}
+					}					
+				}										
 			}
-			
-			return lines != null && lines.Count > 0;
+
+			return !xModemHandler.IsCanceled && lines != null && lines.Count > 0;
 		}
 
-		public bool TryGetCurrentValue(int sensorId, out int temperature) {
+		void xModem_PacketReceived(object sender, EventArgs e) {
+			if (ProgressBar.Instance.ProgressBar.InvokeRequired) {
+				ProgressBar.Instance.ProgressBar.Invoke((System.Windows.Forms.MethodInvoker)
+					delegate() {
+						xModem_PacketReceived(sender, e);
+					}
+				);
+				return;
+			}
+			ProgressBar.Instance.ProgressBar.Value = (ProgressBar.Instance.ProgressBar.Value + 1) % 100;
+		}
+
+		public bool TryGetCurrentValue(byte sensorId, out int temperature) {
 			temperature = -9999;
 			// TODO: implement ID query
 			SerialPort port;
 			
 			if (tryGetPort(out port)) {
 				// get temperature command
-				byte[] getTemperature = { /*0:get temperature*/ 2, 0, 0, 0, 0, 0, 0, 0, 0, /*checksum*/ 2 };
+				byte[] getTemperature = { /*0:get temperature*/ 2, sensorId, 0, 0, 0, 0, 0, 0, 0, /*checksum*/ 2 };
 
 				// serial communication                
 				port.Write(signature, 0, SIGNATURESIZE);
 				port.Write(getTemperature, 0, DATASIZE);
 
-				System.Threading.Thread.Sleep(100);
+				System.Threading.Thread.Sleep(200);
 
 				// read temperature, 100 attempts
 				for (int i = 0; i < 99; i++) {
@@ -129,38 +170,35 @@ namespace Logger {
 			return temperature > -129 && temperature < 129;
 		}
 
-		public bool TryGetRAMlog(int sensorId, out List<TemperatureItem> logItems) {
+		public bool TryGetDayLog(byte sensorId, out List<TemperatureItem> logItems) {
 			logItems = null;
 
 			SerialPort port;
 			
 
-			if (tryGetPort(out port)) {
-				// TODO: implement ID query
+			if (tryGetPort(out port)) {				
 				// get temperature log command
-				byte[] getTemperature = { /*0:get log*/ 3, 0, 0, 0, 0, 0, 0, 0, 0, /*checksum*/ 3 };
+				byte[] getTemperature = { /*0:get log*/ 3, sensorId, 0, 0, 0, 0, 0, 0, 0, /*checksum*/ 3 };
 
 				// serial communication               
 				port.Write(signature, 0, SIGNATURESIZE);
 				port.Write(getTemperature, 0, DATASIZE);
 
-				System.Threading.Thread.Sleep(100);
+				System.Threading.Thread.Sleep(250);
 
-				// read temperature log
-				logItems = new List<TemperatureItem>();
-				for (int i = 0; i < 99; i++) {
-					if (port.BytesToRead > 0) {
-						for (int n = 0; n < port.BytesToRead; n++) {
-							logItems.Add(new TemperatureItem()
-								{
-									Id = logItems.Count + 1,
-									Temperature = (byte)port.ReadByte()
-								}
-							);
-						}
-
-						if (logItems.Count >= 24)
-							break;					
+				XModem.XModem xModem = new XModem.XModem(port);
+				//xModem.PacketReceived += new EventHandler(xModem_PacketReceived);
+				byte[] xFile = xModem.XModemReceive(true, new XModem.XModemHandler());
+				
+				if (xFile != null) {
+					logItems = new List<TemperatureItem>();
+					for (int i = 0; i < 24; i++) {
+						logItems.Add(							
+							new TemperatureItem() {
+								Id = logItems.Count + 1,
+								Temperature = (SByte)xFile[i]
+							}
+						);
 					}
 				}
 
@@ -174,37 +212,8 @@ namespace Logger {
 
 		public bool TryGetSensors(out List<SensorItem> sensors) {
 			sensors = new List<SensorItem>();
-			SerialPort port;
-			
-			// Demo
 			sensors.Add(new SensorItem() { Id = 0, Name = "T1" });
 			sensors.Add(new SensorItem() { Id = 1, Name = "T2" });
-
-			if (tryGetPort(out port)) {
-				byte[] sensorsCmd = { /*0:get sensors cmd*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, /*9:checksum*/ 0 };
-
-				
-				// serial communication
-				port.Write(signature, 0, SIGNATURESIZE);
-				port.Write(sensorsCmd, 0, DATASIZE);
-				System.Threading.Thread.Sleep(100);
-
-				// read sensor id's				
-				for (long i = 0; i < 100; i++) {
-					if (port.BytesToRead > 0) {
-						string s = port.ReadLine();
-						if (s.Length > 0) {
-							if (s.Contains("EOF"))
-								break;
-							sensors.Add(
-								new SensorItem() { Id = sensors.Count, Name = s.Substring(0, s.Length - 1) }
-							);
-						}
-					}
-				}
-
-				port.Close();
-			}
 			return sensors.Count > 0;
 		}
 
@@ -222,7 +231,9 @@ namespace Logger {
                 
                 // serial communication
 				port.Write(signature, 0, SIGNATURESIZE);
-				port.Write(time, 0, DATASIZE);				
+				System.Threading.Thread.Sleep(100);
+				port.Write(time, 0, DATASIZE);
+				System.Threading.Thread.Sleep(100);
 				port.Close();
             }
         }
@@ -240,16 +251,24 @@ namespace Logger {
 				date[6] = getCheckSum(date, 0, 10);
 
 				port.Write(signature, 0, SIGNATURESIZE);
+				System.Threading.Thread.Sleep(100);
 				port.Write(date, 0, DATASIZE);
-
+				System.Threading.Thread.Sleep(100);
 				port.Close();
 			}
 		}
 
 		public void Connect(string portName) {
 			this.portName = portName;
-			IsConnected = TryGetSensors(out sensors);
-			OnConnectionChanged(this, EventArgs.Empty);
+
+			SerialPort port;
+
+			if (tryGetPort(out port)) {
+				IsConnected = TryGetSensors(out sensors);
+				OnConnectionChanged(this, EventArgs.Empty);
+			} else {
+				MessageBox.Show("Port not available");
+			}
 		}
 
 		public void Disconnect(string portName) {
@@ -291,26 +310,31 @@ namespace Logger {
 
 		private bool tryGetPort(out SerialPort port) {
 			port = null;
+			bool result = false;
 
-			if (!string.IsNullOrEmpty(portName)) {
-				port = new SerialPort(portName, 9600);
-				port.DtrEnable = false;
-				port.Open();
-				return true;
+			try {
+				if (!string.IsNullOrEmpty(portName)) {
+					port = new SerialPort(portName, 9600);
+					port.DtrEnable = false;
+					port.Open();
+					result = true;
+				}
+			} catch {
+				result = false;			
 			}
 
-			return false;
+			return result;
 		}
     }
 
     public class TemperatureItem
     {        
         public int Id { get; set; }
-        public byte Temperature { get; set; }
+        public int Temperature { get; set; }
     }
 
 	public class SensorItem {
-		public int Id { get; set; }
+		public byte Id { get; set; }
 		public string Name { get; set; }
 	}
 
@@ -321,5 +345,5 @@ namespace Logger {
 		ShowTemperatureChartTab,
 		ShowFilesTab,
 		Reset
-	}	
+	}
 }

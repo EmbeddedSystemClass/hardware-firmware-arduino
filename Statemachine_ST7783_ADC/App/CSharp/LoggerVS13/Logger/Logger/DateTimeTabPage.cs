@@ -15,23 +15,7 @@ namespace Logger {
 
 		private void updateTimer_Tick(object sender, EventArgs e) {
 			systemDateLabel.Text = DateTime.Now.Date.ToLongDateString();
-			systemTimeLabel.Text = DateTime.Now.ToString("hh:mm:ss");
-		}
-
-		private void setDateButton_Click(object sender, EventArgs e) {
-			DataLogger.Instance.SetDate(datePicker.Value);
-		}
-
-		private void setTimeButton_Click(object sender, EventArgs e) {
-			DataLogger.Instance.SetTime(timePicker.Value);
-		}
-
-		private void setSystemDateButton_Click(object sender, EventArgs e) {
-			DataLogger.Instance.SetDate(DateTime.Now);
-		}
-
-		private void setSystemTimeButton_Click(object sender, EventArgs e) {
-			DataLogger.Instance.SetTime(DateTime.Now);
+			systemTimeLabel.Text = DateTime.Now.ToString("HH:mm:ss");
 		}
 
 		private void setDateTime_Click(object sender, EventArgs e) {

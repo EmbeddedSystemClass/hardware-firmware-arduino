@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.IO.Ports;
+using System.Management;
 
 namespace Logger {
 	public partial class MainTabPage : LoggerTabPage {
@@ -15,10 +16,10 @@ namespace Logger {
 		public MainTabPage() {
 			InitializeComponent();
 
-			connectButton = new ConnectButton("Connect", true, ImageResource.Connection32x32);			
+			connectButton = new ConnectButton("Connect", true, ImageResource.Connection32x32);	
 			mainTabFlowLayoutPanel.Controls.Add(connectButton);
 
-			resetButton = new ResetButton("Reset", false, ImageResource.Remove32x32);			
+			resetButton = new ResetButton("Reset", false, ImageResource.Restart32x32);			
 			mainTabFlowLayoutPanel.Controls.Add(resetButton);			
 		}				
 
@@ -36,8 +37,20 @@ namespace Logger {
 		}
 
 		public override void OnInitialize() {
-			Main.Instance.ToolStrip.Items.Add(new HomeButton(this));
+			HomeButton.Instance.Visible = false;
+			HomeButton.Instance.SetHomePage(this);
+			Main.Instance.ToolStrip.Items.Add(HomeButton.Instance);
 			base.OnInitialize();
+		}
+
+		public override void OnActivate() {
+			HomeButton.Instance.Visible = false;
+			base.OnActivate();
+		}
+
+		public override void OnDeactivate() {
+			HomeButton.Instance.Visible = true;
+			base.OnDeactivate();
 		}
 	}
 
@@ -65,11 +78,15 @@ namespace Logger {
 	}
 
 	public class ConnectButton : Button {
+		public static ConnectButton Instance;
+
 		private ContextMenuStrip connectMenuStrip;
-		
+				
 		public string PortName { get; set; }
 
-		public ConnectButton(string name, bool enabled, Image image) {			
+		public ConnectButton(string name, bool enabled, Image image) {
+			Instance = this;
+
 			BackColor = Color.Transparent;
 			Enabled = enabled;
 			FlatAppearance.BorderSize = 0;
@@ -84,14 +101,38 @@ namespace Logger {
 			connectMenuStrip = new ContextMenuStrip();
 			connectMenuStrip.ItemClicked += connectMenuStrip_ItemClicked;
 
-			foreach (string item in SerialPort.GetPortNames()) {
-				connectMenuStrip.Items.Add(item);
+			List<string> portNames = new List<string>(SerialPort.GetPortNames());
+			portNames.Sort();
+			
+			string arduinoPort = "";
+			foreach (USBDeviceInfo deviceInfo in GetUSBDevices()) {
+				if (deviceInfo.Description.Contains("Arduino")) {
+					arduinoPort = deviceInfo.DeviceID;
+					break;
+				}
+			}
+
+			foreach (string portName in portNames) {
+				if(portName.Equals(arduinoPort)) {
+					connectMenuStrip.Items.Add(portName + " Arduino");
+					PortName = portName;
+				} else {
+					connectMenuStrip.Items.Add(portName);
+				}
 			}
 			ContextMenuStrip = connectMenuStrip;			
 		}
 
+		public bool TryAutoConnect() {
+			if (!string.IsNullOrEmpty(PortName) && PortName.Length > 0) {
+				DataLogger.Instance.Connect( PortName);
+				return true;
+			}
+			return false;
+		}
+
 		void connectMenuStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e) {			
-			PortName = e.ClickedItem.Text;
+			PortName = e.ClickedItem.Text.Replace(" Arduino", "");
 			DataLogger.Instance.Connect(PortName);
 		}
 
@@ -101,6 +142,31 @@ namespace Logger {
 			connectMenuStrip.Show(this, p);
 
 			base.OnClick(e);
+		}
+
+		static List<USBDeviceInfo> GetUSBDevices()
+		{
+			List<USBDeviceInfo> devices = new List<USBDeviceInfo>();
+
+			// https://msdn.microsoft.com/en-us/library/dn605981(v=vs.85).aspx
+			// https://msdn.microsoft.com/en-us/library/aa394413(v=vs.85).aspx
+
+			ManagementObjectCollection collection;			
+			using (var searcher = new ManagementObjectSearcher(@"Select * From Win32_SerialPort"))
+			collection = searcher.Get();      
+
+			foreach (var device in collection)
+			{
+				string s = (string)device.GetPropertyValue("Name");
+				devices.Add(new USBDeviceInfo(
+					(string)device.GetPropertyValue("DeviceID"),
+					(string)device.GetPropertyValue("PNPDeviceID"),
+					(string)device.GetPropertyValue("Description")
+				));
+			}
+
+		  collection.Dispose();
+		  return devices;
 		}
 	}
 
@@ -123,28 +189,23 @@ namespace Logger {
 				Main.Instance, "ResetButton logger", "Reset", 
 				MessageBoxButtons.YesNo, MessageBoxIcon.Question
 			);
-			if(dr == DialogResult.OK)
+			if(dr == DialogResult.Yes)
 				DataLogger.Instance.ResetLooger();
 			base.OnClick(e);
 		}
+	}	
+
+	class USBDeviceInfo {
+		public USBDeviceInfo(string deviceID, string pnpDeviceID, string description)
+		{
+		  this.DeviceID = deviceID;
+		  this.PnpDeviceID = pnpDeviceID;
+		  this.Description = description;
+		}
+		public string DeviceID { get; private set; }
+		public string PnpDeviceID { get; private set; }
+		public string Description { get; private set; }
 	}
 
-	public class HomeButton : ToolStripButton {
-		private LoggerTabPage page;
-
-		public HomeButton(LoggerTabPage page) {
-			this.page = page;
-			DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.ImageAndText;
-			Image = ImageResource.Back16x16;
-			ImageTransparentColor = Color.Magenta;
-			Name = "Home";
-			Size = new Size(23, 22);
-			Text = "Home";		
-		}
-
-		protected override void OnClick(EventArgs e) {
-			page.OnActivate();
-			base.OnClick(e);
-		}
-	}
 }
+

@@ -13,8 +13,10 @@ namespace Logger
         /// </summary>
         [STAThread]
         static void Main()
-        {
-			var logger = new DataLogger();
+        {			
+			DataLogger.Instance = new DataLogger();
+			SingleFileRequest.Instance = new SingleFileRequest();
+			MultiFileRequest.Instance = new MultiFileRequest();
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

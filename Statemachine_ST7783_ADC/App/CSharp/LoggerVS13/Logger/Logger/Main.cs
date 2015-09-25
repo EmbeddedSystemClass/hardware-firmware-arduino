@@ -22,7 +22,7 @@ namespace Logger
 			mainTab.SizeMode = TabSizeMode.Fixed;
 
 			mainTabPageControl.RegisterPage(dateTimePageControl, "Date Time", ImageResource.Clock32x32, false);
-			mainTabPageControl.RegisterPage(currentTabPageControl, "Temperature", ImageResource.Cab32x32, false);
+			mainTabPageControl.RegisterPage(currentTabPageControl, "Temperature", ImageResource.Temperature32x32, false);
 			mainTabPageControl.RegisterPage(chartTabPageControl, "Temperature chart", ImageResource.Chart32x32, false);
 			mainTabPageControl.RegisterPage(logFilesTabPageControl, "Log files", ImageResource.DataBase32x32, false);
 
@@ -31,6 +31,8 @@ namespace Logger
 			DataLogger.Instance.OnConnectionChanged += Logger_OnConnectionChanged;
 
 			mainTabPageControl.OnInitialize();
+
+			ConnectButton.Instance.TryAutoConnect();
 
 			updateUi();
         }

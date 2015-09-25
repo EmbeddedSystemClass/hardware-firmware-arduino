@@ -37,7 +37,7 @@ namespace Logger {
 				} else {
 					item.SubItems.Add("n/a");
 				}
-			}			
+			}		
 			sensorView.EnsureVisible(sensorView.Items.Count - 1);
 			sensorView.ResumeLayout();
 			updateUi();
