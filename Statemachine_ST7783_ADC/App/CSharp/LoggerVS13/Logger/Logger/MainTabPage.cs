@@ -109,7 +109,12 @@ namespace Logger {
 				if (deviceInfo.Description.Contains("Arduino")) {
 					arduinoPort = deviceInfo.DeviceID;
 					break;
-				}
+                }
+                else if (deviceInfo.PnpDeviceID.Contains("2341") && deviceInfo.PnpDeviceID.Contains("0043"))
+                {
+                    arduinoPort = deviceInfo.DeviceID;
+                    break;
+                }
 			}
 
 			foreach (string portName in portNames) {
