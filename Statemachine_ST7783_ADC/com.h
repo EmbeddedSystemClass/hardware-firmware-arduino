@@ -22,8 +22,8 @@
 #define OP_DELETE_ALL 1
 
 static uint8_t Signature[] = { 0xCC, 0x33, 0x55, 0xAA };
-static XFileReader m_XFileReader;
-static XIntArrayReader m_XArrayReader;
+//static XFileReader m_XFileReader;
+//static XIntArrayReader m_XArrayReader;
 
 class Comunication {
   public:
@@ -78,26 +78,28 @@ class Comunication {
         case CMD_SENSOR_VALUES: {
           switch(data[1]) {
             case 0:
+              Serial.print(F("<TEMP>"));
               Serial.write(Measure.temperature);
+              Serial.print(F("</TEMP>"));
               break;
             case 1:
+              Serial.print(F("<TEMP>"));
               Serial.write(Measure.temperature2);
+              Serial.print(F("</TEMP>"));
               break;
           }
           Serial.flush();
           break;
         }
         case CMD_TEMP_LOG: {
-          XModem xmodem(&Serial, ModeXModem, 128);
           switch(data[1]) {
             case 0:
-              m_XArrayReader.SetArray(LogData.temperature1Log, LOG_DATA_SIZE);
+              sendDayLogData(LogData.temperature1Log, LOG_DATA_SIZE);
               break;
             case 1:
-              m_XArrayReader.SetArray(LogData.temperature2Log, LOG_DATA_SIZE);
+              sendDayLogData(LogData.temperature2Log, LOG_DATA_SIZE);
               break;
           }         
-          xmodem.sendFile(&m_XArrayReader, "");
           break;
         }
         case CMD_DIRECTORY:
@@ -122,15 +124,23 @@ class Comunication {
             name[6] = data[7];
             name[7] = data[8];            
             if(file.open(name, O_READ)) {
-              XModem xmodem(&Serial, ModeXModem, 128);
-              m_XFileReader.m_pDataFile = &file;
-              xmodem.sendFile(&m_XFileReader, "datalog.txt");
-              //int16_t c;
-              //while ((c = file.read()) > 0) 
-              //  Serial.write((char)c);
+              uint32_t nFileSize = file.fileSize();
+              uint8_t* pFileSize = (uint8_t*)&nFileSize;
+              Serial.print(F("<SIZE>"));
+              Serial.write(*pFileSize++);
+              Serial.write(*pFileSize++);
+              Serial.write(*pFileSize++);
+              Serial.write(*pFileSize);
+              Serial.print(F("</SIZE>"));
+              
+              Serial.print(F("<FILE>"));
+              for(int i = 0; i < file.fileSize(); i++) {
+                Serial.write((char)file.read());
+              }
+              Serial.print(F("</FILE>"));
+              
               file.close();
-            }
-            Serial.println(F("EOF"));            
+            }                        
           } else {
             Serial.println(F("card failed!"));
           }
@@ -141,6 +151,8 @@ class Comunication {
     }
     
     void sdOperation(uint8_t op) {
+      Serial.print(F("<DIR>"));
+      
       dir_t d;
       for (uint16_t index = 0; Fat16::readDir(&d, &index, DIR_ATT_VOLUME_ID); index++) {                   
         if(op == OP_DELETE_ALL) {
@@ -156,6 +168,17 @@ class Comunication {
           Serial.println();
         }
       }
+      
+      Serial.print(F("</DIR>"));
+    }
+    
+    void sendDayLogData(int8_t* pData, uint32_t nSize) {
+      Serial.print(F("<DAYLOG>"));
+      for(int i; i < nSize; i++) {
+        Serial.write(*pData);        
+        pData++;
+      }
+      Serial.print(F("</DAYLOG>"));
     }
 };
 

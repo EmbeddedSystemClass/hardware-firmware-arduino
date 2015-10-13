@@ -7,7 +7,7 @@
  This example code is in the public domain.
  	 
  */
-#include <XModem.h>
+//#include <XModem.h>
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <SWTFT.h> // Hardware-specific library
 #include <TouchScreen.h>

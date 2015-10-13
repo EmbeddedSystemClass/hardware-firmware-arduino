@@ -42,104 +42,399 @@ namespace Logger {
 				port.Write(signature, 0, SIGNATURESIZE);
 				port.Write(getDir, 0, DATASIZE);
 
-				System.Threading.Thread.Sleep(250);
+                const int BUFFER_SIZE = 10000;
+                byte[] buffer = new byte[BUFFER_SIZE];
 
-				// read directory
-				files = new List<string>();
-				for (int i = 0; i < 1000; i++) {
-					if (port.BytesToRead > 0) {
-						string s = port.ReadLine();
-						if (s.Length > 0) {
-							if (s.Contains("EOF"))
-								break;
-							files.Add(s.Substring(0, 12));
-						}
+                int n1 = 0;
+                int n2 = 0;
+                if (Receive(port, buffer, 0, BUFFER_SIZE, 0, "<DIR>", "</DIR>", out n1, out n2, new CancellationTokenSource()) > 0)
+                {
+                    files = new List<string>();
 
-					}
-				}
-				files.Sort();
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = n1; i < n2; i++)
+                    {
+                        char c = (char)buffer[i];
+                        if (buffer[i] == 13)
+                        {
+                            files.Add(sb.ToString());
+                            sb.Clear();
+                        }
+                        else if (buffer[i] == 10)
+                        {
+                            // ignore
+                        }
+                        else
+                        {
+                            sb.Append(c);
+                        }
+                    }
+
+                    files.Sort();
+                }
+
 				port.Close();
 			}
 			
 			return files != null && files.Count > 0;
 		}
 
-		public bool TryGetFile(string fileName, out List<string> lines) {
-			XModem.XModemHandler xModemHandler = new XModem.XModemHandler();
-			return TryGetFile(fileName, out lines, xModemHandler);
-		}
-
-		public bool TryGetFile(string fileName, out List<string> lines, XModem.XModemHandler xModemHandler) {
+        public bool TryGetFile(string fileName, out List<string> lines, CancellationTokenSource cancellationToken)
+        {
 			lines = null;
-
+            bool bReady = false;
+            
 			SerialPort port;
 
-			if (tryGetPort(out port)) {
-				lines = new List<string>();
+            if (tryGetPort(out port))
+            {
+                lines = new List<string>();
 
-				// get file command
-				char[] getFile = { 
+                // get file command
+                char[] getFile = { 
 					/*0:get file*/ (char)5, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, /* checksum */ (char)5 
 				};
-				Array.Copy(fileName.ToCharArray(), 0, getFile, 1, 8);
+                Array.Copy(fileName.ToCharArray(), 0, getFile, 1, 8);
 
-				// serial communication				
-				port.Write(signature, 0, SIGNATURESIZE);
-				port.Write(getFile, 0, DATASIZE);
+                // serial communication				
+                port.Write(signature, 0, SIGNATURESIZE);
+                port.Write(getFile, 0, DATASIZE);
 
-				Thread.Sleep(250);
+                const int BUFFER_SIZE = 30 * 1024;
+                byte[] buffer = new byte[BUFFER_SIZE];
 
-				XModem.XModem xModem = new XModem.XModem(port);
-				xModem.PacketReceived += new EventHandler(xModem_PacketReceived);
-				byte[] xFile = xModem.XModemReceive(true, xModemHandler);
+                // receive file size
 
-				port.Close();
+                int fileSize = 0;
+                int n1 = 0;
+                int n2 = 0;
+                int read = Receive(port, buffer, 0, BUFFER_SIZE, 0, "<SIZE>", "</SIZE>", out n1, out n2, cancellationToken);
+                if (read > 0)
+                {
+                    fileSize = buffer[n1 + 3] << 24 | buffer[n1 + 2] << 16 | buffer[n1 + 1] << 8 | buffer[n1];
+                    fileSize -= ("<FILE</FILE>").Length;
+                }
 
-				if (!xModemHandler.IsCanceled && xFile != null)
-				{
-					StringBuilder sb = new StringBuilder();
-					for (int i = 0; i < xFile.Length; i++) {
-						if(xFile[i] < 127)
-							sb.Append((char)xFile[i]);
-					}
-					
-					string[] strings = sb.ToString().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                // receive file data
 
-					foreach (string line in strings) {
-						string[] values = line.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-						if (values.Length == 3) {
-							for (int i = 1; i < 3; i++) {
-								// Workaround: old files contains 255 in place of -1
-								int x = 0;
-								if (int.TryParse(values[i], out x)) {
-									if (x > 127) {
-										x = x - 256;
-									}
-									values[i] = x.ToString();
-								}								
-							}							
-							lines.Add(String.Format("{0}; {1}; {2}", values[0], values[1], values[2]));							
-						} else {
-							lines.Add(line);
-						}
-					}					
-				}										
-			}
+                if(fileSize > 0) 
+                {
+                    if (Receive(port, buffer, read, BUFFER_SIZE, fileSize, "<FILE>", "</FILE>", out n1, out n2, cancellationToken) > 0)
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        for (int i = n1; i < n2; i++)
+                        {
+                            sb.Append((char)buffer[i]);
+                        }
 
-			return !xModemHandler.IsCanceled && lines != null && lines.Count > 0;
+                        string[] strings = sb.ToString().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                        foreach (string line in strings)
+                        {
+                            string[] values = line.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                            if (values.Length == 3)
+                            {
+                                for (int i = 1; i < 3; i++)
+                                {
+                                    // Workaround: old files contains 255 in place of -1
+                                    int x = 0;
+                                    if (int.TryParse(values[i], out x))
+                                    {
+                                        if (x > 127)
+                                        {
+                                            x = x - 256;
+                                        }
+                                        values[i] = x.ToString();
+                                    }
+                                }
+                                lines.Add(String.Format("{0}; {1}; {2}", values[0], values[1], values[2]));
+                            }
+                            else
+                            {
+                                lines.Add(line);
+                            }
+                        }	
+                    }
+                }
+
+                port.Close();
+            }
+
+            return bReady && lines != null && lines.Count > 0;
 		}
 
-		void xModem_PacketReceived(object sender, EventArgs e) {
-			if (ProgressBar.Instance.ProgressBar.InvokeRequired) {
-				ProgressBar.Instance.ProgressBar.Invoke((System.Windows.Forms.MethodInvoker)
-					delegate() {
-						xModem_PacketReceived(sender, e);
-					}
-				);
-				return;
-			}
-			ProgressBar.Instance.ProgressBar.Value = (ProgressBar.Instance.ProgressBar.Value + 1) % 100;
-		}
+        public bool TryGetFile1(string fileName, out List<string> lines, CancellationTokenSource cancellationToken)
+        {
+            lines = null;
+            bool bReady = false;
+
+            SerialPort port;
+
+            if (tryGetPort(out port))
+            {
+                lines = new List<string>();
+
+                // get file command
+                char[] getFile = { 
+					/*0:get file*/ (char)5, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, /* checksum */ (char)5 
+				};
+                Array.Copy(fileName.ToCharArray(), 0, getFile, 1, 8);
+
+                // serial communication				
+                port.Write(signature, 0, SIGNATURESIZE);
+                port.Write(getFile, 0, DATASIZE);
+
+                int fileSize = 0;
+                int read = 0;
+                int lastRead = 0;
+                const int BUFFER_SIZE = 30 * 1024;
+                char[] buffer = new char[BUFFER_SIZE];
+
+                // receive file size
+                {
+                    DateTime timeout = DateTime.UtcNow.Add(TimeSpan.FromMilliseconds(250));
+
+                    while (timeout.Subtract(DateTime.UtcNow).Ticks > 0)
+                    {
+                        try
+                        {
+                            read += port.Read(buffer, read, BUFFER_SIZE - read);
+
+                            int n1 = 0;
+                            int n2 = 0;
+                            if (FindData(buffer, BUFFER_SIZE, "<SIZE>", "</SIZE>", out n1, out n2))
+                            {
+                                fileSize = buffer[n1 + 3] << 24 | buffer[n1 + 2] << 16 | buffer[n1 + 1] << 8 | buffer[n1];
+                                fileSize -= ("<FILE</FILE>").Length;
+                                break;
+                            }
+                        }
+                        catch
+                        {
+                            //ignore throw;
+                        }
+                    }
+                }
+
+                // receive file data
+
+                if (fileSize > 0)
+                {
+                    DateTime timeout = DateTime.UtcNow.Add(TimeSpan.FromMilliseconds(250));
+
+                    while (timeout.Subtract(DateTime.UtcNow).Ticks > 0 && !cancellationToken.IsCancellationRequested)
+                    {
+                        try
+                        {
+                            read += port.Read(buffer, read, BUFFER_SIZE - read);
+
+                            int n1 = 0;
+                            int n2 = 0;
+                            if (FindData(buffer, BUFFER_SIZE, "<FILE>", "</FILE>", out n1, out n2))
+                            {
+
+                                StringBuilder sb = new StringBuilder();
+                                for (int i = n1; i < n2; i++)
+                                {
+                                    if (buffer[i] < 127)    // only temperature values less 127°C
+                                        sb.Append(buffer[i]);
+                                }
+
+                                string[] strings = sb.ToString().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                                foreach (string line in strings)
+                                {
+                                    string[] values = line.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                                    if (values.Length == 3)
+                                    {
+                                        for (int i = 1; i < 3; i++)
+                                        {
+                                            // Workaround: old files contains 255 in place of -1
+                                            int x = 0;
+                                            if (int.TryParse(values[i], out x))
+                                            {
+                                                if (x > 127)
+                                                {
+                                                    x = x - 256;
+                                                }
+                                                values[i] = x.ToString();
+                                            }
+                                        }
+                                        lines.Add(String.Format("{0}; {1}; {2}", values[0], values[1], values[2]));
+                                    }
+                                    else
+                                    {
+                                        lines.Add(line);
+                                    }
+                                }
+
+                                ReportProgress(100);
+                                bReady = true;
+                                break;  // while
+                            }
+
+                            if (lastRead != read)
+                            {
+                                timeout = DateTime.UtcNow.Add(TimeSpan.FromMilliseconds(250));
+                                lastRead = read;
+
+                                ReportProgress((int)((float)read / fileSize * 100));
+                            }
+
+                            Thread.Sleep(1);
+                        }
+                        catch (Exception e)
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                port.Close();
+            }
+
+            return bReady && lines != null && lines.Count > 0;
+        }
+
+        private static void ReportProgress(int progress)
+        {
+            if (ProgressBar.Instance.ProgressBar.InvokeRequired)
+            {
+                ProgressBar.Instance.ProgressBar.Invoke((System.Windows.Forms.MethodInvoker)
+                    delegate()
+                    {
+                        ProgressBar.Instance.ProgressBar.Value = progress <= 100 ? progress : 100;
+                    }
+                );
+            }
+        }
+
+        public int Receive(SerialPort port, byte[] buffer, int offset, int bufferSize, int refSize, 
+            string startTag, string stoppTag, out int startIndex, out int stoppIndex, CancellationTokenSource cancellationToken)
+        {
+            startIndex = -1;
+            stoppIndex = -1;
+
+            DateTime timeout = DateTime.UtcNow.Add(TimeSpan.FromMilliseconds(250));
+
+            int read = offset;
+            int lastRead = 0;
+            bool ready = false;
+
+            while (timeout.Subtract(DateTime.UtcNow).Ticks > 0 && !cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    read += port.Read(buffer, read, bufferSize - read);
+
+                    if (FindData(buffer, bufferSize, startTag, stoppTag, out startIndex, out stoppIndex))
+                    {
+                        ready = true;
+                        if (refSize > 0)
+                        {
+                            ReportProgress(100);
+                        } 
+                        break;  // while
+                    }
+
+                    if (lastRead != read)
+                    {
+                        timeout = DateTime.UtcNow.Add(TimeSpan.FromMilliseconds(250));
+                        lastRead = read;
+                        if (refSize > 0)
+                        {
+                            ReportProgress((int)((float)read / refSize * 100));
+                        }                        
+                    }
+
+                    Thread.Sleep(1);
+                }
+                catch/*(Exception e)*/
+                {
+                    break;
+                }
+            }
+
+            return ready ? read : 0;
+        }
+
+        bool FindData(char[] buffer, int nSize, string startTag, string stoppTag, out int startIndex, out int stoppIndex)
+        {
+            startIndex = -1;
+            stoppIndex = -1;
+
+            if (startTag.Length == 0 || stoppTag.Length == 0)
+            {
+                return false;
+            }
+
+            string sBuffer = new string(buffer);
+
+            startIndex = sBuffer.IndexOf(startTag);
+            stoppIndex = sBuffer.IndexOf(stoppTag);
+
+            if (startIndex >= 0)
+            {
+                startIndex += startTag.Length;
+            }
+            
+            return stoppIndex > 0 && stoppIndex >= startIndex;
+        }
+
+        bool FindData(byte[] buffer, int nSize, string startTag, string stoppTag, out int startIndex, out int stoppIndex)
+        {
+            startIndex = 0;
+            stoppIndex = 0;
+
+            if (startTag.Length == 0 || stoppTag.Length == 0)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < nSize; i++)
+            {
+                int j = 0;
+                for (; j < startTag.Length; j++)
+                {
+                    if ((char)buffer[i + j] != startTag[j])
+                    {
+                        j = -1;
+                        break;
+                    }
+                }
+                if (j > 0)
+                {
+                    startIndex = i;
+                    break;
+                }
+            }
+
+            for (int i = 0; i < nSize; i++)
+            {
+                int j = 0;
+                for (; j < stoppTag.Length; j++)
+                {
+                    if ((char)buffer[i + j] != stoppTag[j])
+                    {
+                        j = -1;
+                        break;
+                    }
+                }
+                if (j > 0)
+                {
+                    stoppIndex = i;
+                    break;
+                }
+            }
+
+           
+            if (startIndex >= 0)
+            {
+                startIndex += startTag.Length;
+            }
+
+            return stoppIndex > 0 && stoppIndex >= startIndex;
+        }
 
 		public bool TryGetCurrentValue(byte sensorId, out int temperature) {
 			temperature = -9999;
@@ -154,15 +449,16 @@ namespace Logger {
 				port.Write(signature, 0, SIGNATURESIZE);
 				port.Write(getTemperature, 0, DATASIZE);
 
-				System.Threading.Thread.Sleep(200);
 
-				// read temperature, 100 attempts
-				for (int i = 0; i < 99; i++) {
-					if (port.BytesToRead > 0) {
-						temperature = port.ReadChar();
-						break;				
-					}
-				}
+                const int BUFFER_SIZE = 100;
+                byte[] buffer = new byte[BUFFER_SIZE];
+
+                int n1 = 0;
+                int n2 = 0;
+                if (Receive(port, buffer, 0, BUFFER_SIZE, 0, "<TEMP>", "</TEMP>", out n1, out n2, new CancellationTokenSource()) > 0)
+                {
+                    temperature = (sbyte)buffer[n1];
+                }               
 
 				port.Close();
 			}
@@ -174,7 +470,6 @@ namespace Logger {
 			logItems = null;
 
 			SerialPort port;
-			
 
 			if (tryGetPort(out port)) {				
 				// get temperature log command
@@ -184,27 +479,30 @@ namespace Logger {
 				port.Write(signature, 0, SIGNATURESIZE);
 				port.Write(getTemperature, 0, DATASIZE);
 
-				System.Threading.Thread.Sleep(250);
+                const int BUFFER_SIZE = 1000;
+                byte[] buffer = new byte[BUFFER_SIZE];
 
-				XModem.XModem xModem = new XModem.XModem(port);
-				//xModem.PacketReceived += new EventHandler(xModem_PacketReceived);
-				byte[] xFile = xModem.XModemReceive(true, new XModem.XModemHandler());
-				
-				if (xFile != null) {
-					logItems = new List<TemperatureItem>();
-					for (int i = 0; i < 24; i++) {
-						logItems.Add(							
-							new TemperatureItem() {
-								Id = logItems.Count + 1,
-								Temperature = (SByte)xFile[i]
-							}
-						);
-					}
-				}
+                int n1 = 0;
+                int n2 = 0;
+                if (Receive(port, buffer, 0, BUFFER_SIZE, 24, "<DAYLOG>", "</DAYLOG>", out n1, out n2, new CancellationTokenSource()) > 0)
+                {
+                    if (n2 - n1 == 24)
+                    {
+                        logItems = new List<TemperatureItem>();
+                        for (int i = n1; i < n2; i++)
+                        {
+                            logItems.Add(
+                                new TemperatureItem()
+                                {
+                                    Id = logItems.Count + 1,
+                                    Temperature = (SByte)buffer[i]
+                                }
+                            );
+                        }
+                    }
+                }
 
-				port.Close();
-
-				
+				port.Close();				
 			}
 
 			return logItems != null && logItems.Count > 0;
@@ -266,6 +564,7 @@ namespace Logger {
 			if (tryGetPort(out port)) {
 				IsConnected = TryGetSensors(out sensors);
 				OnConnectionChanged(this, EventArgs.Empty);
+                port.Close();
 			} else {
 				MessageBox.Show("Port not available");
 			}
@@ -319,7 +618,7 @@ namespace Logger {
 					port.Open();
 					result = true;
 				}
-			} catch {
+			} catch /*(Exception e)*/ {
 				result = false;			
 			}
 

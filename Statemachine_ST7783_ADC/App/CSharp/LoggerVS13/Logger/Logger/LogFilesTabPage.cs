@@ -183,7 +183,7 @@ namespace Logger {
 	class MultiFileRequest {
 		private List<string> fileNames;
 		private string destinationPath;
-		private XModem.XModemHandler xModemHandler;
+        private CancellationTokenSource cancellationToken = new CancellationTokenSource();
 
 		public static MultiFileRequest Instance;
 
@@ -192,20 +192,24 @@ namespace Logger {
 		public void Begin(List<string> fileNames, string destinationPath) {
 			this.fileNames = fileNames;
 			this.destinationPath = destinationPath;
-			this.xModemHandler = new XModem.XModemHandler();
+            cancellationToken = new CancellationTokenSource();
 			ThreadPool.QueueUserWorkItem(callMethod);
 		}
 
 		public void Abort() {
-			if(xModemHandler != null)
-				xModemHandler.IsCanceled = true;
+            cancellationToken.Cancel();
 		}
 
 		private void callMethod(object state) {
 			try {
 				foreach (string fileName in fileNames) {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
 					List<string> fileLines = new List<string>();
-					if (DataLogger.Instance.TryGetFile(fileName, out fileLines, xModemHandler)) {
+					if (DataLogger.Instance.TryGetFile(fileName, out fileLines, cancellationToken)) {
 						string destFileName = getFreeFileName(
 							destinationPath + "\\" + fileName.Replace(".TXT", ""), ".csv"
 						);
@@ -222,7 +226,8 @@ namespace Logger {
 				
 			}
 
-			if (!xModemHandler.IsCanceled && OnAsyncReady != null) {
+            if (!cancellationToken.IsCancellationRequested && OnAsyncReady != null)
+            {
 				OnAsyncReady(this, EventArgs.Empty);
 			}
 		}
@@ -239,10 +244,10 @@ namespace Logger {
 	}
 
 	public class SingleFileRequest {
+        private CancellationTokenSource cancellationToken = new CancellationTokenSource();
+        
 		public string FileName;
-		public List<string> Lines;
-
-		private XModem.XModemHandler xModemHandler;
+		public List<string> Lines;        
 
 		public static SingleFileRequest Instance;
 
@@ -250,24 +255,24 @@ namespace Logger {
 
 		public void Begin(string fileName) {
 			FileName = fileName;
-			this.xModemHandler = new XModem.XModemHandler();
+            cancellationToken = new CancellationTokenSource();
 			ThreadPool.QueueUserWorkItem(callMethod);
 		}
 
 		public void Abort() {
-			if (xModemHandler != null)
-				xModemHandler.IsCanceled = true;
+            cancellationToken.Cancel();
 		}
 
 		private void callMethod(object state) {
 			try {
 				Instance.Lines = new List<string>();
-				DataLogger.Instance.TryGetFile(Instance.FileName, out Instance.Lines, Instance.xModemHandler);
+                DataLogger.Instance.TryGetFile(Instance.FileName, out Instance.Lines, cancellationToken);
 			} catch /*(Exception e)*/ {
 				
 			}
 
-			if (!xModemHandler.IsCanceled && OnAsyncReady != null) {
+            if (!cancellationToken.IsCancellationRequested && OnAsyncReady != null)
+            {
 				OnAsyncReady(this, EventArgs.Empty);
 			}
 		}
