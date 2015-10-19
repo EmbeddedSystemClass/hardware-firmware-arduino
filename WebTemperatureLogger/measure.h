@@ -21,7 +21,7 @@ class DS1621 {
     void dispatch() {
       bReady = false;
       
-      if (true /*Events.bT5S*/) {                
+      if (Events.bT5S) {                
         // external
        byte temp_;
        byte r;
