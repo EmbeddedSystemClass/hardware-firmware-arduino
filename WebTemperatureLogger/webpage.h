@@ -5,11 +5,11 @@ const PROGMEM char Page1[] = {
 "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\r\n"
 "<html>\r\n"
 "<head>\r\n"
-"  <title>SVG Graphs example</title>\r\n"
+"  <title>Temperature</title>\r\n"
 
 "  <style type='text/css'>\r\n"
 "  body {\r\n"
-"    background-color: #ffffff;\r\n"
+"    background-color: #b8b8b8;\r\n"
 "  }\r\n"
 
 "  svg.graph {\r\n"
@@ -85,13 +85,30 @@ const PROGMEM char Page1[] = {
 "    	%CHART_YLABELS" 
 "    </g>\r\n"
 "  </svg>\r\n"
+
+"  <form>\r\n"
+"    <p/>\r\n"
+"    <input name=\"SUB\" value=\"Start Log\" type=\"submit\">\r\n"
+"    <input name=\"SUB\" value=\"Stopp Log\" type=\"submit\">\r\n"
+"    <input name=\"OUT\" type=\"radio\" value=\"C\" %LOGSTATE>"
+"    <p/>\r\n"
+"    <select name='download' size='5' style='width: 300px'>\r\n"
+"       %FILES\r\n"
+"    </select>\r\n"
+"    <p/>\r\n"
+"    <input name=\"SUB\" value=\"DownLoad\" type=\"submit\" >\r\n"
+"  </form>\r\n"
+
+
 "</body>\r\n"
 "</html>\r\n"
 "%END"
 };
 
-const PROGMEM char Circle[] = {
-  "<circle cx='????' cy='????' data-value='7.2' r='5'></circle>"
+const PROGMEM char Page2[] = {
+"Test\r\n"
+"Datei\r\n"
+"%END"
 };
 
 #endif //_WEBPAGE_H
