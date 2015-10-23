@@ -86,7 +86,7 @@ const PROGMEM char Page1[] = {
 "    </g>\r\n"
 "  </svg>\r\n"
 
-"  <form>\r\n"
+"  <form method = 'get' action='file.txt'>\r\n"
 "    <p/>\r\n"
 "    <input name=\"SUB\" value=\"Start Log\" type=\"submit\">\r\n"
 "    <input name=\"SUB\" value=\"Stopp Log\" type=\"submit\">\r\n"
@@ -106,8 +106,16 @@ const PROGMEM char Page1[] = {
 };
 
 const PROGMEM char Page2[] = {
-"Test\r\n"
-"Datei\r\n"
+"1000\r\n"
+"2000\r\n"
+"3000\r\n"
+"4000\r\n"
+"5000\r\n"
+"6000\r\n"
+"7000\r\n"
+"8000\r\n"
+"9000\r\n"
+"10000\r\n"
 "%END"
 };
 

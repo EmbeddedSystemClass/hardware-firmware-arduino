@@ -2,14 +2,14 @@
 #include <avr/pgmspace.h>
 #include "webpage.h"
 
-#define CHART_TOP			40
-#define CHART_LEFT			113
-#define CHART_RIGHT			1063
-#define CHART_BOTTOM		370
-#define CHART_X_STEP		50
-#define CHART_Y_STEP		30
-#define CHART_X_INTERVALS	20
-#define CHART_Y_INTERVALS	12
+#define CHART_X_INTERVALS	  20
+#define CHART_Y_INTERVALS	  12
+#define CHART_TOP			      50
+#define CHART_LEFT			    100
+#define CHART_RIGHT			    600
+#define CHART_BOTTOM		    350
+#define CHART_X_STEP		    (CHART_RIGHT - CHART_LEFT) / CHART_X_INTERVALS
+#define CHART_Y_STEP		    (CHART_BOTTOM - CHART_TOP) / CHART_Y_INTERVALS
 
 
 // Enter a MAC address and IP address for your controller below.
@@ -57,9 +57,9 @@ class WebManager {
     void sendPage1(EthernetClient* client) {
       
       // send a standard http response header
-      client->println("HTTP/1.1 200 OK");
-      client->println("Content-Type: text/html");
-      client->println("Connection: close");  // the connection will be closed after completion of the response
+      client->println(F("HTTP/1.1 200 OK"));
+      client->println(F("Content-Type: text/html"));
+      client->println(F("Connection: close"));  // the connection will be closed after completion of the response
       //client->println("Refresh: 5");  // refresh the page automatically every 5 sec
       client->println();
       
@@ -115,12 +115,15 @@ class WebManager {
       }
     }
     
-    void sendPage2(EthernetClient* client) {
-      
-      client->println("HTTP/1.1 200 OK");
-      client->println("Content-Type: text/plain");
+    void sendPage2(EthernetClient* client) {     
+     
+      client->println(F("HTTP/1.0 200 OK"));
+      client->println(F("Content-Type: text/csv"));
+      client->println(F("Connnection: close"));
+      client->println(F("Content-disposition: attachment;filename=file.csv"));
       client->println();
-                  
+      
+      
       PGM_P page_pointer = Page2;
               
       for(;;) {
@@ -208,7 +211,8 @@ class WebManager {
       for (uint8_t i = 0; i < CHART_Y_INTERVALS; i++)
       {
         char buffer[100] = { 0 };        
-        strcpy_P(buffer, PSTR("<line x1 = '86' x2 = '1063' y1 = '????' y2 = '????'></line>"));
+        strcpy_P(buffer, PSTR("<line x1 = '86' x2 = '????' y1 = '????' y2 = '????'></line>"));
+        bin2asc(CHART_RIGHT, &buffer[22], 4);
         bin2asc(y, &buffer[34], 4);
         bin2asc(y, &buffer[46], 4);
 
