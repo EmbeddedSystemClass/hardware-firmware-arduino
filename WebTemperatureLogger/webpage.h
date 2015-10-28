@@ -7,6 +7,47 @@ const PROGMEM char Page1[] = {
 "<head>\r\n"
 "  <title>Temperature</title>\r\n"
 
+"<script>\r\n"
+"	var data = [300,300,300,300,300,300,300,300,300,300,300,300,300,300,300,300,300,300,300,300,300];\r\n"
+"	function GetArduinoInputs()\r\n"
+"	{\r\n"
+	
+"		var path = document.getElementById(\"temp-path\");\r\n"
+	
+"		for(var i = 0; i < 20; i++) {\r\n"
+"			var circle = document.getElementById(\"dot\" + (\"0000\" + i).slice(-4));\r\n"
+"			circle.setAttributeNS(null, \"cy\", data[i]);\r\n"
+			
+"			var segments = path.pathSegList;\r\n"
+"			segments.getItem(i+1).y = parseInt(data[i]);\r\n"
+"		}\r\n"
+		
+"		for(var i = 0; i < 19; i++) {\r\n"
+"			data[i] = data[i + 1];\r\n"
+"		}\r\n"
+	
+	
+"		var request = new XMLHttpRequest();\r\n"
+	
+"		request.onreadystatechange = function()\r\n"
+"			{\r\n"
+"				if (this.readyState == 4) {\r\n"
+"					if (this.status == 200) {\r\n"
+"						if (this.responseXML != null) {\r\n"
+"							var temp = this.responseXML.getElementsByTagName('analog')[0].childNodes[0].nodeValue;\r\n"
+"							data[19] = temp * -2.5 + 250 + 50;\r\n"
+"							document.getElementById('vname').value = temp;\r\n"
+"						}\r\n"
+"					}\r\n"
+"				}\r\n"
+"			}\r\n"
+	
+"		request.open(\"GET\", \"ajax_inputs\", true);\r\n"
+"		request.send(null);\r\n"
+"		setTimeout('GetArduinoInputs()', 10*60*1000);\r\n"
+"	}\r\n"
+"</script>\r\n"
+	
 "  <style type='text/css'>\r\n"
 "  body {\r\n"
 "    background-color: #b8b8b8;\r\n"
@@ -56,7 +97,7 @@ const PROGMEM char Page1[] = {
 
 "</head>\r\n"
 
-"<body>\r\n"
+"<body onload=\"GetArduinoInputs()\">\r\n"
 "  <svg class='graph' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink' xmlns='http://www.w3.org/2000/svg'>\r\n"
 "    <g class='grid x-grid' id='xGrid'>\r\n"
 "    	%CHART_VERTICAL_LINES"  
@@ -67,7 +108,7 @@ const PROGMEM char Page1[] = {
 
 
 "    <g class='surfaces'>\r\n"
-"        <path class='first_set' d=' %CHART_PATH Z'></path>\r\n"
+"        <path id = 'temp-path' class='first_set' d=' %CHART_PATH Z'></path>\r\n"
 "    </g>\r\n"
 
 "    <use class='grid double' xlink:href='#xGrid' style=''></use>\r\n"
@@ -99,6 +140,9 @@ const PROGMEM char Page1[] = {
 "    <input name=\"SUB\" value=\"DownLoad\" type=\"submit\" >\r\n"
 "  </form>\r\n"
 
+"  <label for=\"vname\">Temp:\r\n"
+"    <input id=\"vname\" name=\"vname\">\r\n"
+"  </label>\r\n"
 
 "</body>\r\n"
 "</html>\r\n"

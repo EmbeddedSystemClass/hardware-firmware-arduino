@@ -1,16 +1,17 @@
 // Web ****************************************************************
 #include <avr/pgmspace.h>
 #include "webpage.h"
+#include "measure.h"
 
 #define CHART_X_INTERVALS	  20
-#define CHART_Y_INTERVALS	  12
+#define CHART_Y_INTERVALS	  13
 #define CHART_TOP			      50
 #define CHART_LEFT			    100
 #define CHART_RIGHT			    600
 #define CHART_BOTTOM		    350
 #define CHART_X_STEP		    (CHART_RIGHT - CHART_LEFT) / CHART_X_INTERVALS
-#define CHART_Y_STEP		    (CHART_BOTTOM - CHART_TOP) / CHART_Y_INTERVALS
-
+#define CHART_Y_STEP		    (CHART_BOTTOM - CHART_TOP) / (CHART_Y_INTERVALS - 1)
+#define CHART_Y_ZERO 		250 + CHART_TOP
 
 // Enter a MAC address and IP address for your controller below.
 // The IP address will be dependent on your local network:
@@ -44,12 +45,12 @@ class WebManager {
     
     void Rnd() {
       for(int i = 0; i < 5; i++) {
-        m_values[i] = random(10) * 10;
+        m_values[i] = 0; //random(10) * 10;
         //Serial.println(m_values[i]);
       }
       
       for(int i = 0; i < 20; i++) {
-        m_temperatureLog[i] = random(10) * 10;;
+        m_temperatureLog[i] = random(12) * 10 - 20;
       }
       
     }
@@ -138,6 +139,23 @@ class WebManager {
       }
     }
     
+    void xmlResponse(EthernetClient* client) {
+      client->println(F("HTTP/1.0 200 OK"));
+      client->println("Content-Type: text/xml");
+      client->println("Connection: keep-alive");
+      client->println();
+      // send XML file containing temperature
+      
+      client->print("<?xml version = \"1.0\" ?>");
+      client->print("<inputs>");     
+      client->print("<analog>");
+      client->print(Measure.temperature);
+      client->print("</analog>");
+      client->print("</inputs>");
+      client->flush();
+      client->stop();
+    }
+    
     void dispatch() {
       EthernetClient client = server.available();
       if (client) {
@@ -158,6 +176,8 @@ class WebManager {
               m_logState = true;
             } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /?SUB=Stopp+Log"), 19)==0) {
               m_logState = false;
+            } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /ajax_inputs"), 16)==0) {
+              xmlResponse(&client);
             } else {
               // if you've gotten to the end of the line (received a newline
               // character) and the line is blank, the http request has ended,
@@ -194,9 +214,12 @@ class WebManager {
       for (uint8_t i = 0; i < CHART_X_INTERVALS; i++)
       {
         char buffer[100] = { 0 };        
-        strcpy_P(buffer, PSTR("<line x1 = '????' x2 = '????' y1 = '10' y2 = '380'></line>"));
+        strcpy_P(buffer, PSTR("<line x1 = '????' x2 = '????' y1 = '????' y2 = '????'></line>"));
         bin2asc(x, &buffer[12], 4);
         bin2asc(x, &buffer[24], 4);
+        
+        bin2asc(CHART_TOP, &buffer[36], 4);
+        bin2asc(CHART_BOTTOM, &buffer[48], 4);
 
         stream->println(buffer);
 
@@ -211,10 +234,11 @@ class WebManager {
       for (uint8_t i = 0; i < CHART_Y_INTERVALS; i++)
       {
         char buffer[100] = { 0 };        
-        strcpy_P(buffer, PSTR("<line x1 = '86' x2 = '????' y1 = '????' y2 = '????'></line>"));
-        bin2asc(CHART_RIGHT, &buffer[22], 4);
-        bin2asc(y, &buffer[34], 4);
-        bin2asc(y, &buffer[46], 4);
+        strcpy_P(buffer, PSTR("<line x1 = '????' x2 = '????' y1 = '????' y2 = '????'></line>"));
+        bin2asc(CHART_LEFT, &buffer[12], 4);
+        bin2asc(CHART_RIGHT - CHART_X_STEP, &buffer[24], 4);
+        bin2asc(y, &buffer[36], 4);
+        bin2asc(y, &buffer[48], 4);
 
         stream->println(buffer);
 
@@ -229,11 +253,12 @@ class WebManager {
       for (uint8_t i = 0; i < CHART_X_INTERVALS; i++)
       {        
         char buffer[100] = { 0 };        
-        strcpy_P(buffer, PSTR("<circle cx='????' cy='????' data-value='7.2' r='5'></circle>"));
-        int y = m_temperatureLog[i] * -3 + 280;
+        strcpy_P(buffer, PSTR("<circle id = 'dot????' cx='????' cy='????' data-value='7.2' r='5'></circle>"));
+        int y = m_temperatureLog[i] * -2.5 + 250 + CHART_TOP;
 
-        bin2asc(x, &buffer[12], 4);
-        bin2asc(y, &buffer[22], 4);
+        bin2asc(i, &buffer[17], 4);
+        bin2asc(x, &buffer[27], 4);
+        bin2asc(y, &buffer[37], 4);
 
         stream->println(buffer);
 
@@ -248,10 +273,11 @@ class WebManager {
       for (uint8_t i = 0; i < CHART_X_INTERVALS; i++)
       {		
         char buffer[100] = { 0 };        
-        strcpy_P(buffer, PSTR("<text x='????' y='400'>??</text>"));
+        strcpy_P(buffer, PSTR("<text x='????' y='????'>??</text>"));
         bin2asc(x, &buffer[9], 4);
-        bin2asc(i + 1, &buffer[23], 2);
-	
+        bin2asc(CHART_BOTTOM + 25, &buffer[18], 4);
+        bin2asc(i + 1, &buffer[24], 2);
+  
         stream->println(buffer);
         x += CHART_X_STEP;
       }
@@ -267,7 +293,7 @@ class WebManager {
         strcpy_P(buffer, PSTR("<text x='????' y='????'>???</text>"));
         bin2asc(80, &buffer[9], 4);
         bin2asc(y, &buffer[18], 4);
-        bin2asc(80 - i * 10, &buffer[24], 3);
+        bin2asc(100 - i * 10, &buffer[24], 3);
 
         stream->println(buffer);
 
@@ -292,14 +318,14 @@ class WebManager {
       strcpy_P(mbuffer, PSTR("M????, ????"));
       
       bin2asc(x, &mbuffer[1], 4);
-      bin2asc(CHART_BOTTOM, &mbuffer[7], 4);
+      bin2asc(CHART_Y_ZERO, &mbuffer[7], 4);
       stream->println(mbuffer);
       
       for (uint8_t i = 0; i < CHART_X_INTERVALS; i++)
       {        
         char buffer[15] = { 0 };        
         strcpy_P(buffer, PSTR("L????, ????"));
-        int y = m_temperatureLog[i] * -3 + 280;
+        int y = m_temperatureLog[i] * -2.5 + 250 + CHART_TOP;
 
         bin2asc(x, &buffer[1], 4);
         bin2asc(y, &buffer[7], 4);
@@ -311,8 +337,8 @@ class WebManager {
       
       char lbuffer[15] = { 0 };        
       strcpy_P(lbuffer, PSTR("L????, ????"));
-      bin2asc(CHART_RIGHT, &lbuffer[1], 4);
-      bin2asc(CHART_BOTTOM, &lbuffer[7], 4);
+      bin2asc(CHART_RIGHT - CHART_X_STEP, &lbuffer[1], 4);
+      bin2asc(CHART_Y_ZERO, &lbuffer[7], 4);
       stream->println(lbuffer);
     }
     
