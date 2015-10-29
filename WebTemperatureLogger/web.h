@@ -88,28 +88,7 @@ class WebManager {
           page_pointer += 9;
         } else if (strncasecmp_P("%FILES", page_pointer, 6)==0) {
           files(client);
-          page_pointer += 6;          
-        } else if (strncasecmp_P("%CHART", page_pointer, 6)==0) {
-          page_pointer += 7;
-          if (strncasecmp_P("HORIZONTAL_LINES", page_pointer, 16)==0) {
-            chartHorizontalLines(client);
-            page_pointer += 16;
-          } else if (strncasecmp_P("VERTICAL_LINES", page_pointer, 6)==0) {
-            chartVerticalLines(client);
-            page_pointer += 14;
-          } else if (strncasecmp_P("PATH", page_pointer, 4)==0) {
-            chartPath(client);
-            page_pointer += 4;
-          } else if (strncasecmp_P("POINTS", page_pointer, 6)==0) {
-            chartCircles(client);
-            page_pointer += 6;
-          } else if (strncasecmp_P("XLABELS", page_pointer, 7)==0) {
-            chartXLabels(client);
-            page_pointer += 7;
-          } else if (strncasecmp_P("YLABELS", page_pointer, 7)==0) {
-            chartYLabels(client);
-            page_pointer += 7;
-          }
+          page_pointer += 6;        
         } else {                
           client->write(b);
         }
@@ -147,13 +126,20 @@ class WebManager {
       // send XML file containing temperature
       
       client->print("<?xml version = \"1.0\" ?>");
-      client->print("<inputs>");     
-      client->print("<analog>");
-      client->print(Measure.temperature);
-      client->print("</analog>");
-      client->print("</inputs>");
+      client->print("<data>");
+      for(int i = 0; i < 20; i++) {
+        client->print("<analog>");
+        client->print(m_temperatureLog[i]);
+        client->print("</analog>");
+      }
+      client->print("</data>");
       client->flush();
       client->stop();
+      
+      for(int i = 0; i < 19; i++) {
+        m_temperatureLog[i] = m_temperatureLog[i+1];
+      }
+      m_temperatureLog[18] = random(12) * 10 - 20;
     }
     
     void dispatch() {
@@ -176,7 +162,7 @@ class WebManager {
               m_logState = true;
             } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /?SUB=Stopp+Log"), 19)==0) {
               m_logState = false;
-            } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /ajax_inputs"), 16)==0) {
+            } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /temperatur_data"), 16)==0) {
               xmlResponse(&client);
             } else {
               // if you've gotten to the end of the line (received a newline
@@ -208,139 +194,7 @@ class WebManager {
       }
     }
     
-    void chartVerticalLines(Stream* stream) {
-      //<line x1 = '113' x2 = '113' y1 = '10' y2 = '380'></line>	
-      uint16_t x = CHART_LEFT;
-      for (uint8_t i = 0; i < CHART_X_INTERVALS; i++)
-      {
-        char buffer[100] = { 0 };        
-        strcpy_P(buffer, PSTR("<line x1 = '????' x2 = '????' y1 = '????' y2 = '????'></line>"));
-        bin2asc(x, &buffer[12], 4);
-        bin2asc(x, &buffer[24], 4);
-        
-        bin2asc(CHART_TOP, &buffer[36], 4);
-        bin2asc(CHART_BOTTOM, &buffer[48], 4);
-
-        stream->println(buffer);
-
-        x += CHART_X_STEP;
-      }
-    }
-
-    void chartHorizontalLines(Stream* stream) {
-      //<line x1 = '86' x2 = '1063' y1 = '40' y2 = '40'></line>
-
-      uint16_t y = CHART_TOP;
-      for (uint8_t i = 0; i < CHART_Y_INTERVALS; i++)
-      {
-        char buffer[100] = { 0 };        
-        strcpy_P(buffer, PSTR("<line x1 = '????' x2 = '????' y1 = '????' y2 = '????'></line>"));
-        bin2asc(CHART_LEFT, &buffer[12], 4);
-        bin2asc(CHART_RIGHT - CHART_X_STEP, &buffer[24], 4);
-        bin2asc(y, &buffer[36], 4);
-        bin2asc(y, &buffer[48], 4);
-
-        stream->println(buffer);
-
-        y += CHART_Y_STEP;
-      }
-    }
-
-    void chartCircles(Stream* stream) {
-      //<circle cx='113' cy='40' data-value='7.2' r='5'></circle>
-
-      uint16_t x = CHART_LEFT;
-      for (uint8_t i = 0; i < CHART_X_INTERVALS; i++)
-      {        
-        char buffer[100] = { 0 };        
-        strcpy_P(buffer, PSTR("<circle id = 'dot????' cx='????' cy='????' data-value='7.2' r='5'></circle>"));
-        int y = m_temperatureLog[i] * -2.5 + 250 + CHART_TOP;
-
-        bin2asc(i, &buffer[17], 4);
-        bin2asc(x, &buffer[27], 4);
-        bin2asc(y, &buffer[37], 4);
-
-        stream->println(buffer);
-
-        x += CHART_X_STEP;
-      }
-    }
-
-    void chartXLabels(Stream* stream) {
-      //<text x='113' y='400'>1</text>
-
-      uint16_t x = CHART_LEFT;
-      for (uint8_t i = 0; i < CHART_X_INTERVALS; i++)
-      {		
-        char buffer[100] = { 0 };        
-        strcpy_P(buffer, PSTR("<text x='????' y='????'>??</text>"));
-        bin2asc(x, &buffer[9], 4);
-        bin2asc(CHART_BOTTOM + 25, &buffer[18], 4);
-        bin2asc(i + 1, &buffer[24], 2);
-  
-        stream->println(buffer);
-        x += CHART_X_STEP;
-      }
-    }
-
-    void chartYLabels(Stream* stream) {
-    //<text x='80' y='45'>80</text>
-
-      uint16_t y = CHART_TOP + 5;
-      for (uint8_t i = 0; i < CHART_Y_INTERVALS; i++)
-      {		
-        char buffer[100] = { 0 };        
-        strcpy_P(buffer, PSTR("<text x='????' y='????'>???</text>"));
-        bin2asc(80, &buffer[9], 4);
-        bin2asc(y, &buffer[18], 4);
-        bin2asc(100 - i * 10, &buffer[24], 3);
-
-        stream->println(buffer);
-
-        y += CHART_Y_STEP;
-      }
-    }
-
-    void chartPath(Stream* stream) {
-      /*<path class = 'first_set' d = '
-        M113, 360
-        
-        L113, 40
-        
-        L1063, 325
-        L1063, 360
-        Z'
-      < / path>*/
-      
-      uint16_t x = CHART_LEFT;
-   
-      char mbuffer[15] = { 0 };        
-      strcpy_P(mbuffer, PSTR("M????, ????"));
-      
-      bin2asc(x, &mbuffer[1], 4);
-      bin2asc(CHART_Y_ZERO, &mbuffer[7], 4);
-      stream->println(mbuffer);
-      
-      for (uint8_t i = 0; i < CHART_X_INTERVALS; i++)
-      {        
-        char buffer[15] = { 0 };        
-        strcpy_P(buffer, PSTR("L????, ????"));
-        int y = m_temperatureLog[i] * -2.5 + 250 + CHART_TOP;
-
-        bin2asc(x, &buffer[1], 4);
-        bin2asc(y, &buffer[7], 4);
-
-        stream->println(buffer);
-
-        x += CHART_X_STEP;
-      }
-      
-      char lbuffer[15] = { 0 };        
-      strcpy_P(lbuffer, PSTR("L????, ????"));
-      bin2asc(CHART_RIGHT - CHART_X_STEP, &lbuffer[1], 4);
-      bin2asc(CHART_Y_ZERO, &lbuffer[7], 4);
-      stream->println(lbuffer);
-    }
+    
     
     void files(Stream* stream) {
     //<option>file.csv</option>      
