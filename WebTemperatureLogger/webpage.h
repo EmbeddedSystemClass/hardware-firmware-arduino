@@ -142,7 +142,7 @@ const PROGMEM char Page1[] = {
 "var text = document.createElementNS(svgNS,\"text\");\n"
 "text.setAttributeNS(null,\"x\", G_LEFT);\n"
 "text.setAttributeNS(null,\"y\", G_TOP);\n"
-"text.textContent = \"Â°C\";\n"
+"text.textContent = \"°C\";\n"
 "yAxis.appendChild(text);\n"
 
 "document.getElementById(\"temp-graph\").appendChild(gGrid);\n"
@@ -207,7 +207,7 @@ const PROGMEM char Page1[] = {
 "}\n"
 
 
-"functionOnStartLog()\n"
+"function OnStartLog()\n"
 "{\n"
 "var request = new XMLHttpRequest();\n"
 "request.open(\"GET\", \"start_log\", true);\n"
