@@ -1,0 +1,22 @@
+
+    <script type=\"text/javascript\">
+      function addOpt(e) {
+        var o=document.createElement(\"option\");
+        //o.value= -e.options.length;
+        o.text = \"Test \" + e.options.length;
+        o.selected=true;
+        e.add(o,null);
+      }
+    </script>
+
+    <form method=\"post\" action=\"mypage.html\">
+      <input type=\"button\" onclick=\"addOpt(this.form.myselect)\" value=\"Add option\"/>
+      <br/>
+      <select id=\"myselect\" name=\"mydata\" multiple=\"multiple\" size=\"10\">
+        <option value=\"0\">Test 0</option>
+        <option value=\"1\">Test 1</option>
+        <option value=\"2\">Test 2</option>
+      </select>
+     
+     
+    </form>

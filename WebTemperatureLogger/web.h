@@ -55,8 +55,7 @@ class WebManager {
       
     }
     
-    void sendPage1(EthernetClient* client) {
-      
+    void sendPage1(EthernetClient* client) {      
       // send a standard http response header
       client->println(F("HTTP/1.1 200 OK"));
       client->println(F("Content-Type: text/html"));
@@ -64,7 +63,7 @@ class WebManager {
       //client->println("Refresh: 5");  // refresh the page automatically every 5 sec
       client->println();
       
-      PGM_P page_pointer = Page1;
+      PGM_P page_pointer = NULL;//Page1;
               
       for(;;) {
         unsigned char b = pgm_read_byte(page_pointer++);
@@ -96,26 +95,39 @@ class WebManager {
     }
     
     void sendPage2(EthernetClient* client) {     
-     
-      client->println(F("HTTP/1.0 200 OK"));
-      client->println(F("Content-Type: text/csv"));
-      client->println(F("Connnection: close"));
-      client->println(F("Content-disposition: attachment;filename=file.csv"));
+
+      client->println(F("HTTP/1.1 200 OK"));
+      client->println(F("Content-Type: text/html"));
+      client->println(F("Connection: close"));  // the connection will be closed after completion of the response
+      //client->println("Refresh: 5");  // refresh the page automatically every 5 sec
       client->println();
+
       
-      
-      PGM_P page_pointer = Page2;
+      SD_ACTIVE();
+
+      if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {
+                   
+          if(file.open("INDEX.HTM", O_READ)) {                    
+            Serial.println("file");
+            for(int i = 0; i < file.fileSize(); i++) {
+                    
+              char c = (char)file.read();
+              //Serial.print(c);
+              ETH_ACTIVE();
               
-      for(;;) {
-        unsigned char b = pgm_read_byte(page_pointer++);
-        if (strncasecmp_P("%END",page_pointer,4)==0) {                  
-          client->flush();
-          client->stop();          
-          break;							
-        } else {                
-          client->write(b);
-        }
+              client->write(c);
+              
+              SD_ACTIVE();
+            }
+                        
+            file.close();
+          }
       }
+       
+       ETH_ACTIVE();
+      
+      client->flush();
+      client->stop();
     }
     
     void xmlResponse(EthernetClient* client) {
@@ -169,7 +181,7 @@ class WebManager {
               // character) and the line is blank, the http request has ended,
               // so you can send a reply
               if (c == '\n' && currentLineIsBlank) {
-                sendPage1(&client);
+                sendPage2(&client);
               }
               if (c == '\n') {
                 // you're starting a new line
@@ -196,15 +208,19 @@ class WebManager {
     
     
     
+//    void files(Stream* stream) {
+//    //<option>file.csv</option>      
+//      for (uint8_t i = 0; i < 10; i++)
+//      {		
+//        char buffer[50] = { 0 };        
+//        strcpy_P(buffer, PSTR("<option>????.csv</option>"));
+//        bin2asc(i, &buffer[8], 4);        
+//        stream->println(buffer);
+//      }
+//    }
+    
     void files(Stream* stream) {
-    //<option>file.csv</option>      
-      for (uint8_t i = 0; i < 10; i++)
-      {		
-        char buffer[50] = { 0 };        
-        strcpy_P(buffer, PSTR("<option>????.csv</option>"));
-        bin2asc(i, &buffer[8], 4);        
-        stream->println(buffer);
-      }
+      
     }
 };
 

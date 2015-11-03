@@ -17,13 +17,12 @@
 #define CMD_TEMP_LOG 3
 #define CMD_DIRECTORY 4
 #define CMD_FILE 5
+#define CMD_FILE_UPLOAD 6
 
 #define OP_DIR 0
 #define OP_DELETE_ALL 1
 
 static uint8_t Signature[] = { 0xCC, 0x33, 0x55, 0xAA };
-//static XFileReader m_XFileReader;
-//static XIntArrayReader m_XArrayReader;
 
 class Comunication {
   public:
@@ -57,7 +56,7 @@ class Comunication {
     void dispatch() {
       if(!bValid) 
         return;
-        
+      
       switch(data[0]) {
         case CMD_TIME: {
 //            DateTime* dt = &RTC.now;
@@ -79,7 +78,7 @@ class Comunication {
           switch(data[1]) {
             case 0:
               Serial.print(F("<TEMP>"));
-              //Serial.write(Measure.temperature);
+              Serial.write(Measure.temperature);
               Serial.print(F("</TEMP>"));
               break;
             case 1:
@@ -103,7 +102,8 @@ class Comunication {
           break;
         }
         case CMD_DIRECTORY:
-          if (card.init() && Fat16::init(&card)) {
+          SD_ACTIVE();
+          if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {
             // "Name          Modify Date/Time    Size";
             //Fat16::ls(LS_DATE | LS_SIZE);
             sdOperation(OP_DIR);
@@ -111,9 +111,11 @@ class Comunication {
           } else {
             Serial.println(F("card failed!"));
           }
-          break;
+          ETH_ACTIVE();
+          break;          
         case CMD_FILE:
-          if (card.init() && Fat16::init(&card)) {
+          SD_ACTIVE();
+          if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {
             char name[] = "01234567.TXT";
             name[0] = data[1];
             name[1] = data[2];
@@ -123,7 +125,7 @@ class Comunication {
             name[5] = data[6];
             name[6] = data[7];
             name[7] = data[8];            
-            if(file.open(name, O_READ)) {
+            if(file.open("INDEX.HTM", O_READ)) {
               uint32_t nFileSize = file.fileSize();
               uint8_t* pFileSize = (uint8_t*)&nFileSize;
               Serial.print(F("<SIZE>"));
@@ -144,10 +146,66 @@ class Comunication {
           } else {
             Serial.println(F("card failed!"));
           }
+          ETH_ACTIVE();
           break;
+        
+        case CMD_FILE_UPLOAD: {          
+          receiveFile();
+          break;
+        }
       }
       
       bValid = false;
+    }
+    
+    void receiveFile(void) {
+      SD_ACTIVE();          
+      Serial.println("<FILEUPLOAD>");
+      char buffer[20] = { 0 };
+      uint8_t state = 0;
+      
+      if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {
+        file.remove("INDEX.HTM");   
+        if(file.open("INDEX.HTM", O_CREAT | O_EXCL | O_WRITE)) {                    
+          while(state != 2) {
+            if(Serial.available() > 0) {
+              char c = (char)Serial.read();
+              
+              buffer[sizeof(buffer) - 2] = c;
+              
+              switch(state) {
+                case 0: {                 
+                  if (strncasecmp_P(buffer, PSTR("<FILE>"), 6)==0) {                  
+                    state = 1;                    
+                  }
+                  break;
+                }
+                
+                case 1: {
+                  if (strncasecmp_P(buffer + 6, PSTR("</FILE>"), 7)==0) {
+                    state = 2;
+                  }
+                  file.write(buffer[6]);
+                  break;
+                }
+                
+                case 2: {
+                    break; // for
+                  break;
+                }
+              }
+              
+              memmove(buffer, buffer + 1, sizeof(buffer) - 2);
+            }
+          }              
+          file.close();
+          Serial.println("</FILEUPLOAD>");
+        }                        
+      } else {
+        Serial.println(F("card failed!"));
+      }
+      
+      ETH_ACTIVE();
     }
     
     void sdOperation(uint8_t op) {

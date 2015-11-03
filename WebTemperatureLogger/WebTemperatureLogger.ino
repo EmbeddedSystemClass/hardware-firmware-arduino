@@ -33,6 +33,7 @@
 
 
 void setup() {
+  
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
   while (!Serial) {
@@ -44,15 +45,19 @@ void setup() {
   RTC.setDate(11,11,2015); //set the date here
   RTC.startRTC(); //start the RTC
 
-  //Wire.begin();
+  
   Measure.begin();
   Measure.dispatch();
   
+  pinMode(SS_SD_CARD, OUTPUT);
+  pinMode(SS_ETHERNET, OUTPUT);
   // start the Ethernet connection and the server:
+  digitalWrite(SS_SD_CARD, HIGH); // SD Card not active
+  digitalWrite(SS_ETHERNET, LOW);  // Ethernet ACTIVE
   Web.begin();
   
-  LogEvents.begin();
-  LogEvents.setMode(LOG_INTERVAL_HOUR); 
+  //LogEvents.begin();
+  //LogEvents.setMode(LOG_INTERVAL_HOUR); 
   
   Serial.print("server is at ");
   Serial.println(Ethernet.localIP());
@@ -63,9 +68,17 @@ void loop() {
   Events.dispatch();
   LogEvents.dispatch();  
   Measure.dispatch();
-  LogData.dispatch();
+  //LogData.dispatch();
   Com.dispatch();
   Web.dispatch();
+}
+
+void serialEvent() {
+  while (Serial.available()) {
+    // get the new uint8_t:
+    char inChar = (char)Serial.read(); 
+    Com.receive(inChar); 
+  }
 }
 
 void bin2asc(int value, char buffer[], uint8_t digits) {
