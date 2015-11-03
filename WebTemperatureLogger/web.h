@@ -154,6 +154,60 @@ class WebManager {
       m_temperatureLog[18] = random(12) * 10 - 20;
     }
     
+    void xmlDirResponse(EthernetClient* client) {      
+      client->println(F("HTTP/1.0 200 OK"));
+      client->println("Content-Type: text/xml");
+      client->println("Connection: keep-alive");
+      client->println();
+      
+      // send XML file containing sd card directory
+      
+      client->print("<?xml version = \"1.0\" ?>");
+      
+      SD_ACTIVE();
+      if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {
+        // "Name          Modify Date/Time    Size";
+        //Fat16::ls(LS_DATE | LS_SIZE);
+        
+        ETH_ACTIVE();
+        client->print(F("<dir>"));
+        SD_ACTIVE();
+        
+        dir_t d;
+        for (uint16_t index = 0; Fat16::readDir(&d, &index, DIR_ATT_VOLUME_ID); index++) {
+          ETH_ACTIVE();
+          client->print(F("<file>"));
+          SD_ACTIVE();
+          for (uint8_t i = 0; i < 11; i++) {
+            if (d.name[i] == ' ') 
+              continue;
+            if (i == 8) {
+              ETH_ACTIVE();
+              client->write('.');
+              SD_ACTIVE();
+            }
+            ETH_ACTIVE();
+            client->write(d.name[i]);
+            SD_ACTIVE();
+          }
+          ETH_ACTIVE();
+          client->print(F("</file>"));
+          client->println();
+          SD_ACTIVE();
+        }
+        
+        ETH_ACTIVE();
+        client->print(F("</dir>"));
+               
+      } else {
+        Serial.println(F("card failed!"));
+      }
+      ETH_ACTIVE();
+      
+      client->flush();
+      client->stop();
+    }
+    
     void dispatch() {
       EthernetClient client = server.available();
       if (client) {
@@ -176,6 +230,8 @@ class WebManager {
               m_logState = false;
             } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /temperatur_data"), 16)==0) {
               xmlResponse(&client);
+            } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /dir"), 8)==0) {
+              xmlDirResponse(&client);
             } else {
               // if you've gotten to the end of the line (received a newline
               // character) and the line is blank, the http request has ended,

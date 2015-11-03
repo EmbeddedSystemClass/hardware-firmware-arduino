@@ -130,6 +130,32 @@
         alert("Stopp");
     }
     
+    function OnRefreshLogFiles()
+    {
+      var request = new XMLHttpRequest();
+  
+      request.onreadystatechange = function()
+      {
+          if (this.readyState == 4) {
+              if (this.status == 200) {
+                  if (this.responseXML != null) {                      
+                      var select = document.getElementById("logFiles");
+                      select.innerHTML = "";
+                      for(var i = 0; i < this.responseXML.getElementsByTagName('dir')[0].childElementCount; i++) {
+                        var fileName = this.responseXML.getElementsByTagName('dir')[0].children[i].innerHTML;
+                        var option = document.createElement("option");
+                        option.innerHTML = fileName;
+                        select.add( option );
+                      }
+                  }
+              }
+          }
+      }
+
+      request.open("GET", "dir", true);
+      request.send(null);
+    }
+    
     function IntervalComboInit()
     {
         var intervalInputBox = document.getElementById("intervalInput");
@@ -337,20 +363,10 @@
     <p/>
     <fieldset name="files">
         <legend>Files</legend>
-        <select name="download" size="5" style="width: 300px">
-            <option>0000.csv</option>
-            <option>0001.csv</option>
-            <option>0002.csv</option>
-            <option>0003.csv</option>
-            <option>0004.csv</option>
-            <option>0005.csv</option>
-            <option>0006.csv</option>
-            <option>0007.csv</option>
-            <option>0008.csv</option>
-            <option>0009.csv</option>
+        <select id="logFiles" name="logFiles" size="5" style="width: 300px">            
         </select>
-        <p/>
-        <input name="refreshButton" value="Refresh" type="submit">
+        <p/>        
+        <input name="refreshButton" value="Refresh" type="button" onclick="OnRefreshLogFiles()">
         <input name="downloadButton" value="Download" type="submit">		
     </fieldset>
  
