@@ -238,7 +238,8 @@
     <None Include="Resources\Save16x16.png" />
     <Content Include="Log-Icon.ico" />
     <Content Include="Resources\Clear16x16.png" />
-    <None Include="Resources\Get File.png" />
+    <None Include="Resources\GetFile16x16.png" />
+    <None Include="Resources\Remove16x16.png" />
     <Content Include="Resources\Log-Icon.ico" />
     <Content Include="Resources\Log-Icon32x32.png" />
     <Content Include="Resources\Log-Icon48x48.png" />

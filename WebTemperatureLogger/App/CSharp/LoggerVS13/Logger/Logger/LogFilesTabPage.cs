@@ -50,6 +50,14 @@ namespace Logger {
             
         }
 
+        private void removeFileButton_Click(object sender, EventArgs e)
+        {
+            if (logFilesListView.SelectedItems.Count > 0) {
+				string s = logFilesListView.SelectedItems[0].Text;
+                DataLogger.Instance.TryDeleteFile(s);
+            }           
+        }
+
 		private void logFilesListView_DoubleClick(object sender, EventArgs e) {
 			if (logFilesListView.SelectedItems.Count > 0) {
 				logFileValuesListView.Items.Clear();                
@@ -164,6 +172,7 @@ namespace Logger {
 
 		private void logFilesListView_SelectedIndexChanged(object sender, EventArgs e) {
 			SaveFileButton.Instance.Enabled = logFilesListView.SelectedIndices.Count > 0;
+            RemoveFileButton.Instance.Enabled = logFilesListView.SelectedIndices.Count > 0;
 		}
 
 		public override void OnActivate() {
@@ -173,9 +182,13 @@ namespace Logger {
 			SaveFileButton.Instance.AddTo(Main.Instance.ToolStrip);
 			SaveFileButton.Instance.Click += saveButton_Click;
 			SaveFileButton.Instance.Enabled = logFilesListView.SelectedIndices.Count > 0;
+            
+            RemoveFileButton.Instance.AddTo(Main.Instance.ToolStrip);
+            RemoveFileButton.Instance.Click += removeFileButton_Click;
+            RemoveFileButton.Instance.Enabled = logFilesListView.SelectedIndices.Count > 0;
 
             UploadFileButton.Instance.AddTo(Main.Instance.ToolStrip);
-            UploadFileButton.Instance.Click += uploadButton_Click;
+            UploadFileButton.Instance.Click += uploadButton_Click;            
 
 			ProgressBar.Instance.AddTo(Main.Instance.ToolStrip, true);
 			ProgressBar.Instance.Visible = false;
@@ -184,13 +197,16 @@ namespace Logger {
 
 		public override void OnDeactivate() {
 			RefreshButton.Instance.RemoveFrom(Main.Instance.ToolStrip);
-			RefreshButton.Instance.Click -= refreshButton_Click;
+			RefreshButton.Instance.Click -= refreshButton_Click;            
+
+			SaveFileButton.Instance.RemoveFrom(Main.Instance.ToolStrip);
+			SaveFileButton.Instance.Click -= saveButton_Click;
 
             UploadFileButton.Instance.RemoveFrom(Main.Instance.ToolStrip);
             UploadFileButton.Instance.Click -= uploadButton_Click;
 
-			SaveFileButton.Instance.RemoveFrom(Main.Instance.ToolStrip);
-			SaveFileButton.Instance.Click -= saveButton_Click;            
+            RemoveFileButton.Instance.RemoveFrom(Main.Instance.ToolStrip);
+            RemoveFileButton.Instance.Click -= removeFileButton_Click;
 
 			ProgressBar.Instance.RemoveFrom(Main.Instance.ToolStrip);
 			base.OnDeactivate();
@@ -202,6 +218,7 @@ namespace Logger {
 			RefreshButton.Instance.Enabled = bEnable;
 			HomeButton.Instance.Enabled = bEnable;
             UploadFileButton.Instance.Enabled = bEnable;
+            RemoveFileButton.Instance.Enabled = bEnable;
 		}
 	}
 
@@ -248,6 +265,31 @@ namespace Logger {
         {
             separatorButton = new ToolStripSeparator();
             Image = ImageResource.GetFile16x16;
+        }
+    }
+
+    public class RemoveFileButton : ToolStripButton
+    {
+        private ToolStripSeparator separatorButton;
+
+        public static RemoveFileButton Instance = new RemoveFileButton();
+
+        public void AddTo(ToolStrip toolStrip)
+        {
+            toolStrip.Items.Add(separatorButton);
+            toolStrip.Items.Add(this);
+        }
+
+        public void RemoveFrom(ToolStrip toolStrip)
+        {
+            toolStrip.Items.Remove(separatorButton);
+            toolStrip.Items.Remove(this);
+        }
+
+        public RemoveFileButton()
+        {
+            separatorButton = new ToolStripSeparator();
+            Image = ImageResource.Remove16x16;
         }
     }
 

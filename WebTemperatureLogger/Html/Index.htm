@@ -4,19 +4,19 @@
 <head>
   <title>Temperature</title>
 <script>
-    const G_TOP = 25;
-    const G_LEFT = 50;
-    const G_WIDTH = 20 * 25;
-    const G_HEIGHT = 13 * 25;
+    const GRAPH_TOP = 25;
+    const GRAPH_LEFT = 50;
+    const GRAPH_WIDTH = 20 * 25;
+    const GRAPH_HEIGHT = 13 * 25;
     
-    const G_MARGIN_PY = 25;
-    const G_MARGIN_PX = 25;
-    const G_GRID_PY = 25;
-    const G_GRID_PX = 25;
-    const G_ZERO_PY = G_TOP + G_MARGIN_PY + 10 * G_GRID_PY;
+    const GRAPH_MARGIN_PY = 25;
+    const GRAPH_MARGIN_PX = 25;
+    const GRAPH_GRID_PY = 25;
+    const GRAPH_GRID_PX = 25;
+    const GRAPH_ZERO_PY = GRAPH_TOP + GRAPH_MARGIN_PY + 10 * GRAPH_GRID_PY;
     
     
-    var data = [];
+    var data = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
     var svgNS = "http://www.w3.org/2000/svg";  
     
     function Init()
@@ -46,7 +46,7 @@
         path.setAttributeNS(null,"id","path");
         path.setAttributeNS(null,"class","first_set");
                
-        var pathAttrib = "M" + (G_LEFT + G_MARGIN_PX) + ", " + G_ZERO_PY;                
+        var pathAttrib = "M" + (GRAPH_LEFT + GRAPH_MARGIN_PX) + ", " + GRAPH_ZERO_PY;                
         for(var i = 0; i < 21; i++) {            
             pathAttrib += " L0, 0";            
         }        
@@ -69,7 +69,7 @@
             circle.setAttributeNS(null,"r",5);
             circle.setAttributeNS(null,"visibility","hidden");
             gCircles.appendChild(circle);
-            x += G_GRID_PX;
+            x += GRAPH_GRID_PX;
         }
         
         document.getElementById("temp-graph").appendChild(gPath);        
@@ -83,27 +83,27 @@
         gGrid.setAttributeNS(null, "id", "xGrid");
         
         // draw vertical lines
-        var x = G_LEFT + G_MARGIN_PX;
+        var x = GRAPH_LEFT + GRAPH_MARGIN_PX;
         for(var i = 0; i < 20; i++) {            
             var line = document.createElementNS(svgNS,"line");
             line.setAttributeNS(null,"x1",x);
             line.setAttributeNS(null,"x2",x);
-            line.setAttributeNS(null,"y1",G_TOP + G_MARGIN_PY);        
-            line.setAttributeNS(null,"y2",G_TOP + G_HEIGHT + G_MARGIN_PY);
+            line.setAttributeNS(null,"y1",GRAPH_TOP + GRAPH_MARGIN_PY);        
+            line.setAttributeNS(null,"y2",GRAPH_TOP + GRAPH_HEIGHT + GRAPH_MARGIN_PY);
             gGrid.appendChild(line);
-            x += G_GRID_PX;
+            x += GRAPH_GRID_PX;
         }
         
         // draw horizontal lines
-        var y = G_TOP + G_MARGIN_PY;
+        var y = GRAPH_TOP + GRAPH_MARGIN_PY;
         for(var i = 0; i < 14; i++) {            
             var line = document.createElementNS(svgNS,"line");
-            line.setAttributeNS(null,"x1", G_LEFT + G_MARGIN_PX);
-            line.setAttributeNS(null,"x2", G_LEFT + G_WIDTH);
+            line.setAttributeNS(null,"x1", GRAPH_LEFT + GRAPH_MARGIN_PX);
+            line.setAttributeNS(null,"x2", GRAPH_LEFT + GRAPH_WIDTH);
             line.setAttributeNS(null,"y1", y);        
             line.setAttributeNS(null,"y2", y);
             gGrid.appendChild(line);
-            y += G_GRID_PY;
+            y += GRAPH_GRID_PY;
         }
         
         // draw x axis
@@ -111,14 +111,14 @@
         xAxis.setAttributeNS(null, "class","labels x-labels");
         xAxis.setAttributeNS(null, "id", "xAxisLabels");
         
-        x = G_LEFT + G_MARGIN_PX;
+        x = GRAPH_LEFT + GRAPH_MARGIN_PX;
         for(var i = 1; i < 21; i++) {            
             var text = document.createElementNS(svgNS,"text");
             text.setAttributeNS(null,"x", x);
-            text.setAttributeNS(null,"y", G_TOP + G_HEIGHT + 2 * G_MARGIN_PY);         
+            text.setAttributeNS(null,"y", GRAPH_TOP + GRAPH_HEIGHT + 2 * GRAPH_MARGIN_PY);         
             text.textContent = i;
             xAxis.appendChild(text);
-            x += G_GRID_PX;
+            x += GRAPH_GRID_PX;
         }
         
         // draw y axis
@@ -126,19 +126,19 @@
         yAxis.setAttributeNS(null, "class","labels y-labels");
         yAxis.setAttributeNS(null, "id", "yAxisLabels");
         
-        y = G_TOP + G_MARGIN_PY + 5;
+        y = GRAPH_TOP + GRAPH_MARGIN_PY + 5;
         for(var i = 100; i > -40; i -= 10) {            
             var text = document.createElementNS(svgNS,"text");
-            text.setAttributeNS(null,"x", G_LEFT);
+            text.setAttributeNS(null,"x", GRAPH_LEFT);
             text.setAttributeNS(null,"y", y);            
             text.textContent = i;
             yAxis.appendChild(text);
-            y += G_GRID_PY;
+            y += GRAPH_GRID_PY;
         }
 
         var text = document.createElementNS(svgNS,"text");
-        text.setAttributeNS(null,"x", G_LEFT);
-        text.setAttributeNS(null,"y", G_TOP);            
+        text.setAttributeNS(null,"x", GRAPH_LEFT);
+        text.setAttributeNS(null,"y", GRAPH_TOP);            
         text.textContent = "°C";
         yAxis.appendChild(text);
             
@@ -176,24 +176,26 @@
         var path = document.getElementById("path");
         var segments = path.pathSegList;
         
-        var x = G_LEFT + G_MARGIN_PX;
+        var x = GRAPH_LEFT + GRAPH_MARGIN_PX;
         
-        segments.getItem(0).y = G_ZERO_PY;
+        segments.getItem(0).y = GRAPH_ZERO_PY;
         segments.getItem(0).x = x;
         
-        segments.getItem(21).y = G_ZERO_PY;
-        segments.getItem(21).x = G_LEFT + G_WIDTH;
+        segments.getItem(21).y = GRAPH_ZERO_PY;
+        segments.getItem(21).x = GRAPH_LEFT + GRAPH_WIDTH;
             
         for(var i = 0; i < 20; i++) {
-            var y = data[i] * -2.5 + G_ZERO_PY;
+            var y = data[i] * -2.5 + GRAPH_ZERO_PY;
             var circle = document.getElementById("c" + i);			
             circle.setAttributeNS(null, "cy", y);
             circle.setAttributeNS(null, "cx", x);
-                        
+            if(data[i] != GRAPH_ZERO_PY)
+                circle.setAttributeNS(null,"visibility","visible");
+            
             segments.getItem(i+1).y = parseInt(y);
             segments.getItem(i+1).x = x;
             
-            x += G_GRID_PX;
+            x += GRAPH_GRID_PX;
         }        
         
         for(var i = 0; i < 21; i++) {
@@ -206,27 +208,27 @@
         var path = document.getElementById("path");
         var segments = path.pathSegList;
         
-        var x = G_LEFT + G_MARGIN_PX;
+        var x = GRAPH_LEFT + GRAPH_MARGIN_PX;
         
-        segments.getItem(0).y = G_ZERO_PY;
+        segments.getItem(0).y = GRAPH_ZERO_PY;
         segments.getItem(0).x = x;
         
-        segments.getItem(21).y = G_ZERO_PY;
-        segments.getItem(21).x = G_LEFT + G_WIDTH;
+        segments.getItem(21).y = GRAPH_ZERO_PY;
+        segments.getItem(21).x = GRAPH_LEFT + GRAPH_WIDTH;
             
         for(var i = 0; i < 20; i++) {
-            var y = data[i] * -2.5 + G_ZERO_PY;
+            var y = data[i] * -2.5 + GRAPH_ZERO_PY;
             var circle = document.getElementById("c" + i);			
             circle.setAttributeNS(null, "cy", y);
             circle.setAttributeNS(null, "cx", x);
 	    
-            if(data[i] != G_ZERO_PY)
+            if(data[i] != GRAPH_ZERO_PY)
                 circle.setAttributeNS(null,"visibility","visible");
             
             segments.getItem(i+1).y = parseInt(y);
             segments.getItem(i+1).x = x;
             
-            x += G_GRID_PX;
+            x += GRAPH_GRID_PX;
         }
 
 
@@ -251,6 +253,53 @@
         var request = new XMLHttpRequest();
         request.open("GET", "stopp_log", true);
         request.send(null);
+    }
+    
+    function OnRefreshLogFilesButtonClick()
+    {
+      var request = new XMLHttpRequest();
+  
+      request.onreadystatechange = function()
+      {
+          if (this.readyState == 4) {
+              if (this.status == 200) {
+                  if (this.responseXML != null) {                      
+                      var select = document.getElementById("logFiles");
+                      select.innerHTML = "";
+                      for(var i = 0; i < this.responseXML.getElementsByTagName('dir')[0].childElementCount; i++) {
+                        var fileName = this.responseXML.getElementsByTagName('dir')[0].children[i].innerHTML;
+                        var option = document.createElement("option");
+                        option.innerHTML = fileName;
+                        select.add( option );
+                      }
+                  }
+              }
+          }
+      }
+
+      request.open("GET", "dir", true);
+      request.send(null);
+    }
+    
+    function OnDownloadLogFileButtonClick()
+    {
+      var select = document.getElementById("logFiles");
+      var idx = select.selectedIndex;
+      if(idx >= 0) {
+        var fileName = select.options[idx].value;
+        OnDownloadLogFile(fileName);
+      }     
+    }
+    
+    function onError(e) {
+      console.log('Error', e);
+    }
+    
+    function OnDownloadLogFile(fileName)
+    {
+      //window.open("file/" + fileName,'Download'); 
+      
+      window.location.href = "file/" + fileName;
     }
     
     function IntervalComboInit()
@@ -308,7 +357,8 @@
       svg.graph .labels.y-labels {
         text-anchor: end;       
       }
-      fieldset {
+
+    fieldset {
         padding-top:10px;
         padding-bottom:10px;
         font-family: Arial;
@@ -317,15 +367,17 @@
         width: 600px;
         border:1px solid #666;
         border-radius:4px;		    
-      }   
+    }
+        
+        
   </style>
 </head>
 <body onload="Init()">
-    <fieldset name="graph">
-        <legend>Temperature</legend>
-        <svg id = 'temp-graph' class='graph' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink' xmlns='http://www.w3.org/2000/svg'>
-    </fieldset>
-  <form method = "get" action="file.txt">
+  <fieldset name="graph">
+      <legend>Temperature</legend>
+      <svg id = 'temp-graph' class='graph' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink' xmlns='http://www.w3.org/2000/svg'>
+  </fieldset>
+  <form method = "get" action="file">
     <p/>
     <fieldset name="logging">
         <legend>Logging</legend>
@@ -355,21 +407,20 @@
     <p/>
     <fieldset name="files">
         <legend>Files</legend>
-        <select name="download" size="5" style="width: 300px">
-            <option>0000.csv</option>
-            <option>0001.csv</option>
-            <option>0002.csv</option>
-            <option>0003.csv</option>
-            <option>0004.csv</option>
-            <option>0005.csv</option>
-            <option>0006.csv</option>
-            <option>0007.csv</option>
-            <option>0008.csv</option>
-            <option>0009.csv</option>
+        <select id="logFiles" name="logFiles" size="5" style="width: 300px">            
         </select>
-        <p/>
-        <input name="refreshButton" value="Refresh" type="submit">
-        <input name="downloadButton" value="Download" type="submit">		
+        <p/>        
+        <input name="refreshButton" value="Refresh" type="button" onclick="OnRefreshLogFilesButtonClick()">
+        <input name="downloadButton" value="Download" type="button" onclick="OnDownloadLogFileButtonClick()">        
     </fieldset>
- </body>
+ 
+</body>
 </html>
+
+
+
+
+
+
+
+

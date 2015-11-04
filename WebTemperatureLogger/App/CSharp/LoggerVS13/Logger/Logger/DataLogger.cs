@@ -13,7 +13,7 @@ namespace Logger {
 		private static List<SensorItem> sensors;
 
 		// frame data size
-		public const int DATASIZE = 10;
+		public const int DATASIZE = 16;
 		// frame signature size
 		public const int SIGNATURESIZE = 4;
 		// frame signature
@@ -36,7 +36,7 @@ namespace Logger {
 
 			if (tryGetPort(out port)) {
 				// get dir command
-				byte[] getDir = { /*0:get dir*/ 4, 0, 0, 0, 0, 0, 0, 0, 0, /* checksum */ 4 };
+				byte[] getDir = { 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* checksum */ 4 };
 
 				// serial communication				
 				port.Write(signature, 0, SIGNATURESIZE);
@@ -91,10 +91,10 @@ namespace Logger {
                 lines = new List<string>();
 
                 // get file command
-                char[] getFile = { 
-					/*0:get file*/ (char)5, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, /* checksum */ (char)5 
+                char[] getFile = { 					
+                    (char)5, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, /* checksum */ (char)5
 				};
-                Array.Copy(fileName.ToCharArray(), 0, getFile, 1, 8);
+                Array.Copy(fileName.ToCharArray(), 0, getFile, 1, fileName.Length);
 
                 // serial communication				
                 port.Write(signature, 0, SIGNATURESIZE);
@@ -163,140 +163,7 @@ namespace Logger {
             return bReady && lines != null && lines.Count > 0;
 		}
 
-        public bool TryGetFile1(string fileName, out List<string> lines, CancellationTokenSource cancellationToken)
-        {
-            lines = null;
-            bool bReady = false;
-
-            SerialPort port;
-
-            if (tryGetPort(out port))
-            {
-                lines = new List<string>();
-
-                // get file command
-                char[] getFile = { 
-					/*0:get file*/ (char)5, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, /* checksum */ (char)5 
-				};
-                Array.Copy(fileName.ToCharArray(), 0, getFile, 1, 8);
-
-                // serial communication				
-                port.Write(signature, 0, SIGNATURESIZE);
-                port.Write(getFile, 0, DATASIZE);
-
-                int fileSize = 0;
-                int read = 0;
-                int lastRead = 0;
-                const int BUFFER_SIZE = 30 * 1024;
-                char[] buffer = new char[BUFFER_SIZE];
-
-                // receive file size
-                {
-                    DateTime timeout = DateTime.UtcNow.Add(TimeSpan.FromMilliseconds(250));
-
-                    while (timeout.Subtract(DateTime.UtcNow).Ticks > 0)
-                    {
-                        try
-                        {
-                            read += port.Read(buffer, read, BUFFER_SIZE - read);
-
-                            int n1 = 0;
-                            int n2 = 0;
-                            if (FindData(buffer, BUFFER_SIZE, "<SIZE>", "</SIZE>", out n1, out n2))
-                            {
-                                fileSize = buffer[n1 + 3] << 24 | buffer[n1 + 2] << 16 | buffer[n1 + 1] << 8 | buffer[n1];
-                                fileSize -= ("<FILE</FILE>").Length;
-                                break;
-                            }
-                        }
-                        catch
-                        {
-                            //ignore throw;
-                        }
-                    }
-                }
-
-                // receive file data
-
-                if (fileSize > 0)
-                {
-                    DateTime timeout = DateTime.UtcNow.Add(TimeSpan.FromMilliseconds(250));
-
-                    while (timeout.Subtract(DateTime.UtcNow).Ticks > 0 && !cancellationToken.IsCancellationRequested)
-                    {
-                        try
-                        {
-                            read += port.Read(buffer, read, BUFFER_SIZE - read);
-
-                            int n1 = 0;
-                            int n2 = 0;
-                            if (FindData(buffer, BUFFER_SIZE, "<FILE>", "</FILE>", out n1, out n2))
-                            {
-
-                                StringBuilder sb = new StringBuilder();
-                                for (int i = n1; i < n2; i++)
-                                {
-                                    if (buffer[i] < 127)    // only temperature values less 127°C
-                                        sb.Append(buffer[i]);
-                                }
-
-                                string[] strings = sb.ToString().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-                                foreach (string line in strings)
-                                {
-                                    string[] values = line.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-                                    if (values.Length == 3)
-                                    {
-                                        for (int i = 1; i < 3; i++)
-                                        {
-                                            // Workaround: old files contains 255 in place of -1
-                                            int x = 0;
-                                            if (int.TryParse(values[i], out x))
-                                            {
-                                                if (x > 127)
-                                                {
-                                                    x = x - 256;
-                                                }
-                                                values[i] = x.ToString();
-                                            }
-                                        }
-                                        lines.Add(String.Format("{0}; {1}; {2}", values[0], values[1], values[2]));
-                                    }
-                                    else
-                                    {
-                                        lines.Add(line);
-                                    }
-                                }
-
-                                ReportProgress(100);
-                                bReady = true;
-                                break;  // while
-                            }
-
-                            if (lastRead != read)
-                            {
-                                timeout = DateTime.UtcNow.Add(TimeSpan.FromMilliseconds(250));
-                                lastRead = read;
-
-                                ReportProgress((int)((float)read / fileSize * 100));
-                            }
-
-                            Thread.Sleep(1);
-                        }
-                        catch (Exception e)
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                port.Close();
-            }
-
-            return bReady && lines != null && lines.Count > 0;
-        }
-
-        public bool TryWriteFile(string fileName)
+        public bool TryWriteFile(string filePathName)
         {
 
             SerialPort port;
@@ -305,10 +172,15 @@ namespace Logger {
             {
 
                 //port.DataReceived += port_DataReceived;
-                // get file command
-                char[] writeFile = { 
-					/*6:write file*/ (char)6, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, /* checksum */ (char)6 
+
+                // write file command              
+                char[] writeFile = { 					
+                    (char)6, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, /* checksum */ (char)6
 				};
+
+                string fileName = System.IO.Path.GetFileName(filePathName);
+
+                Array.Copy(fileName.ToCharArray(), 0, writeFile, 1, fileName.Length);
 
                 // serial communication				
                 port.Write(signature, 0, SIGNATURESIZE);
@@ -318,7 +190,7 @@ namespace Logger {
                 byte[] fileStart = Encoding.ASCII.GetBytes("<FILE>");
                 port.Write(fileStart, 0, fileStart.Length);
                 
-                var file = System.IO.File.Open(fileName /*@"Z:\ino\WebTemperatureLogger\Html\Chart_3.html"*/, System.IO.FileMode.Open);
+                var file = System.IO.File.Open(filePathName, System.IO.FileMode.Open);
                 
                 Thread.Sleep(250);
 
@@ -350,6 +222,35 @@ namespace Logger {
                 //}
 
                 file.Close();
+                port.Close();
+            }
+
+            return true;
+        }
+
+        public bool TryDeleteFile(string filePathName)
+        {
+
+            SerialPort port;
+
+            if (tryGetPort(out port))
+            {
+
+                //port.DataReceived += port_DataReceived;
+
+                // delete file command              
+                char[] deleteFile = { 					
+                    (char)7, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, /* checksum */ (char)7
+				};
+
+                string fileName = System.IO.Path.GetFileName(filePathName);
+
+                Array.Copy(fileName.ToCharArray(), 0, deleteFile, 1, fileName.Length);
+
+                // serial communication				
+                port.Write(signature, 0, SIGNATURESIZE);
+                port.Write(deleteFile, 0, DATASIZE);             
+
                 port.Close();
             }
 
@@ -511,9 +412,8 @@ namespace Logger {
 			SerialPort port;
 			
 			if (tryGetPort(out port)) {
-				// get temperature command
-				byte[] getTemperature = { /*0:get temperature*/ 2, sensorId, 0, 0, 0, 0, 0, 0, 0, /*checksum*/ 2 };
-
+				// get temperature command				
+                byte[] getTemperature = { 2, sensorId, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* checksum */ (byte)(2 + sensorId) };
 				// serial communication                
 				port.Write(signature, 0, SIGNATURESIZE);
 				port.Write(getTemperature, 0, DATASIZE);
@@ -541,8 +441,8 @@ namespace Logger {
 			SerialPort port;
 
 			if (tryGetPort(out port)) {				
-				// get temperature log command
-				byte[] getTemperature = { /*0:get log*/ 3, sensorId, 0, 0, 0, 0, 0, 0, 0, /*checksum*/ 3 };
+				// get temperature log command				
+                byte[] getTemperature = { 3, sensorId, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* checksum */ (byte)(2 + sensorId) };
 
 				// serial communication               
 				port.Write(signature, 0, SIGNATURESIZE);
@@ -589,7 +489,7 @@ namespace Logger {
 			            
             if (tryGetPort(out port))
             {                
-				byte[] time = { /*0:set time cmd*/ 0, /*1:hh*/ 0, /*2:mm*/ 0, /*3:ss*/ 0, /*4:empty*/ 0, /*5:empty*/ 0, /*6:empty*/ 0, /*7:empty*/ 0, /*8:empty */ 0, /*9:checksum*/ 0 };
+				byte[] time = { /*0:set time cmd*/ 0, /*1:hh*/ 0, /*2:mm*/ 0, /*3:ss*/ 0, /*4:empty*/ 0, /*5:empty*/ 0, /*6:empty*/ 0, /*7:empty*/ 0, /*8:empty */ 0, 0, 0, 0, 0, 0, 0, /*9:checksum*/ 0 };
 
 				time[1] = (byte)dateTime.Hour;
 				time[2] = (byte)dateTime.Minute;
@@ -609,8 +509,8 @@ namespace Logger {
 			SerialPort port;
 
 			if (tryGetPort(out port)) 
-			{		
-				byte[] date = { /*0:set date cmd*/ 1, /*1:yy*/ 0, /*2:yy*/ 0, /*3:mm*/ 0, /*4:dd   */ 0, /*5:empty*/ 0, /*6:empty*/ 0, /*7:empty*/ 0, /*8:empty */ 0, /*9:checksum*/ 0 };
+			{
+                byte[] date = { /*0:set date cmd*/ 1, /*1:yy*/ 0, /*2:yy*/ 0, /*3:mm*/ 0, /*4:dd   */ 0, /*5:empty*/ 0, /*6:empty*/ 0, /*7:empty*/ 0, /*8:empty */ 0, 0, 0, 0, 0, 0, 0, /*9:checksum*/ 0 };
 				date[1] = 0;
 				date[2] = (byte)(dateTime.Year - 2000);
 				date[3] = (byte)dateTime.Month;

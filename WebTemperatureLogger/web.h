@@ -26,11 +26,10 @@ IPAddress ip(192, 168, 2, 86); // 192.168.2.86
 EthernetServer server(80);
 
 class WebManager {
-  private:
-    int m_values[5];
+  private:    
     int m_temperatureLog[20];
     char m_ethBuffer[30];
-    bool m_logState;
+    bool m_logState;    
   public:
     void begin() {
       Rnd();
@@ -44,13 +43,9 @@ class WebManager {
     }
     
     void Rnd() {
-      for(int i = 0; i < 5; i++) {
-        m_values[i] = 0; //random(10) * 10;
-        //Serial.println(m_values[i]);
-      }
-      
+            
       for(int i = 0; i < 20; i++) {
-        m_temperatureLog[i] = random(12) * 10 - 20;
+        m_temperatureLog[i] = 0;//random(12) * 10 - 20;
       }
       
     }
@@ -69,32 +64,15 @@ class WebManager {
         unsigned char b = pgm_read_byte(page_pointer++);
         if (strncasecmp_P("%END",page_pointer,4)==0) {                  
           client->flush();
-          client->stop();
-          Rnd();
-          break;							
-        } else if (strncasecmp_P("%?", page_pointer, 2)==0) {
-          page_pointer += 2;
-          uint8_t idx = pgm_read_byte(page_pointer) - '0' - 1;
-
-          char buffer[5] = { 0 };
-          bin2asc(m_values[idx], buffer, 3);
-          client->print(buffer);
-          
-          page_pointer++;
-        } else if (strncasecmp_P("%LOGSTATE", page_pointer, 9)==0) {
-          if(m_logState)
-            client->print("checked");
-          page_pointer += 9;
-        } else if (strncasecmp_P("%FILES", page_pointer, 6)==0) {
-          files(client);
-          page_pointer += 6;        
+          client->stop();          
+          break;							              
         } else {                
           client->write(b);
         }
       }
     }
     
-    void sendPage2(EthernetClient* client) {     
+    void sendPageFromSDCard(EthernetClient* client) {     
 
       client->println(F("HTTP/1.1 200 OK"));
       client->println(F("Content-Type: text/html"));
@@ -102,35 +80,95 @@ class WebManager {
       //client->println("Refresh: 5");  // refresh the page automatically every 5 sec
       client->println();
 
-      
+
       SD_ACTIVE();
 
       if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {
                    
           if(file.open("INDEX.HTM", O_READ)) {                    
-            Serial.println("file");
-            for(int i = 0; i < file.fileSize(); i++) {
-                    
+            ETH_ACTIVE();
+            for(int i = 0; i < file.fileSize(); i++) {                    
               char c = (char)file.read();
               //Serial.print(c);
-              ETH_ACTIVE();
-              
-              client->write(c);
-              
-              SD_ACTIVE();
+                            
+              client->write(c);              
+              //SD_ACTIVE();
             }
-                        
+            
             file.close();
           }
+          
       }
        
-       ETH_ACTIVE();
+      ETH_ACTIVE();
       
       client->flush();
       client->stop();
     }
     
-    void xmlResponse(EthernetClient* client) {
+    void sendPageFromSDCard1(EthernetClient* client) {     
+
+      client->println(F("HTTP/1.1 200 OK"));
+      client->println(F("Content-Type: text/html"));
+      client->println(F("Connection: close"));  // the connection will be closed after completion of the response
+      //client->println("Refresh: 5");  // refresh the page automatically every 5 sec
+      client->println();
+
+
+      SD_ACTIVE();
+
+      if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {
+                   
+          if(file.open("INDEX.HTM", O_READ)) {                    
+            
+            for(int i = 0; i < file.fileSize(); i++) {                    
+              char c = (char)file.read();
+              //Serial.print(c);
+              ETH_ACTIVE();              
+              client->write(c);              
+              SD_ACTIVE();
+            }
+            
+            file.close();
+          }
+          
+      }
+       
+      ETH_ACTIVE();
+      
+      client->flush();
+      client->stop();
+    }
+    
+    void sendFile(EthernetClient* client, char* fileName) {
+      client->println(F("HTTP/1.0 200 OK"));
+      client->println(F("Content-Type: text/csv"));
+      client->println(F("Connnection: close"));
+      client->println(F("Content-disposition: attachment;filename=file.csv"));
+      client->println();
+      
+      SD_ACTIVE();
+
+      if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {                  
+          if(file.open(fileName, O_READ)) {
+            for(int i = 0; i < file.fileSize(); i++) {
+              char c = (char)file.read();
+              //Serial.print(c);
+              ETH_ACTIVE();
+              client->write(c);
+              SD_ACTIVE();
+            }                        
+            file.close();
+          }
+      }       
+      
+      ETH_ACTIVE();
+      
+      client->flush();
+      client->stop();
+    }
+    
+    void sendTemperatureRamLog(EthernetClient* client) {
       client->println(F("HTTP/1.0 200 OK"));
       client->println("Content-Type: text/xml");
       client->println("Connection: keep-alive");
@@ -154,7 +192,7 @@ class WebManager {
       m_temperatureLog[18] = random(12) * 10 - 20;
     }
     
-    void xmlDirResponse(EthernetClient* client) {      
+    void sendLogFilesDir(EthernetClient* client) {      
       client->println(F("HTTP/1.0 200 OK"));
       client->println("Content-Type: text/xml");
       client->println("Connection: keep-alive");
@@ -208,6 +246,14 @@ class WebManager {
       client->stop();
     }
     
+    uint8_t GetFileNameLength(char* buffer) {
+      char* pDot = strstr(buffer, ".");
+      if (pDot) {
+        return pDot - buffer + 4;		
+      }
+      return 0;
+    }
+    
     void dispatch() {
       EthernetClient client = server.available();
       if (client) {
@@ -221,23 +267,29 @@ class WebManager {
             
             m_ethBuffer[sizeof(m_ethBuffer) - 2] = c;
             
-            if (strncasecmp_P(m_ethBuffer, PSTR("GET /file.txt"), 13)==0) {
-              Serial.println("match file");
-              sendPage2(&client);
+            if (strncasecmp_P(m_ethBuffer, PSTR("GET /file"), 9)==0) {              
+              uint8_t l = GetFileNameLength(m_ethBuffer + 10);
+              if (l > 0 && l < 13) {                
+                char name[13] = { 0 };
+                strncpy(name, m_ethBuffer + 10, l);
+                sendFile(&client, name);
+              } else {
+                Serial.println("file not found");
+              }
             } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /?SUB=Start+Log"), 19)==0) {
               m_logState = true;
             } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /?SUB=Stopp+Log"), 19)==0) {
               m_logState = false;
             } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /temperatur_data"), 16)==0) {
-              xmlResponse(&client);
+              sendTemperatureRamLog(&client);
             } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /dir"), 8)==0) {
-              xmlDirResponse(&client);
+              sendLogFilesDir(&client);
             } else {
               // if you've gotten to the end of the line (received a newline
               // character) and the line is blank, the http request has ended,
               // so you can send a reply
               if (c == '\n' && currentLineIsBlank) {
-                sendPage2(&client);
+                sendPageFromSDCard(&client);
               }
               if (c == '\n') {
                 // you're starting a new line
@@ -261,23 +313,7 @@ class WebManager {
         }
       }
     }
-    
-    
-    
-//    void files(Stream* stream) {
-//    //<option>file.csv</option>      
-//      for (uint8_t i = 0; i < 10; i++)
-//      {		
-//        char buffer[50] = { 0 };        
-//        strcpy_P(buffer, PSTR("<option>????.csv</option>"));
-//        bin2asc(i, &buffer[8], 4);        
-//        stream->println(buffer);
-//      }
-//    }
-    
-    void files(Stream* stream) {
-      
-    }
+   
 };
 
 WebManager Web;

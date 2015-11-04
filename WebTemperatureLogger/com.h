@@ -8,19 +8,20 @@
  */
 
 
-#define SIGNATURE_SIZE 4
-#define DATA_SIZE 9
+#define SIGNATURE_SIZE        4
+#define DATA_SIZE             15
 
-#define CMD_TIME 0
-#define CMD_DATE 1
-#define CMD_SENSOR_VALUES 2
-#define CMD_TEMP_LOG 3
-#define CMD_DIRECTORY 4
-#define CMD_FILE 5
-#define CMD_FILE_UPLOAD 6
+#define CMD_TIME              0
+#define CMD_DATE              1
+#define CMD_SENSOR_VALUES     2
+#define CMD_TEMP_LOG          3
+#define CMD_DIRECTORY         4
+#define CMD_FILE              5
+#define CMD_FILE_UPLOAD       6
+#define CMD_DELETE_ALLFILES   7
 
-#define OP_DIR 0
-#define OP_DELETE_ALL 1
+#define OP_DIR                0
+#define OP_DELETE_ALL         1
 
 static uint8_t Signature[] = { 0xCC, 0x33, 0x55, 0xAA };
 
@@ -101,54 +102,18 @@ class Comunication {
           }         
           break;
         }
-        case CMD_DIRECTORY:
-          SD_ACTIVE();
-          if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {
-            // "Name          Modify Date/Time    Size";
-            //Fat16::ls(LS_DATE | LS_SIZE);
-            sdOperation(OP_DIR);
-            Serial.println(F("EOF"));
-          } else {
-            Serial.println(F("card failed!"));
-          }
-          ETH_ACTIVE();
-          break;          
-        case CMD_FILE:
-          SD_ACTIVE();
-          if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {
-            char name[] = "01234567.TXT";
-            name[0] = data[1];
-            name[1] = data[2];
-            name[2] = data[3];
-            name[3] = data[4];
-            name[4] = data[5];
-            name[5] = data[6];
-            name[6] = data[7];
-            name[7] = data[8];            
-            if(file.open("INDEX.HTM", O_READ)) {
-              uint32_t nFileSize = file.fileSize();
-              uint8_t* pFileSize = (uint8_t*)&nFileSize;
-              Serial.print(F("<SIZE>"));
-              Serial.write(*pFileSize++);
-              Serial.write(*pFileSize++);
-              Serial.write(*pFileSize++);
-              Serial.write(*pFileSize);
-              Serial.print(F("</SIZE>"));
-              
-              Serial.print(F("<FILE>"));
-              for(int i = 0; i < file.fileSize(); i++) {
-                Serial.write((char)file.read());
-              }
-              Serial.print(F("</FILE>"));
-              
-              file.close();
-            }                        
-          } else {
-            Serial.println(F("card failed!"));
-          }
-          ETH_ACTIVE();
+        case CMD_DIRECTORY: {
+          sendDir();
           break;
-        
+        }
+        case CMD_DELETE_ALLFILES: {
+          deleteFile();
+          break;
+        }
+        case CMD_FILE: {
+          sendFile();
+          break;
+        }
         case CMD_FILE_UPLOAD: {          
           receiveFile();
           break;
@@ -158,6 +123,36 @@ class Comunication {
       bValid = false;
     }
     
+    void sendFile(void) {
+      SD_ACTIVE();
+      if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {
+        char name[13] = { 0 };
+        strncpy(name, data + 1, 12);
+        
+        if(file.open(name, O_READ)) {
+          uint32_t nFileSize = file.fileSize();
+          uint8_t* pFileSize = (uint8_t*)&nFileSize;
+          Serial.print(F("<SIZE>"));
+          Serial.write(*pFileSize++);
+          Serial.write(*pFileSize++);
+          Serial.write(*pFileSize++);
+          Serial.write(*pFileSize);
+          Serial.print(F("</SIZE>"));
+          
+          Serial.print(F("<FILE>"));
+          for(int i = 0; i < file.fileSize(); i++) {
+            Serial.write((char)file.read());
+          }
+          Serial.print(F("</FILE>"));
+          
+          file.close();
+        }                        
+      } else {
+        Serial.println(F("card failed!"));
+      }
+      ETH_ACTIVE();
+    }
+    
     void receiveFile(void) {
       SD_ACTIVE();          
       Serial.println("<FILEUPLOAD>");
@@ -165,8 +160,11 @@ class Comunication {
       uint8_t state = 0;
       
       if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {
-        file.remove("INDEX.HTM");   
-        if(file.open("INDEX.HTM", O_CREAT | O_EXCL | O_WRITE)) {                    
+        char name[13] = { 0 };
+        strncpy(name, data + 1, 12);       
+        
+        file.remove(name);   
+        if(file.open(name, O_CREAT | O_EXCL | O_WRITE)) {                    
           while(state != 2) {
             if(Serial.available() > 0) {
               char c = (char)Serial.read();
@@ -176,7 +174,8 @@ class Comunication {
               switch(state) {
                 case 0: {                 
                   if (strncasecmp_P(buffer, PSTR("<FILE>"), 6)==0) {                  
-                    state = 1;                    
+                    state = 1;
+                    file.write(buffer[6]);
                   }
                   break;
                 }
@@ -184,8 +183,9 @@ class Comunication {
                 case 1: {
                   if (strncasecmp_P(buffer + 6, PSTR("</FILE>"), 7)==0) {
                     state = 2;
+                  } else {
+                    file.write(buffer[6]);
                   }
-                  file.write(buffer[6]);
                   break;
                 }
                 
@@ -208,14 +208,28 @@ class Comunication {
       ETH_ACTIVE();
     }
     
-    void sdOperation(uint8_t op) {
-      Serial.print(F("<DIR>"));
+    void deleteFile(void) {
+      SD_ACTIVE();
       
-      dir_t d;
-      for (uint16_t index = 0; Fat16::readDir(&d, &index, DIR_ATT_VOLUME_ID); index++) {                   
-        if(op == OP_DELETE_ALL) {
-          Fat16::remove((char*)d.name);
-        } else if(op == OP_DIR) {
+      char buffer[20] = { 0 };
+      uint8_t state = 0;
+      
+      if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {
+        char name[13] = { 0 };
+        strncpy(name, data + 1, 12);       
+        
+        file.remove(name);
+      }
+      
+      ETH_ACTIVE();
+    }
+    
+    void sendDir() {
+      SD_ACTIVE();
+      if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {
+        Serial.print(F("<DIR>"));
+        dir_t d;
+        for (uint16_t index = 0; Fat16::readDir(&d, &index, DIR_ATT_VOLUME_ID); index++) {        
           for (uint8_t i = 0; i < 11; i++) {
             if (d.name[i] == ' ') continue;
             if (i == 8) {
@@ -223,11 +237,14 @@ class Comunication {
             }
             Serial.write(d.name[i]);
           }          
-          Serial.println();
+          Serial.println();        
         }
-      }
       
-      Serial.print(F("</DIR>"));
+        Serial.print(F("</DIR>"));
+      } else {
+        Serial.println(F("card failed!"));
+      }
+      ETH_ACTIVE();
     }
     
     void sendDayLogData(int8_t* pData, uint32_t nSize) {
