@@ -84,64 +84,45 @@ class LogEventManager {
     public:        
       unsigned bLog:1;
       unsigned bEnabled:1;
-      
-      uint8_t mode;
-      uint8_t last;
+    
+      uint32_t last;    
+      uint16_t interval;  // seconds
+    
+    private:
+      int16_t delta;
          
     public:
-      LogEventManager() {        
-        setMode(LOG_INTERVAL_HOUR);
+      LogEventManager() {
         bEnabled = false;
       }
 
       void dispatch() {
         bLog = false;
         
-        if(!bEnabled)
+        if(!bEnabled || interval == 0)
           return;
-
-        switch(mode) {			
-          case LOG_INTERVAL_HOUR:
-            if(RTC.getHours() != last) {              
-              last = RTC.getHours();
-              bLog = true;              
-            }
-            break;
-          case LOG_INTERVAL_MINUTE:
-            if(RTC.getMinutes() != last) {              
-              last = RTC.getMinutes();
-              bLog = true;              
-            }
-            break;
-//          case LOG_INTERVAL_SECOND:
-//            if(RTC.b1S) {					
-//              if(--last == 0) {                
-//                bLog = true;
-//                last = LOG_INTERVAL_5S;
-//              }
-//            }
-//            break;
+        
+        uint32_t current = (RTC.getHours() * 3600) + 
+          (RTC.getMinutes() * 60) + RTC.getSeconds();
+        
+        delta -= (current - last);
+        last = current;
+        
+        if(delta > interval) {
+          delta = interval;
+        } else if(delta <= 0) {
+          delta = interval;
+          bLog = true;
         }
-      }
-      
-      void setMode(uint8_t newMode) {
-        mode = newMode;
-        switch(mode) {
-          case LOG_INTERVAL_HOUR:
-            last = RTC.getHours();
-            break;
-          case LOG_INTERVAL_MINUTE:
-            last = RTC.getMinutes();
-            break;
-//          case LOG_INTERVAL_SECOND:
-//            last = LOG_INTERVAL_5S;
-//            break;
-        }
+        
       }
       
       void begin() {
         bEnabled = true;        
         bLog = false;
+        last = 0;
+        delta = 0;
+        interval = 0;
       }
       
       void stop() {        

@@ -13,8 +13,8 @@
 
 SdCard card;
 Fat16 file;
-
-char name[] = "yyyymmnn.TXT";
+            // 012345678901
+char name[] = "00000000.LOG";
 
 class LogData {
   public:
@@ -23,30 +23,31 @@ class LogData {
        
     int8_t temperature1Log[LOG_DATA_SIZE];
     int8_t temperature2Log[LOG_DATA_SIZE];
-  
-    uint8_t month; 
     int8_t count;
 	
   public:   
     LogData() {
-      bLog2SdEnabled = true;
-      bLogFileAvailable = false;
-      month = 0;
+      bLog2SdEnabled = false;
+      bLogFileAvailable = false;      
       count = 0;
     }   
   
+    void stopLog() {
+      bLog2SdEnabled = false;
+      bLogFileAvailable = false; 
+    }
+    
+    void startLog() {
+      bLog2SdEnabled = true;
+      createNewLogFile();
+    }
+    
     void dispatch() {
       if (LogEvents.bLog) {       
         pushBack(temperature1Log, Measure.temperature, count);
         pushBack(temperature2Log, Measure.temperature2, count);        
         
-        if(bLog2SdEnabled) {
-          // create new file every month          
-          if(RTC.getMonth() != month) {
-            month = RTC.getMonth();
-            createNewLogFile();
-          }
-          
+        if(bLog2SdEnabled) {          
           if(bLogFileAvailable) {
             log2File(Measure.temperature, Measure.temperature2);
           }          
@@ -95,21 +96,25 @@ class LogData {
     }
     
     void log2File(int8_t value1, int8_t value2) {
+      SD_ACTIVE();
+      
       // initialize the SD card
-      if (!card.init()) {
-        Serial.println(F("Error: int SD card"));
+      if (!card.init(0, SS_SD_CARD)) {
+        Serial.println(F("Error: SD card init"));
         file.close();
+        ETH_ACTIVE();
         return;
       }
       // initialize a FAT16 volume
       if (!Fat16::init(&card)) {
         file.close();
-        Serial.println(F("Fat16::init"));
+        Serial.println(F("Error: Fat16::init"));
+        ETH_ACTIVE();
         return;
-      }
+      }      
       
       if (file.open(name, O_APPEND | O_EXCL | O_WRITE)) {
-                      // 01234567890123456789012345678
+                      // 0123456789012345678901234567890
         char buffer[] = "yyyy-mm-dd hh:mm:ss; 0000; 0000";
         bin2asc(RTC.getYear(), buffer, 4);
         bin2asc(RTC.getMonth(), &buffer[5], 2);
@@ -122,32 +127,38 @@ class LogData {
         file.println(buffer);      
         file.close();
       }
+      
+      ETH_ACTIVE();
     }
     
     void createNewLogFile() {
+      SD_ACTIVE();
+      
       // initialize the SD card
-      if (!card.init()) Serial.println(F("Error: int SD card"));
+      if (!card.init(0, SS_SD_CARD)) Serial.println(F("Error: int SD card"));
       // initialize a FAT16 volume
       if (!Fat16::init(&card)) Serial.println(F("Fat16::init"));
       
       // create a new file
-      //                012345678901
-      char name[] = "yyyymmnn.TXT";
+      //     012345678901
+      //    "00001.LOG"
       
-      for (uint8_t i = 0; i < 100; i++) {
-        bin2asc(RTC.getYear(), name, 4);
-        bin2asc(RTC.getMonth(), &name[4], 2);
-        name[0] = '2'; // Year 2000
-        name[6] = i/10 + '0';
-        name[7] = i%10 + '0';
+      for (int i = 1; i < 10000; i++) {
+        bin2asc(i, name, 5);
+        name[5] = '.';
+        name[6] = 'L';
+        name[7] = 'O';
+        name[8] = 'G';
+        name[9] = 0;
         //Serial.println(name);
         // O_CREAT - create the file if it does not exist
         // O_EXCL - fail if the file exists
         // O_WRITE - open for write
-        //if (file.open(name, O_CREAT | O_EXCL | O_WRITE)) break;
-        if (file.open(name, O_CREAT | O_WRITE)) break;
+        if (file.open(name, O_CREAT | O_EXCL | O_WRITE)) break;
+        //if (file.open(name, O_CREAT | O_WRITE)) break;
       }
       if (file.isOpen()) {
+        Serial.println("Log start");
         file.write_P(PSTR("Logger\r\n"));
         file.close();
         bLogFileAvailable = true;
@@ -155,6 +166,8 @@ class LogData {
         bLogFileAvailable = false;
         Serial.println(F("Error: file.open"));
       }
+      
+      ETH_ACTIVE();
     }
 };
 

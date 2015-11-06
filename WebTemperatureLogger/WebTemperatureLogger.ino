@@ -56,9 +56,9 @@ void setup() {
   digitalWrite(SS_ETHERNET, LOW);  // Ethernet ACTIVE
   Web.begin();
   
-  //LogEvents.begin();
-  //LogEvents.setMode(LOG_INTERVAL_HOUR); 
+  LogEvents.begin();  
   
+  Serial.println();
   Serial.print("server is at ");
   Serial.println(Ethernet.localIP());
 }
@@ -68,7 +68,7 @@ void loop() {
   Events.dispatch();
   LogEvents.dispatch();  
   Measure.dispatch();
-  //LogData.dispatch();
+  LogData.dispatch();
   Com.dispatch();
   Web.dispatch();
 }

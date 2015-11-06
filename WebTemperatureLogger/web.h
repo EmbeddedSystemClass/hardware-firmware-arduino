@@ -83,63 +83,33 @@ class WebManager {
 
       SD_ACTIVE();
 
-      if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {
-                   
-          if(file.open("INDEX.HTM", O_READ)) {                    
-            ETH_ACTIVE();
-            for(int i = 0; i < file.fileSize(); i++) {                    
-              char c = (char)file.read();
-              //Serial.print(c);
-                            
-              client->write(c);              
-              //SD_ACTIVE();
-            }
+      if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) 
+      {                   
+          if(file.open("INDEX.HTM", O_READ)) {
+            char buffer[160];
+            size_t size;
             
-            file.close();
-          }
-          
-      }
-       
-      ETH_ACTIVE();
-      
-      client->flush();
-      client->stop();
-    }
-    
-    void sendPageFromSDCard1(EthernetClient* client) {     
-
-      client->println(F("HTTP/1.1 200 OK"));
-      client->println(F("Content-Type: text/html"));
-      client->println(F("Connection: close"));  // the connection will be closed after completion of the response
-      //client->println("Refresh: 5");  // refresh the page automatically every 5 sec
-      client->println();
-
-
-      SD_ACTIVE();
-
-      if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {
-                   
-          if(file.open("INDEX.HTM", O_READ)) {                    
-            
-            for(int i = 0; i < file.fileSize(); i++) {                    
-              char c = (char)file.read();
-              //Serial.print(c);
-              ETH_ACTIVE();              
-              client->write(c);              
+            for(;;) {              
               SD_ACTIVE();
-            }
+              size = file.read(buffer, sizeof(buffer));
+              
+              ETH_ACTIVE();
+              if (size == 0 || !client->connected()) {
+                break;
+              }              
+              client->write(buffer, size);              
+            }          
             
             file.close();
-          }
-          
+          }          
       }
        
       ETH_ACTIVE();
       
       client->flush();
       client->stop();
-    }
-    
+    }   
+        
     void sendFile(EthernetClient* client, char* fileName) {
       client->println(F("HTTP/1.0 200 OK"));
       client->println(F("Content-Type: text/csv"));
@@ -192,6 +162,34 @@ class WebManager {
       m_temperatureLog[18] = random(12) * 10 - 20;
     }
     
+    void sendSystemState(EthernetClient* client) {
+      client->println(F("HTTP/1.0 200 OK"));
+      client->println("Content-Type: text/xml");
+      client->println("Connection: keep-alive");
+      client->println();
+      // send XML file containing status
+      
+      client->print("<?xml version = \"1.0\" ?>");
+      client->print("<state>");
+      
+        client->print("<logstate>");
+        client->print(m_logState);
+        client->print("</logstate>");
+      
+        client->print("<loginterval>");
+        client->print(LogEvents.interval);
+        client->print("</loginterval>");
+
+      client->print("</state>");
+      client->flush();
+      client->stop();
+      
+      for(int i = 0; i < 19; i++) {
+        m_temperatureLog[i] = m_temperatureLog[i+1];
+      }
+      m_temperatureLog[18] = random(12) * 10 - 20;
+    }
+    
     void sendLogFilesDir(EthernetClient* client) {      
       client->println(F("HTTP/1.0 200 OK"));
       client->println("Content-Type: text/xml");
@@ -203,12 +201,9 @@ class WebManager {
       client->print("<?xml version = \"1.0\" ?>");
       
       SD_ACTIVE();
-      if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {
-        // "Name          Modify Date/Time    Size";
-        //Fat16::ls(LS_DATE | LS_SIZE);
-        
+      if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {       
         ETH_ACTIVE();
-        client->print(F("<dir>"));
+        client->print(F("<dir>"));        
         SD_ACTIVE();
         
         dir_t d;
@@ -254,6 +249,27 @@ class WebManager {
       return 0;
     }
     
+    bool GetUInt16FromString(char* buffer, uint16_t* pInterval, char* sep) {
+      *pInterval = 0;
+      char* pNChar = strstr(buffer, sep);
+      if (pNChar) {
+        uint16_t n = 1;
+        while (pNChar-- > buffer) {          
+          *pInterval += (*pNChar - '0')  * n;
+          n *= 10;
+        }
+        return true;
+      }
+      return false;
+    }
+    
+    void setLogInterval() {      
+      uint16_t interval = 0;
+      if(GetUInt16FromString(m_ethBuffer + 21, &interval, " ")) {
+        LogEvents.interval = interval;
+      }      
+    }
+    
     void dispatch() {
       EthernetClient client = server.available();
       if (client) {
@@ -276,14 +292,20 @@ class WebManager {
               } else {
                 Serial.println("file not found");
               }
-            } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /?SUB=Start+Log"), 19)==0) {
+            } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /start_log"), 14)==0) {
               m_logState = true;
-            } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /?SUB=Stopp+Log"), 19)==0) {
+              LogData.startLog();
+            } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /stopp_log"), 14)==0) {
               m_logState = false;
-            } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /temperatur_data"), 16)==0) {
+              LogData.stopLog();
+            } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /set_loginterval"), 20)==0) {
+              setLogInterval();
+            } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /temperatur_data"), 20)==0) {
               sendTemperatureRamLog(&client);
             } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /dir"), 8)==0) {
               sendLogFilesDir(&client);
+            } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /system_state"), 17)==0) {
+              sendSystemState(&client);
             } else {
               // if you've gotten to the end of the line (received a newline
               // character) and the line is blank, the http request has ended,
