@@ -4,27 +4,30 @@
 <head>
   <title>Temperature</title>
 <script>
-    const GRAPH_TOP = 25;
-    const GRAPH_LEFT = 50;
-    const GRAPH_WIDTH = 20 * 25;
-    const GRAPH_HEIGHT = 13 * 25;
+    const LOG_DATA_SIZE     = 24;
+     
+    const GRAPH_TOP         = 25;
+    const GRAPH_LEFT        = 50;
+    const GRAPH_WIDTH       = LOG_DATA_SIZE * 25;
+    const GRAPH_HEIGHT      = 13 * 25;
     
-    const GRAPH_MARGIN_PY = 25;
-    const GRAPH_MARGIN_PX = 25;
-    const GRAPH_GRID_PY = 25;
-    const GRAPH_GRID_PX = 25;
-    const GRAPH_ZERO_PY = GRAPH_TOP + GRAPH_MARGIN_PY + 10 * GRAPH_GRID_PY;
-    
-    
-    var data = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+    const GRAPH_MARGIN_PY   = 25;
+    const GRAPH_MARGIN_PX   = 25;
+    const GRAPH_GRID_PY     = 25;
+    const GRAPH_GRID_PX     = 25;
+    const GRAPH_ZERO_PY     = GRAPH_TOP + GRAPH_MARGIN_PY + 10 * GRAPH_GRID_PY;
+         
+    var data = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
     var svgNS = "http://www.w3.org/2000/svg";  
     
     function Init()
     {	
         DrawChart();
         IntervalComboInit();
-        //GetTemperature();
-        UpdateGraphDummy();
+        
+        OnRefreshState();
+        GetTemperature();
+        //UpdateGraphDummy();        
     }
     
     function DrawChart()
@@ -35,7 +38,7 @@
     
     function InitPath()
     {
-        for(var i = 0; i < 20; i++) {
+        for(var i = 0; i < LOG_DATA_SIZE; i++) {
             data[i] = 0;
         } 
         
@@ -47,7 +50,7 @@
         path.setAttributeNS(null,"class","first_set");
                
         var pathAttrib = "M" + (GRAPH_LEFT + GRAPH_MARGIN_PX) + ", " + GRAPH_ZERO_PY;                
-        for(var i = 0; i < 21; i++) {            
+        for(var i = 0; i < LOG_DATA_SIZE + 1; i++) {            
             pathAttrib += " L0, 0";            
         }        
         pathAttrib += " Z";
@@ -61,7 +64,7 @@
         gCircles.setAttributeNS(null, "data-setname", "Our first data set");
         
         var x = 45;
-        for(var i = 0; i < 20; i++) {
+        for(var i = 0; i < LOG_DATA_SIZE; i++) {
             var circle = document.createElementNS(svgNS,"circle")
             circle.setAttributeNS(null,"id","c" + i);
             circle.setAttributeNS(null,"cx",x);
@@ -84,7 +87,7 @@
         
         // draw vertical lines
         var x = GRAPH_LEFT + GRAPH_MARGIN_PX;
-        for(var i = 0; i < 20; i++) {            
+        for(var i = 0; i < LOG_DATA_SIZE; i++) {            
             var line = document.createElementNS(svgNS,"line");
             line.setAttributeNS(null,"x1",x);
             line.setAttributeNS(null,"x2",x);
@@ -112,7 +115,7 @@
         xAxis.setAttributeNS(null, "id", "xAxisLabels");
         
         x = GRAPH_LEFT + GRAPH_MARGIN_PX;
-        for(var i = 1; i < 21; i++) {            
+        for(var i = 1; i < LOG_DATA_SIZE + 1; i++) {            
             var text = document.createElementNS(svgNS,"text");
             text.setAttributeNS(null,"x", x);
             text.setAttributeNS(null,"y", GRAPH_TOP + GRAPH_HEIGHT + 2 * GRAPH_MARGIN_PY);         
@@ -156,7 +159,7 @@
             if (this.readyState == 4) {
                 if (this.status == 200) {
                     if (this.responseXML != null) {
-                        for(var i = 0; i < 20; i++) {
+                        for(var i = 0; i < LOG_DATA_SIZE; i++) {
                             data[i] = this.responseXML.getElementsByTagName('analog')[i].childNodes[0].nodeValue;
                         }
                         UpdateGraph();
@@ -181,10 +184,10 @@
         segments.getItem(0).y = GRAPH_ZERO_PY;
         segments.getItem(0).x = x;
         
-        segments.getItem(21).y = GRAPH_ZERO_PY;
-        segments.getItem(21).x = GRAPH_LEFT + GRAPH_WIDTH;
+        segments.getItem(LOG_DATA_SIZE + 1).y = GRAPH_ZERO_PY;
+        segments.getItem(LOG_DATA_SIZE + 1).x = GRAPH_LEFT + GRAPH_WIDTH;
             
-        for(var i = 0; i < 20; i++) {
+        for(var i = 0; i < LOG_DATA_SIZE; i++) {
             var y = data[i] * -2.5 + GRAPH_ZERO_PY;
             var circle = document.getElementById("c" + i);			
             circle.setAttributeNS(null, "cy", y);
@@ -196,11 +199,7 @@
             segments.getItem(i+1).x = x;
             
             x += GRAPH_GRID_PX;
-        }        
-        
-        for(var i = 0; i < 21; i++) {
-            data[i] = data[i + 1];
-        }        
+        }      
     }
     
     function UpdateGraphDummy()
@@ -216,7 +215,7 @@
         segments.getItem(21).y = GRAPH_ZERO_PY;
         segments.getItem(21).x = GRAPH_LEFT + GRAPH_WIDTH;
             
-        for(var i = 0; i < 20; i++) {
+        for(var i = 0; i < LOG_DATA_SIZE; i++) {
             var y = data[i] * -2.5 + GRAPH_ZERO_PY;
             var circle = document.getElementById("c" + i);			
             circle.setAttributeNS(null, "cy", y);
@@ -232,7 +231,7 @@
         }
 
 
-        data[20] = 20;//Math.random() * 100;
+        data[LOG_DATA_SIZE] = 20;//Math.random() * 100;
         
         for(var i = 0; i < 21; i++) {
             data[i] = data[i + 1];
@@ -246,6 +245,9 @@
         var request = new XMLHttpRequest();
         request.open("GET", "start_log", true);
         request.send(null);
+                
+        setTimeout("OnRefreshState()", 500);
+        setTimeout("OnRefreshLogFilesButtonClick()", 1000);
     }
     
     function OnStoppLog()
@@ -253,6 +255,8 @@
         var request = new XMLHttpRequest();
         request.open("GET", "stopp_log", true);
         request.send(null);
+        
+        setTimeout("OnRefreshState()", 500);
     }
     
     function OnRefreshLogFilesButtonClick()
@@ -268,9 +272,11 @@
                       select.innerHTML = "";
                       for(var i = 0; i < this.responseXML.getElementsByTagName('dir')[0].childElementCount; i++) {
                         var fileName = this.responseXML.getElementsByTagName('dir')[0].children[i].innerHTML;
-                        var option = document.createElement("option");
-                        option.innerHTML = fileName;
-                        select.add( option );
+                        if(fileName.toLowerCase().indexOf(".log") > 0) {
+                          var option = document.createElement("option");
+                          option.innerHTML = fileName;
+                          select.add( option );
+                        }
                       }
                   }
               }
@@ -291,10 +297,21 @@
       }     
     }
     
-    function onError(e) {
-      console.log('Error', e);
+    function OnDeleteLogFileButtonClick()
+    {    
+      var select = document.getElementById("logFiles");
+      var idx = select.selectedIndex;
+      if(idx >= 0) {
+        var fileName = select.options[idx].value;
+        
+        var request = new XMLHttpRequest();
+        request.open("GET", "delete/" + fileName, true);
+        request.send(null);
+        
+        setTimeout("OnRefreshLogFilesButtonClick()", 500);
+      }
     }
-    
+   
     function OnDownloadLogFile(fileName)
     {
       //window.open("file/" + fileName,'Download'); 
@@ -303,7 +320,60 @@
     }
     
     function OnRefreshState() {
-      // todo
+      var request = new XMLHttpRequest();
+  
+      request.onreadystatechange = function()
+      {
+          if (this.readyState == 4) {
+              if (this.status == 200) {
+                  if (this.responseXML != null) {
+                    // Logstate
+                    var logState = this.responseXML.getElementsByTagName('state')[0].childNodes[0].innerHTML == "1";
+                    var stateLabel = document.getElementById("stateLabel");
+                    if(logState) {
+                      stateLabel.innerText = "On";
+                    } else {
+                      stateLabel.innerText = "Off";
+                    }
+                    
+                    // Interval
+                    var intervalInputBox = document.getElementById("intervalInput");
+                    intervalInputBox.value = parseInt(this.responseXML.getElementsByTagName('state')[0].childNodes[1].innerHTML);
+                    
+                    // Enable Delete button
+                    var deleteFileButton = document.getElementById("deleteButton");
+                    deleteFileButton.disabled  = logState;
+                    
+                    // System date time
+                    var systemDateTimeLabel = document.getElementById("systemDateTimeLabel");
+                    systemDateTimeLabel.innerHTML  = this.responseXML.getElementsByTagName('state')[0].childNodes[2].innerHTML;
+                  }
+              }
+          }
+      }
+
+      request.open("GET", "system_state", true);
+      request.send(null);
+    }
+    
+    function OnRefreshDateTimeButtonClick() {
+      var request = new XMLHttpRequest();
+  
+      request.onreadystatechange = function()
+      {
+          if (this.readyState == 4) {
+              if (this.status == 200) {
+                  if (this.responseXML != null) {
+                    // System date time
+                    var systemDateTimeLabel = document.getElementById("systemDateTimeLabel");
+                    systemDateTimeLabel.innerHTML  = this.responseXML.getElementsByTagName('state')[0].childNodes[2].innerHTML;
+                  }
+              }
+          }
+      }
+
+      request.open("GET", "system_state", true);
+      request.send(null);
     }
     
     function IntervalComboInit()
@@ -350,7 +420,7 @@
       }
       svg.graph {	    
         height: 400px;
-        width: 600px;
+        width: 700px;
       }
       svg.graph .grid {
         stroke: white;
@@ -402,43 +472,39 @@
       <svg id = 'temp-graph' class='graph' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink' xmlns='http://www.w3.org/2000/svg'>
   </fieldset>
    <p/>
-  <fieldset name="logging">
+  <fieldset name="logging" style="width: 700px">
       <legend>Logging</legend>
-      <table style="width:100%">
-        <tr>
-          <td>
-              <input name="START_LOG" value="Start Log" type="button" onclick="OnStartLog()">
-              <input name="STOPP_LOG" value="Stopp Log" type="button" onclick="OnStoppLog()">
-          </td>
-          <td>
-              <label>Interval[s]:</label>		
-              <input type="text" id="intervalInput" name="intervalInput" style="width: 50px" onkeypress="intervalInputHandle(event)"/>
-              <select id="intervalCombo" name="intervalCombo" onChange="IntervalComboOnChange()">
-                  <option value="1">1s</option>
-                  <option value="60">1m</option>
-                  <option value="600">10m</option>
-                  <option value="3600">1h</option>
-              </select>    
-          </td> 
-          <td>			
-              <label>State:</label>	
-              <label id = "stateLabel"><font color="red"><b>Off</b></font></label>              
-          </td>
-          <td>
-              <input name="refreshState" value="Refresh" type="button" onclick="OnRefreshState()">
-          </td>          
-        </tr> 
-      </table>
+      <label>Interval[s]:</label>		
+      <input type="text" id="intervalInput" name="intervalInput" style="width: 50px" onkeypress="intervalInputHandle(event)"/>
+      <select id="intervalCombo" name="intervalCombo" onChange="IntervalComboOnChange()">
+          <option value="0">--</option>
+          <option value="1">1s</option>
+          <option value="60">1m</option>
+          <option value="600">10m</option>
+          <option value="3600">1h</option>
+      </select>      
   </fieldset>
   <p/>
-  <fieldset name="files">
-      <legend>Files</legend>
+  <fieldset name="files" style="width: 700px">
+      <legend>Log files</legend>     
+      <input name="START_LOG" value="Start Log" type="button" onclick="OnStartLog()">
+      <input name="STOPP_LOG" value="Stopp Log" type="button" onclick="OnStoppLog()">      
+      <label style="margin:10px">State:</label>	
+      <label id = "stateLabel">Off</label>              
+       <p/> 
       <select id="logFiles" name="logFiles" size="5" style="width: 300px">            
       </select>
       <p/>        
       <input name="refreshButton" value="Refresh" type="button" onclick="OnRefreshLogFilesButtonClick()">
-      <input name="downloadButton" value="Download" type="button" onclick="OnDownloadLogFileButtonClick()">        
-  </fieldset> 
+      <input name="deleteButton" value="Delete" type="button" id = "deleteButton" onclick="OnDeleteLogFileButtonClick()">
+      <input name="downloadButton" value="Download" type="button" onclick="OnDownloadLogFileButtonClick()">
+  </fieldset>
+   <p/>
+  <fieldset name="dateTime" style="width: 700px">
+      <legend>System date time</legend>
+      <label id = "systemDateTimeLabel"></label>
+      <input name="refreshButton" value="Refresh" type="button" onclick="OnRefreshDateTimeButtonClick()">
+  </fieldset>
 </body>
 </html>
 

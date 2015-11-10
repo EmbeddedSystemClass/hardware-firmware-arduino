@@ -18,13 +18,12 @@
 #include <SPI.h>
 #include <Ethernet.h>
 #include <avr/pgmspace.h>
-//#include <Wire.h>
 #include <OneWire.h>
 #include <Fat16.h>
 #include <swRTC.h>
 
 #include "main.h"
-//#include "rtc.h"
+#include "ntp.h"
 #include "event.h"
 #include "measure.h"
 #include "data.h"
@@ -61,6 +60,13 @@ void setup() {
   Serial.println();
   Serial.print("server is at ");
   Serial.println(Ethernet.localIP());
+  
+  uint32_t time = time = Ntp.getEpoch();
+  if(time > 0) {
+    Serial.print("Set RTC with timestamp:");
+    Serial.println(time);
+    RTC.setClockWithTimestamp(time);
+  }
 }
 
 

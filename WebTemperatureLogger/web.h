@@ -18,7 +18,7 @@
 byte mac[] = {
   0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
 };
-IPAddress ip(192, 168, 2, 86); // 192.168.2.86
+IPAddress ip(192, 168, 2, 87); // 192.168.2.87
 
 // Initialize the Ethernet server library
 // with the IP address and port you want to use
@@ -26,28 +26,17 @@ IPAddress ip(192, 168, 2, 86); // 192.168.2.86
 EthernetServer server(80);
 
 class WebManager {
-  private:    
-    int m_temperatureLog[20];
+  private:
     char m_ethBuffer[30];
     bool m_logState;    
   public:
     void begin() {
-      Rnd();
-      
       memset(m_ethBuffer, 0, 10);
       
       m_logState = false;
       
       Ethernet.begin(mac, ip);
       server.begin();
-    }
-    
-    void Rnd() {
-            
-      for(int i = 0; i < 20; i++) {
-        m_temperatureLog[i] = 0;//random(12) * 10 - 20;
-      }
-      
     }
     
     void sendPage1(EthernetClient* client) {      
@@ -140,65 +129,66 @@ class WebManager {
     
     void sendTemperatureRamLog(EthernetClient* client) {
       client->println(F("HTTP/1.0 200 OK"));
-      client->println("Content-Type: text/xml");
-      client->println("Connection: keep-alive");
+      client->println(F("Content-Type: text/xml"));
+      client->println(F("Connection: keep-alive"));
       client->println();
       // send XML file containing temperature
       
-      client->print("<?xml version = \"1.0\" ?>");
-      client->print("<data>");
-      for(int i = 0; i < 20; i++) {
-        client->print("<analog>");
-        client->print(m_temperatureLog[i]);
-        client->print("</analog>");
+      client->print(F("<?xml version = \"1.0\" ?>"));
+      client->print(F("<data>"));
+      for(int i = 0; i < LOG_DATA_SIZE; i++) {
+        client->print(F("<analog>"));
+        client->print(LogData.temperature1Log[i]);
+        client->print(F("</analog>"));
       }
-      client->print("</data>");
+      client->print(F("</data>"));
       client->flush();
       client->stop();
-      
-      for(int i = 0; i < 19; i++) {
-        m_temperatureLog[i] = m_temperatureLog[i+1];
-      }
-      m_temperatureLog[18] = random(12) * 10 - 20;
     }
     
     void sendSystemState(EthernetClient* client) {
       client->println(F("HTTP/1.0 200 OK"));
-      client->println("Content-Type: text/xml");
-      client->println("Connection: keep-alive");
+      client->println(F("Content-Type: text/xml"));
+      client->println(F("Connection: keep-alive"));
       client->println();
       // send XML file containing status
       
-      client->print("<?xml version = \"1.0\" ?>");
-      client->print("<state>");
+      client->print(F("<?xml version = \"1.0\" ?>"));
+      client->print(F("<state>"));
       
-        client->print("<logstate>");
+        client->print(F("<logstate>"));
         client->print(m_logState);
-        client->print("</logstate>");
+        client->print(F("</logstate>"));
       
-        client->print("<loginterval>");
+        client->print(F("<loginterval>"));
         client->print(LogEvents.interval);
-        client->print("</loginterval>");
+        client->print(F("</loginterval>"));
+      
+        client->print(F("<systemtime>"));
+        char buffer[] = "yyyy-mm-dd hh:mm:ss";
+        bin2asc(RTC.getYear(), buffer, 4);
+        bin2asc(RTC.getMonth(), &buffer[5], 2);
+        bin2asc(RTC.getDay(), &buffer[8], 2);
+        bin2asc(RTC.getHours(),&buffer[11], 2);
+        bin2asc(RTC.getMinutes(), &buffer[14], 2);
+        bin2asc(RTC.getSeconds(), &buffer[17], 2);        
+        client->print(buffer); 
+        client->print(F("</systemtime>"));
 
-      client->print("</state>");
+      client->print(F("</state>"));
       client->flush();
       client->stop();
-      
-      for(int i = 0; i < 19; i++) {
-        m_temperatureLog[i] = m_temperatureLog[i+1];
-      }
-      m_temperatureLog[18] = random(12) * 10 - 20;
     }
     
     void sendLogFilesDir(EthernetClient* client) {      
       client->println(F("HTTP/1.0 200 OK"));
-      client->println("Content-Type: text/xml");
-      client->println("Connection: keep-alive");
+      client->println(F("Content-Type: text/xml"));
+      client->println(F("Connection: keep-alive"));
       client->println();
       
       // send XML file containing sd card directory
       
-      client->print("<?xml version = \"1.0\" ?>");
+      client->print(F("<?xml version = \"1.0\" ?>"));
       
       SD_ACTIVE();
       if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {       
@@ -270,8 +260,20 @@ class WebManager {
       }      
     }
     
+    void deleteFile(char* fileName) {
+      SD_ACTIVE();   
+           
+      if (card.init(0, SS_SD_CARD) && Fat16::init(&card)) {        
+        file.remove(fileName);
+      }
+      
+      ETH_ACTIVE();
+    }
+    
     void dispatch() {
+      
       EthernetClient client = server.available();
+      
       if (client) {
         //Serial.println("new client");
         // an http request ends with a blank line
@@ -289,6 +291,15 @@ class WebManager {
                 char name[13] = { 0 };
                 strncpy(name, m_ethBuffer + 10, l);
                 sendFile(&client, name);
+              } else {
+                Serial.println("file not found");
+              }              
+            } else if (strncasecmp_P(m_ethBuffer, PSTR("GET /delete"), 11)==0) {              
+              uint8_t l = GetFileNameLength(m_ethBuffer + 12);
+              if (l > 0 && l < 13) {                
+                char name[13] = { 0 };
+                strncpy(name, m_ethBuffer + 12, l);
+                deleteFile(name);
               } else {
                 Serial.println("file not found");
               }
@@ -339,3 +350,4 @@ class WebManager {
 };
 
 WebManager Web;
+
