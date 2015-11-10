@@ -35,7 +35,11 @@ class WebManager {
       
       m_logState = false;
       
-      Ethernet.begin(mac, ip);
+      // Trying to get an IP address using DHCP
+      if(Ethernet.begin(mac) == 0) {
+        // initialize the ethernet device not using DHCP
+        Ethernet.begin(mac, ip);
+      };
       server.begin();
     }
     
