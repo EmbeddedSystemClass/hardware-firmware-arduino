@@ -24,7 +24,7 @@ class LogData {
     int8_t temperature1Log[LOG_DATA_SIZE];
     int8_t temperature2Log[LOG_DATA_SIZE];
     int8_t count;
-	
+  
   public:   
     LogData() {
       bLog2SdEnabled = false;

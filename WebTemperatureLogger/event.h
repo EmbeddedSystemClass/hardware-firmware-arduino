@@ -85,12 +85,9 @@ class LogEventManager {
       unsigned bLog:1;
       unsigned bEnabled:1;
     
-      uint32_t last;    
+      uint32_t next;      // next event timestamp
       uint16_t interval;  // seconds
     
-    private:
-      int16_t delta;
-         
     public:
       LogEventManager() {
         bEnabled = false;
@@ -102,26 +99,18 @@ class LogEventManager {
         if(!bEnabled || interval == 0)
           return;
         
-        uint32_t current = (RTC.getHours() * 3600) + 
-          (RTC.getMinutes() * 60) + RTC.getSeconds();
+        uint32_t current = RTC.getTimestamp();        
         
-        delta -= (current - last);
-        last = current;
-        
-        if(delta > interval) {
-          delta = interval;
-        } else if(delta <= 0) {
-          delta = interval;
+        if(current >= next) {        
+          next = current + interval;
           bLog = true;
-        }
-        
+        }        
       }
       
       void begin() {
         bEnabled = true;        
         bLog = false;
-        last = 0;
-        delta = 0;
+        next = 0;        
         interval = 0;
       }
       
