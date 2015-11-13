@@ -48,22 +48,22 @@ class DS1621 {
          r = temp_ ^ 0xFF; // bit inversion external
          t = r + 1;        // external
       
-         /*Serial.print("T");
-         Serial.print("-");
-         Serial.print(t);
-         Serial.print("C");
-         Serial.println();*/
+        Serial.print("T");
+        Serial.print("-");
+        Serial.print(t);
+        Serial.print("C");
+        Serial.println();
        }
        // positive temp external
        else
        {
          t = temp_; // external
       
-         /*Serial.print("T");
-         Serial.print("+");
-         Serial.print(t);
-         Serial.print("C");
-         Serial.println();*/
+        Serial.print("T");
+        Serial.print("+");
+        Serial.print(t);
+        Serial.print("C");
+        Serial.println();
        }
        
        temperature = t;

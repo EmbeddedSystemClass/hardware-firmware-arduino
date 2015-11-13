@@ -28,6 +28,9 @@
       OnRefreshState();
       GetTemperature();
       //UpdateGraphDummy();
+
+      var downloadButton = document.getElementById("downloadButton");
+      downloadButton.disabled = true;
     }
 
     function DrawChart()
@@ -489,6 +492,14 @@
         request.send(null);
     }
 
+    function OnFilesSelectChange()
+    {
+      var select = document.getElementById("logFiles");
+      var idx = select.selectedIndex;
+      var downloadButton = document.getElementById("downloadButton");
+      downloadButton.disabled = idx < 0;
+    }
+
 </script>
   <style type="text/css">
       body {
@@ -584,12 +595,12 @@
       <label style="margin:10px">State:</label>
       <label id = "stateLabel">Off</label>
        <p/>
-      <select id="logFiles" name="logFiles" size="5" style="width: 300px">
+      <select id="logFiles" name="logFiles" size="5" style="width: 300px" onChange="OnFilesSelectChange()">         
       </select>
       <p/>
       <input name="refreshButton" value="Refresh" type="button" onclick="OnRefreshLogFilesButtonClick()">
       <input name="deleteButton" value="Delete" type="button" id = "deleteButton" onclick="OnDeleteLogFileButtonClick()">
-      <input name="downloadButton" value="Download" type="button" onclick="OnDownloadLogFileButtonClick()">
+      <input name="downloadButton" value="Download" type="button" id = "downloadButton" onclick="OnDownloadLogFileButtonClick()">
   </fieldset>
    <p/>
   <fieldset name="dateTime" style="width: 700px">
@@ -599,11 +610,3 @@
   </fieldset>
 </body>
 </html>
-
-
-
-
-
-
-
-

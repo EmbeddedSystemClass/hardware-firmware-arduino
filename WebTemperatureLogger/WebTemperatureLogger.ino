@@ -39,15 +39,18 @@ void setup() {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
   
+  Serial.println(F("Start Temperatur Logger"));
+  
   RTC.stopRTC(); //stop the RTC
   RTC.setTime(12,0,0); //set the time here
   RTC.setDate(11,11,2015); //set the date here
   RTC.startRTC(); //start the RTC
 
-  
+  Serial.println(F("Start Measure"));
   Measure.begin();
   Measure.dispatch();
   
+  Serial.println(F("Start Eth"));
   pinMode(SS_SD_CARD, OUTPUT);
   pinMode(SS_ETHERNET, OUTPUT);
   // start the Ethernet connection and the server:
