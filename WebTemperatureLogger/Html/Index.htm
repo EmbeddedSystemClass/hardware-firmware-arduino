@@ -180,8 +180,6 @@
         document.getElementById("temp-graph").appendChild(gGrid);
         document.getElementById("temp-graph").appendChild(xAxis);
         document.getElementById("temp-graph").appendChild(yAxis);
-
-        document.getElementById("temp-graph").setAttributeNS(null, "onmousemove", "OnMouseMove()");
     }
 
     function GetTemperature()
@@ -366,9 +364,9 @@
                     var logState = this.responseXML.getElementsByTagName('state')[0].childNodes[0].innerHTML == "1";
                     var stateLabel = document.getElementById("stateLabel");
                     if(logState) {
-                      stateLabel.innerText = "On";
+                      stateLabel.innerHTML = "On";
                     } else {
-                      stateLabel.innerText = "Off";
+                      stateLabel.innerHTML = "Off";
                     }
 
                     // Interval
@@ -420,7 +418,7 @@
         var graphXOffset = GRAPH_LEFT + GRAPH_MARGIN_PX;
         var x = event.offsetX;
 
-        if((x > graphXOffset && x < (GRAPH_LEFT + GRAPH_WIDTH)) && event.buttons == 1) {
+        if((x > graphXOffset && x < (GRAPH_LEFT + GRAPH_WIDTH)) && event.buttons > 0) {
           cursorVLine.setAttributeNS(null,"visibility","visible");
           cursorHLine.setAttributeNS(null,"visibility","visible");
           cursorText.setAttributeNS(null,"visibility","visible");
@@ -571,7 +569,7 @@
 <body onload="Init()">
   <fieldset name="graph">
       <legend>Temperature</legend>
-      <svg id = 'temp-graph' class='graph' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink' xmlns='http://www.w3.org/2000/svg'">
+      <svg id = 'temp-graph' class='graph' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink' xmlns='http://www.w3.org/2000/svg' onmousemove='OnMouseMove()'>
   </fieldset>
    <p/>
   <fieldset name="logging" style="width: 700px">
