@@ -82,7 +82,6 @@ namespace Logger {
         public bool TryGetFile(string fileName, out List<string> lines, CancellationTokenSource cancellationToken)
         {
 			lines = null;
-            bool bReady = false;
             
 			SerialPort port;
 
@@ -160,7 +159,7 @@ namespace Logger {
                 port.Close();
             }
 
-            return bReady && lines != null && lines.Count > 0;
+            return lines != null && lines.Count > 0;
 		}
 
         public bool TryGetFile1(string fileName, out List<string> lines, CancellationTokenSource cancellationToken)
